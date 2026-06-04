@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA — Adaptive Fitness OS</title>
+  <meta name="description" content="Premium adaptive fitness operating system. Emotionally intelligent. Cinematic. Yours.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+  <div class="desktop-label">AURA · Playable Prototype</div>
+
+  <div class="phone-frame" id="phone-frame">
+    <!-- Dynamic Island -->
+    <div class="dynamic-island" id="dynamic-island">
+      <div class="di-camera"></div>
+      <div class="di-speaker"></div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="status-time" id="status-time">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="0.5"/><rect x="4" y="2" width="3" height="10" rx="0.5"/><rect x="8" y="0" width="3" height="12" rx="0.5"/><rect x="12" y="0" width="3" height="12" rx="0.5" opacity="0.3"/></svg>
+        <svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.4C5.6 2.4 3.4 3.4 1.8 5L0 3.2C2.1 1.2 4.9 0 8 0s5.9 1.2 8 3.2L14.2 5C12.6 3.4 10.4 2.4 8 2.4zm0 4.8c-1.2 0-2.3.5-3.1 1.3L3.1 6.7C4.3 5.6 6.1 5 8 5s3.7.6 4.9 1.7L11.1 8.5C10.3 7.7 9.2 7.2 8 7.2zM8 10a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
+        <div class="battery-icon"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- App Viewport -->
+    <div class="app-viewport" id="app-viewport">
+
+      <!-- ═══ SCREEN: SPLASH ═══ -->
+      <div class="screen active" id="screen-splash">
+        <div class="splash-content">
+          <div class="splash-emblem">
+            <svg viewBox="0 0 40 40" fill="none">
+              <polygon points="20,4 36,34 4,34" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <polygon points="20,12 30,30 10,30" fill="white" opacity="0.15"/>
+            </svg>
+          </div>
+          <h1 class="splash-wordmark">AURA</h1>
+          <p class="splash-sub">Adaptive Fitness OS</p>
+          <div class="splash-bar"><div class="splash-bar-fill" id="splash-bar-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: AUTH LOGIN ═══ -->
+      <div class="screen" id="screen-auth-login">
+        <div class="auth-bg-glow"></div>
+        <div class="auth-container">
+          <div class="auth-logo-wrap">
+            <div class="auth-emblem">
+              <svg viewBox="0 0 40 40" fill="none" width="36" height="36">
+                <polygon points="20,4 36,34 4,34" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                <polygon points="20,12 30,30 10,30" fill="white" opacity="0.15"/>
+              </svg>
+            </div>
+            <h1 class="auth-wordmark">AURA</h1>
+            <p class="auth-tagline">Discipline. Accountability. Identity.</p>
+          </div>
+
+          <div class="auth-card">
+            <p class="auth-card-eyebrow">Welcome back</p>
+            <h2 class="auth-card-title">Sign in</h2>
+
+            <div class="auth-field-group">
+              <label class="auth-label">Username or Email</label>
+              <input type="text" class="auth-input" id="login-identifier" placeholder="@username or email" autocomplete="username">
+            </div>
+            <div class="auth-field-group">
+              <label class="auth-label">Password</label>
+              <input type="password" class="auth-input" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+
+            <button class="primary-btn" id="login-btn" style="margin-top:8px;">Sign In →</button>
+            <p class="auth-switch-text">New to AURA? <button class="auth-link-btn" id="goto-signup-btn">Create profile</button></p>
+          </div>
+
+          <p class="auth-disclaimer">This is a discipline & accountability system.<br>Not a social feed. Not a dating app.</p>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: AUTH SIGNUP ═══ -->
+      <div class="screen" id="screen-auth-signup">
+        <div class="auth-bg-glow"></div>
+        <div class="auth-signup-header">
+          <button class="auth-back-btn" id="signup-back-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </button>
+          <div class="ob-progress-bar" style="flex:1; margin:0 12px;">
+            <div class="ob-progress-fill" id="signup-progress-fill" style="width:16.6%"></div>
+          </div>
+          <span class="auth-step-label" id="signup-step-label">1 / 6</span>
+        </div>
+
+        <div class="signup-steps-container" id="signup-steps-container">
+
+          <!-- Signup Step 0: Profile Identity -->
+          <div class="signup-step active" id="signup-step-0">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Create your identity</p>
+              <h2 class="ob-title">Who are you?</h2>
+
+              <div class="auth-avatar-upload" id="auth-avatar-upload">
+                <div class="auth-avatar-circle" id="auth-avatar-preview">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="opacity:0.4"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                </div>
+                <button class="auth-upload-btn" id="auth-upload-btn">Upload Photo</button>
+                <input type="file" id="auth-avatar-input" accept="image/*" style="display:none;">
+              </div>
+
+              <div class="auth-field-group">
+                <label class="auth-label">Display Name</label>
+                <input type="text" class="auth-input" id="signup-name" placeholder="e.g. Praneeth" maxlength="32">
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">Username</label>
+                <div style="position:relative;">
+                  <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:15px;pointer-events:none;">@</span>
+                  <input type="text" class="auth-input" id="signup-username" placeholder="yourhandle" maxlength="24" style="padding-left:28px;" autocomplete="username">
+                </div>
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">Email</label>
+                <input type="email" class="auth-input" id="signup-email" placeholder="you@email.com" autocomplete="email">
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">Password</label>
+                <input type="password" class="auth-input" id="signup-password" placeholder="8+ characters" autocomplete="new-password">
+              </div>
+            </div>
+          </div>
+
+          <!-- Signup Step 1: Basic Info -->
+          <div class="signup-step" id="signup-step-1">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Personal details</p>
+              <h2 class="ob-title">About you</h2>
+
+              <div class="auth-row-fields">
+                <div class="auth-field-group" style="flex:1;">
+                  <label class="auth-label">Age</label>
+                  <input type="number" class="auth-input" id="signup-age" placeholder="21" min="16" max="75">
+                </div>
+                <div class="auth-field-group" style="flex:1;">
+                  <label class="auth-label">Gender</label>
+                  <select class="auth-input auth-select" id="signup-gender">
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="auth-field-group">
+                <label class="auth-label">Country</label>
+                <select class="auth-input auth-select" id="signup-country">
+                  <option value="">Select country</option>
+                  <option value="india">India</option>
+                  <option value="usa">United States</option>
+                  <option value="uk">United Kingdom</option>
+                  <option value="canada">Canada</option>
+                  <option value="australia">Australia</option>
+                  <option value="uae">UAE</option>
+                  <option value="singapore">Singapore</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="auth-field-group">
+                <label class="auth-label">City <span style="color:var(--text-3);font-weight:400;">(optional)</span></label>
+                <input type="text" class="auth-input" id="signup-city" placeholder="e.g. Hyderabad">
+              </div>
+            </div>
+          </div>
+
+          <!-- Signup Step 2: Fitness Goals -->
+          <div class="signup-step" id="signup-step-2">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Transformation focus</p>
+              <h2 class="ob-title">Your fitness<br>goals?</h2>
+              <p class="ob-hint">Select all that apply.</p>
+              <div class="goal-grid" id="signup-goals-grid">
+                <div class="goal-card" data-signup-goal="weight-loss"><div class="goal-icon">⚖️</div><div class="goal-label">Weight Loss</div></div>
+                <div class="goal-card" data-signup-goal="muscle-gain"><div class="goal-icon">💪</div><div class="goal-label">Muscle Gain</div></div>
+                <div class="goal-card" data-signup-goal="discipline"><div class="goal-icon">🔁</div><div class="goal-label">Discipline</div></div>
+                <div class="goal-card" data-signup-goal="athlete"><div class="goal-icon">🏆</div><div class="goal-label">Athlete</div></div>
+                <div class="goal-card" data-signup-goal="hybrid"><div class="goal-icon">⚡</div><div class="goal-label">Hybrid</div></div>
+                <div class="goal-card" data-signup-goal="recovery"><div class="goal-icon">🌿</div><div class="goal-label">Recovery</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signup Step 3: Ambition + Training Style -->
+          <div class="signup-step" id="signup-step-3">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Training profile</p>
+              <h2 class="ob-title">How do you<br>operate?</h2>
+
+              <p class="section-label" style="margin-bottom:8px;">Ambition Level</p>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+                <div class="signup-select-card selected" data-signup-ambition="casual">
+                  <span class="signup-sc-icon">🚶</span>
+                  <div><div class="signup-sc-name">Casual</div><div class="signup-sc-sub">Steady progress, sustainable pace</div></div>
+                </div>
+                <div class="signup-select-card" data-signup-ambition="consistent">
+                  <span class="signup-sc-icon">🔁</span>
+                  <div><div class="signup-sc-name">Consistent</div><div class="signup-sc-sub">Structured, habit-focused approach</div></div>
+                </div>
+                <div class="signup-select-card" data-signup-ambition="ambitious">
+                  <span class="signup-sc-icon">🔥</span>
+                  <div><div class="signup-sc-name">Highly Ambitious</div><div class="signup-sc-sub">Intensity, accountability, results</div></div>
+                </div>
+              </div>
+
+              <p class="section-label" style="margin-bottom:8px;">Training Style</p>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div class="signup-select-card selected" data-signup-training="gym" style="flex-direction:column;align-items:center;text-align:center;padding:14px 8px;">
+                  <span style="font-size:24px;margin-bottom:4px;">🏋️</span>
+                  <div class="signup-sc-name" style="font-size:13px;">Gym</div>
+                </div>
+                <div class="signup-select-card" data-signup-training="home" style="flex-direction:column;align-items:center;text-align:center;padding:14px 8px;">
+                  <span style="font-size:24px;margin-bottom:4px;">🏠</span>
+                  <div class="signup-sc-name" style="font-size:13px;">Home</div>
+                </div>
+                <div class="signup-select-card" data-signup-training="hybrid" style="flex-direction:column;align-items:center;text-align:center;padding:14px 8px;">
+                  <span style="font-size:24px;margin-bottom:4px;">⚡</span>
+                  <div class="signup-sc-name" style="font-size:13px;">Hybrid</div>
+                </div>
+                <div class="signup-select-card" data-signup-training="outdoor" style="flex-direction:column;align-items:center;text-align:center;padding:14px 8px;">
+                  <span style="font-size:24px;margin-bottom:4px;">🌄</span>
+                  <div class="signup-sc-name" style="font-size:13px;">Outdoor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signup Step 4: Optional Compatibility Profile -->
+          <div class="signup-step" id="signup-step-4">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Optional · for better matches</p>
+              <h2 class="ob-title">Compatibility<br>profile</h2>
+              <p class="ob-hint" style="margin-bottom:16px;">Used only internally for matching. Never shown publicly.</p>
+
+              <div class="auth-field-group">
+                <label class="auth-label">Profession</label>
+                <select class="auth-input auth-select" id="signup-profession">
+                  <option value="">Prefer not to say</option>
+                  <option value="student">Student</option>
+                  <option value="software">Software Engineer</option>
+                  <option value="founder">Founder / Entrepreneur</option>
+                  <option value="doctor">Doctor / Healthcare</option>
+                  <option value="designer">Designer / Creative</option>
+                  <option value="freelancer">Freelancer</option>
+                  <option value="business">Business Owner</option>
+                  <option value="other">Other Professional</option>
+                </select>
+              </div>
+
+              <div class="auth-field-group">
+                <label class="auth-label">Monthly Income Range</label>
+                <select class="auth-input auth-select" id="signup-income">
+                  <option value="">Prefer not to say</option>
+                  <option value="student">Student / No Income</option>
+                  <option value="10-25">₹10k – ₹25k</option>
+                  <option value="25-50">₹25k – ₹50k</option>
+                  <option value="50-100">₹50k – ₹1L</option>
+                  <option value="100+">₹1L+</option>
+                </select>
+              </div>
+
+              <p class="section-label" style="margin-top:16px; margin-bottom:8px;">Training Schedule</p>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div class="signup-select-card" data-signup-schedule="morning" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;">
+                  <span style="font-size:20px;margin-bottom:4px;">🌅</span>
+                  <div class="signup-sc-name" style="font-size:12px;">Morning</div>
+                </div>
+                <div class="signup-select-card" data-signup-schedule="afternoon" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;">
+                  <span style="font-size:20px;margin-bottom:4px;">☀️</span>
+                  <div class="signup-sc-name" style="font-size:12px;">Afternoon</div>
+                </div>
+                <div class="signup-select-card" data-signup-schedule="evening" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;">
+                  <span style="font-size:20px;margin-bottom:4px;">🌇</span>
+                  <div class="signup-sc-name" style="font-size:12px;">Evening</div>
+                </div>
+                <div class="signup-select-card" data-signup-schedule="night" style="flex-direction:column;align-items:center;text-align:center;padding:12px 8px;">
+                  <span style="font-size:20px;margin-bottom:4px;">🌙</span>
+                  <div class="signup-sc-name" style="font-size:12px;">Night</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signup Step 5: Life Goals + Personality -->
+          <div class="signup-step" id="signup-step-5">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Final step</p>
+              <h2 class="ob-title">What are you<br>building toward?</h2>
+              <p class="ob-hint" style="margin-bottom:12px;">Select all that apply.</p>
+
+              <div class="life-goals-grid" id="life-goals-grid">
+                <div class="life-goal-pill" data-life-goal="confidence">Better Confidence</div>
+                <div class="life-goal-pill" data-life-goal="transformation">Weight Transformation</div>
+                <div class="life-goal-pill" data-life-goal="discipline">Discipline</div>
+                <div class="life-goal-pill" data-life-goal="career">Career Growth</div>
+                <div class="life-goal-pill" data-life-goal="athletic">Athletic Performance</div>
+                <div class="life-goal-pill" data-life-goal="mental">Mental Stability</div>
+                <div class="life-goal-pill" data-life-goal="longevity">Longevity</div>
+                <div class="life-goal-pill" data-life-goal="lifestyle">Better Lifestyle</div>
+              </div>
+
+              <p class="section-label" style="margin-top:18px; margin-bottom:8px;">Your Energy / Personality</p>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <div class="signup-select-card" data-signup-personality="calm" style="padding:8px 14px; flex:none;">🌊 Calm</div>
+                <div class="signup-select-card" data-signup-personality="intense" style="padding:8px 14px; flex:none;">🔥 Intense</div>
+                <div class="signup-select-card" data-signup-personality="balanced" style="padding:8px 14px; flex:none;">⚖️ Balanced</div>
+                <div class="signup-select-card" data-signup-personality="analytical" style="padding:8px 14px; flex:none;">🧠 Analytical</div>
+                <div class="signup-select-card" data-signup-personality="competitive" style="padding:8px 14px; flex:none;">🏆 Competitive</div>
+                <div class="signup-select-card" data-signup-personality="motivational" style="padding:8px 14px; flex:none;">⚡ Motivational</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /signup-steps-container -->
+
+        <div class="ob-footer">
+          <button class="ob-next-btn" id="signup-next-btn" style="width:100%;">Continue</button>
+          <p class="auth-switch-text" style="margin-top:12px; text-align:center;">Already have an account? <button class="auth-link-btn" id="goto-login-btn">Sign in</button></p>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: ONBOARDING ═══ -->
+      <div class="screen" id="screen-onboarding">
+        <div class="ob-header">
+          <div class="ob-logo">
+            <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><polygon points="10,2 18,17 2,17" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="ob-progress-bar">
+            <div class="ob-progress-fill" id="ob-progress-fill"></div>
+          </div>
+          <div class="ob-step-label" id="ob-step-label">1 of 5</div>
+        </div>
+
+        <div class="ob-steps-container" id="ob-steps-container">
+
+          <!-- Step 0: Goals -->
+          <div class="ob-step active" id="ob-step-0">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Getting started</p>
+              <h2 class="ob-title">What's your<br>primary focus?</h2>
+              <p class="ob-hint">Select all that apply.</p>
+              <div class="goal-grid">
+                <div class="goal-card" data-goal="strength">
+                  <div class="goal-icon">💪</div>
+                  <div class="goal-label">Strength</div>
+                </div>
+                <div class="goal-card" data-goal="consistency">
+                  <div class="goal-icon">🔁</div>
+                  <div class="goal-label">Consistency</div>
+                </div>
+                <div class="goal-card" data-goal="recovery">
+                  <div class="goal-icon">🌿</div>
+                  <div class="goal-label">Recovery</div>
+                </div>
+                <div class="goal-card" data-goal="weight">
+                  <div class="goal-icon">⚖️</div>
+                  <div class="goal-label">Fat Loss</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 1: Body Metrics -->
+          <div class="ob-step" id="ob-step-1">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Physical baseline</p>
+              <h2 class="ob-title">Body metrics</h2>
+
+              <div class="metric-input-group">
+                <label class="metric-label">Height (cm)</label>
+                <div class="metric-dual">
+                  <input type="number" class="metric-number-input" id="height-num" value="172" min="120" max="220">
+                  <input type="range" class="metric-slider" id="height-slider" min="120" max="220" value="172">
+                </div>
+              </div>
+
+              <div class="metric-input-group">
+                <label class="metric-label">Weight (kg)</label>
+                <div class="metric-dual">
+                  <input type="number" class="metric-number-input" id="weight-num" value="70" min="30" max="200">
+                  <input type="range" class="metric-slider" id="weight-slider" min="30" max="200" value="70">
+                </div>
+              </div>
+
+              <div class="metric-input-group">
+                <label class="metric-label">Age</label>
+                <div class="metric-dual">
+                  <input type="number" class="metric-number-input" id="age-num" value="21" min="14" max="80">
+                  <input type="range" class="metric-slider" id="age-slider" min="14" max="80" value="21">
+                </div>
+              </div>
+
+              <div class="bmi-display">
+                <div class="bmi-block">
+                  <span class="bmi-val" id="bmi-val">23.7</span>
+                  <span class="bmi-lbl">BMI</span>
+                </div>
+                <div class="bmi-block">
+                  <span class="bmi-val" id="bmi-cat" style="font-size:16px;">Normal</span>
+                  <span class="bmi-lbl">Category</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Environment -->
+          <div class="ob-step" id="ob-step-2">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Training setup</p>
+              <h2 class="ob-title">Where do you<br>usually train?</h2>
+
+              <div class="env-cards">
+                <div class="env-card selected" data-env="gym">
+                  <div class="env-icon">🏋️</div>
+                  <div class="env-label">Gym</div>
+                  <div class="env-sub">Full equipment</div>
+                </div>
+                <div class="env-card" data-env="home">
+                  <div class="env-icon">🏠</div>
+                  <div class="env-label">Home</div>
+                  <div class="env-sub">Bodyweight & bands</div>
+                </div>
+              </div>
+
+              <div class="metric-input-group" style="margin-top:28px;">
+                <label class="metric-label">Sleep per night (hrs)</label>
+                <div class="metric-dual">
+                  <input type="number" class="metric-number-input" id="sleep-num" value="7" min="4" max="12">
+                  <input type="range" class="metric-slider" id="sleep-slider" min="4" max="12" value="7">
+                </div>
+                <!-- Sleep mood dynamic feedback -->
+                <div class="sleep-mood-feedback" id="sleep-mood-feedback" style="margin-top:14px; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--surface-2); border:1px solid var(--border); padding:10px 14px; border-radius:14px; min-height:44px; transition:all var(--dur-fast) var(--ease);">
+                  <span class="sleep-mood-emoji" id="sleep-mood-emoji" style="font-size:20px;">😐</span>
+                  <span class="sleep-mood-label" id="sleep-mood-label" style="font-size:12px; font-weight:700; color:var(--text-1);">Average Sleep</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Diet & Budget -->
+          <div class="ob-step" id="ob-step-3">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Nutrition baseline</p>
+              <h2 class="ob-title">Your diet & budget?</h2>
+              
+              <p class="section-label" style="margin-top:12px; margin-bottom:6px;">Diet Preference</p>
+              <div class="diet-cards" style="display:flex; flex-direction:column; gap:8px;">
+                <div class="diet-card selected" data-diet="veg">
+                  <div class="diet-icon">🥗</div>
+                  <div>
+                    <div class="diet-label" style="font-weight:700;">🟢 Pure Veg</div>
+                    <div class="diet-sub">Fully vegetarian foods only</div>
+                  </div>
+                </div>
+                <div class="diet-card" data-diet="eggetarian">
+                  <div class="diet-icon">🥚</div>
+                  <div>
+                    <div class="diet-label" style="font-weight:700;">🟡 Eggitarian</div>
+                    <div class="diet-sub">Vegetarian + eggs allowed</div>
+                  </div>
+                </div>
+                <div class="diet-card" data-diet="nonveg">
+                  <div class="diet-icon">🍗</div>
+                  <div>
+                    <div class="diet-label" style="font-weight:700;">🔴 Non-Veg</div>
+                    <div class="diet-sub">Full recommendation suite</div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="section-label" style="margin-top:20px; margin-bottom:6px;">Budget Level (India-Focused)</p>
+              <div class="budget-selector" style="display:flex; gap:8px;">
+                <button class="budget-btn selected" data-budget="low" style="flex:1; padding:12px 8px; border-radius:14px; font-size:12px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">
+                  <span style="font-size:16px; display:block; margin-bottom:4px;">🪙</span>
+                  Low Budget
+                  <span style="font-size:9px; font-weight:400; color:var(--text-2); display:block; margin-top:2px;">Staples & Mess</span>
+                </button>
+                <button class="budget-btn" data-budget="medium" style="flex:1; padding:12px 8px; border-radius:14px; font-size:12px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">
+                  <span style="font-size:16px; display:block; margin-bottom:4px;">💵</span>
+                  Medium
+                  <span style="font-size:9px; font-weight:400; color:var(--text-3); display:block; margin-top:2px;">Whey & Paneer</span>
+                </button>
+                <button class="budget-btn" data-budget="high" style="flex:1; padding:12px 8px; border-radius:14px; font-size:12px; font-weight:700; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">
+                  <span style="font-size:16px; display:block; margin-bottom:4px;">💎</span>
+                  Premium
+                  <span style="font-size:9px; font-weight:400; color:var(--text-3); display:block; margin-top:2px;">Organic & Salmon</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Lifestyle situation -->
+          <div class="ob-step" id="ob-step-4">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Lifestyle</p>
+              <h2 class="ob-title">What's your<br>living situation?</h2>
+              <p class="ob-hint" style="margin-bottom:16px;">This adapts cooking complexity, grocery recommendations, and recipes.</p>
+
+              <div class="lifestyle-cards" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="lifestyle-card selected" data-lifestyle="hostel" style="background:var(--surface-2); border:1.5px solid var(--border); border-radius:18px; padding:16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all var(--dur-fast) var(--ease-spring);">
+                  <div style="font-size:28px; flex-shrink:0;">🏢</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Hostel Mode</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">Mess food hacks, electric kettle recipes, no-cook options.</div>
+                  </div>
+                </div>
+                <div class="lifestyle-card" data-lifestyle="home" style="background:var(--surface-2); border:1.5px solid var(--border); border-radius:18px; padding:16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all var(--dur-fast) var(--ease-spring);">
+                  <div style="font-size:28px; flex-shrink:0;">🏠</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Home Mode</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">Full kitchen access, home-cooked flexibility, family options.</div>
+                  </div>
+                </div>
+                <div class="lifestyle-card" data-lifestyle="alone" style="background:var(--surface-2); border:1.5px solid var(--border); border-radius:18px; padding:16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all var(--dur-fast) var(--ease-spring);">
+                  <div style="font-size:28px; flex-shrink:0;">🍳</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Living Alone</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">Quick 15-min meals, highly efficient grocery systems, low waste.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 5: Experience Level -->
+          <div class="ob-step" id="ob-step-5">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Your Baseline</p>
+              <h2 class="ob-title">What is your<br>experience level?</h2>
+              <p class="ob-hint" style="margin-bottom:16px;">This configures starting intensity, split volumes, and explanation details.</p>
+
+              <div class="experience-cards" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="experience-card selected" data-experience="beginner">
+                  <div style="font-size:28px; flex-shrink:0;">🌱</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Beginner</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">New to training. Simple moves, lower volume, helpful guides.</div>
+                  </div>
+                </div>
+                <div class="experience-card" data-experience="returning">
+                  <div style="font-size:28px; flex-shrink:0;">🔄</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Returning</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">Trained before, making a comeback. Balanced volume and pacing.</div>
+                  </div>
+                </div>
+                <div class="experience-card" data-experience="experienced">
+                  <div style="font-size:28px; flex-shrink:0;">⚡</div>
+                  <div>
+                    <div style="font-size:15px; font-weight:700; color:var(--text-1);">Experienced</div>
+                    <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.3;">Locked-in habits. Higher intensity suggestions, high set density.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 6: Home Gym Equipment -->
+          <div class="ob-step" id="ob-step-6">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Home Setup</p>
+              <h2 class="ob-title">What equipment do you have?</h2>
+              <p class="ob-hint" style="margin-bottom:12px;">Only relevant for Home or Hybrid environments. Select all that apply.</p>
+
+              <div class="equipment-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                <div class="equipment-card" data-equipment="dumbbells">
+                  <span class="eq-icon">🏋️‍♀️</span>
+                  <span class="eq-label">Dumbbells</span>
+                </div>
+                <div class="equipment-card" data-equipment="pullup-bar">
+                  <span class="eq-icon">🪜</span>
+                  <span class="eq-label">Pull-Up Bar</span>
+                </div>
+                <div class="equipment-card" data-equipment="resistance-bands">
+                  <span class="eq-icon">🎗️</span>
+                  <span class="eq-label">Resistance Bands</span>
+                </div>
+                <div class="equipment-card" data-equipment="yoga-ball">
+                  <span class="eq-icon">🔮</span>
+                  <span class="eq-label">Yoga Ball</span>
+                </div>
+                <div class="equipment-card" data-equipment="bench">
+                  <span class="eq-icon">🪑</span>
+                  <span class="eq-label">Bench</span>
+                </div>
+                <div class="equipment-card" data-equipment="stretch-bands">
+                  <span class="eq-icon">🧣</span>
+                  <span class="eq-label">Stretch Bands</span>
+                </div>
+              </div>
+
+              <div class="auth-field-group">
+                <label class="auth-label">What else do you have?</label>
+                <input type="text" class="auth-input" id="ob-equipment-custom" placeholder="e.g. Kettlebell, Sandbag">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 7: Identity -->
+          <div class="ob-step" id="ob-step-7">
+            <div class="ob-step-inner">
+              <p class="ob-eyebrow">Your mindset</p>
+              <h2 class="ob-title">Who are you<br>becoming?</h2>
+
+              <div class="identity-cards">
+                <div class="identity-card selected" data-identity="scholar">
+                  <div class="identity-top">
+                    <span class="identity-emoji">📖</span>
+                    <span class="identity-name" style="color:var(--violet);">The Quiet Scholar</span>
+                  </div>
+                  <p class="identity-desc">Systematic. Data-driven. Slow and steady progress.</p>
+                </div>
+                <div class="identity-card" data-identity="performer">
+                  <div class="identity-top">
+                    <span class="identity-emoji">🔥</span>
+                    <span class="identity-name" style="color:var(--mint);">The Resilient Performer</span>
+                  </div>
+                  <p class="identity-desc">Output-focused. Challenges are fuel. Built for grit.</p>
+                </div>
+                <div class="identity-card" data-identity="strategist">
+                  <div class="identity-top">
+                    <span class="identity-emoji">🧠</span>
+                    <span class="identity-name" style="color:#60a5fa;">The Calm Strategist</span>
+                  </div>
+                  <p class="identity-desc">Life integration. Low friction. Recovery-first mindset.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ob-footer">
+          <button class="ob-back-btn" id="ob-back-btn">Back</button>
+          <button class="ob-next-btn" id="ob-next-btn">Continue</button>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: VISION (Home) ═══ -->
+      <div class="screen" id="screen-vision">
+        <div class="screen-header">
+          <div>
+            <p class="screen-eyebrow" id="vision-date-label">Saturday · May 24</p>
+            <h1 class="screen-title">Good morning.</h1>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="streak-badge" id="vision-streak-badge" style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#fb923c; background:rgba(251,146,60,0.1); border:1px solid rgba(251,146,60,0.2); padding:3px 8px; border-radius:12px;">
+              <span>🔥</span><span>4d</span>
+            </div>
+            <button class="notif-bell-btn" style="position:relative;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--dur-fast) ease;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+              <span class="notif-badge hidden">3</span>
+            </button>
+            <div class="avatar-btn" id="vision-avatar-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen-scroll">
+          <!-- Identity Display -->
+          <div class="identity-banner" id="vision-identity-banner">
+            <div class="ib-left">
+              <p class="ib-role">Your Identity</p>
+              <p class="ib-name" id="vision-identity-name">The Quiet Scholar</p>
+            </div>
+            <div class="ib-badge" id="vision-identity-badge">📖</div>
+          </div>
+
+          <!-- Quote Card -->
+          <div class="quote-card">
+            <p class="quote-text">"The discipline you build today is the shield that guards your future self."</p>
+            <p class="quote-attr">— AURA</p>
+          </div>
+
+          <!-- Morning Checklist -->
+          <p class="section-label">Morning Anchors</p>
+          <div class="checklist-card">
+            <div class="check-item" data-check="0">
+              <div class="check-box"><svg viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,8 11,1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>5-min breathing pacer</span>
+            </div>
+            <div class="check-item" data-check="1">
+              <div class="check-box"><svg viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,8 11,1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Hydrate — 500ml before screen</span>
+            </div>
+            <div class="check-item" data-check="2">
+              <div class="check-box"><svg viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,8 11,1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span>Set one intention for today</span>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="start-checkin-btn">
+            Begin Daily Sync
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M5 13h12.17l-4.88 4.88L14 19.76 21.76 12 14 4.24l-1.71 1.88L17.17 11H5v2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: CHECK-IN (Wheel UI) ═══ -->
+      <div class="screen" id="screen-checkin">
+        <div class="ci-wheel-header">
+          <p class="ci-wheel-eyebrow">Daily Sync</p>
+          <div class="ci-dots" id="checkin-dots">
+            <div class="ci-dot active"></div>
+            <div class="ci-dot"></div>
+            <div class="ci-dot"></div>
+            <div class="ci-dot"></div>
+            <div class="ci-dot"></div>
+          </div>
+        </div>
+
+        <div class="ci-wheel-viewport" id="ci-wheel-viewport">
+          <div class="ci-wheel-track" id="ci-wheel-track"></div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: DASHBOARD (Home tab) ═══ -->
+      <div class="screen" id="screen-dashboard">
+        <div class="screen-header">
+          <div>
+            <p class="screen-eyebrow" id="dashboard-date">Saturday · May 24</p>
+            <h1 class="screen-title">AURA Engine</h1>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="streak-badge" id="dashboard-streak-badge" style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#fb923c; background:rgba(251,146,60,0.1); border:1px solid rgba(251,146,60,0.2); padding:3px 8px; border-radius:12px;">
+              <span>🔥</span><span>4d</span>
+            </div>
+            <button class="notif-bell-btn" style="position:relative;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--dur-fast) ease;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+              <span class="notif-badge hidden">3</span>
+            </button>
+            <div class="active-badge" id="dashboard-recovery-state">ACTIVE</div>
+          </div>
+        </div>
+
+        <div class="screen-scroll">
+          <!-- Readiness Ring -->
+          <div class="ring-container">
+            <svg class="ring-svg" viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="80" cy="80" r="68"/>
+              <circle class="ring-prog" id="ring-prog" cx="80" cy="80" r="68"/>
+            </svg>
+            <div class="ring-text">
+              <span class="ring-val" id="ring-val">—</span>
+              <span class="ring-lbl">Readiness</span>
+            </div>
+          </div>
+
+          <!-- Advice Card -->
+          <div class="advice-card" id="advice-card">
+            <p class="advice-title" id="advice-title">System Diagnostic</p>
+            <p class="advice-body" id="advice-body">Complete your daily sync to receive today's readiness assessment.</p>
+          </div>
+
+          <!-- Today's Why -->
+          <div class="why-card" id="why-card">
+            <div class="why-header">
+              <span class="why-dot"></span>
+              <span class="why-label">Today's Why</span>
+            </div>
+            <p class="why-text" id="why-text">You are not training for aesthetics. You are training for who you need to become.</p>
+            <div class="why-dots" id="why-dots">
+              <span class="why-dot-ind active" data-why="0"></span>
+              <span class="why-dot-ind" data-why="1"></span>
+              <span class="why-dot-ind" data-why="2"></span>
+            </div>
+          </div>
+
+          <!-- MVS Toggle -->
+          <div class="mvs-card">
+            <div class="mvs-info">
+              <p class="mvs-title">Minimum Viable Success</p>
+              <p class="mvs-sub">Protect consistency on low-energy days.</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="mvs-toggle">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <!-- Engine Insights Accordion -->
+          <div class="insights-accordion" id="insights-accordion">
+            <button class="insights-toggle" id="insights-toggle">
+              <span>Show Engine Insights</span>
+              <svg class="insights-arrow" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="insights-body hidden" id="insights-body">
+              <div class="insight-row"><span class="insight-label">CNS Load</span><span class="insight-val" id="ins-cns">Moderate</span></div>
+              <div class="insight-row"><span class="insight-label">Recovery Window</span><span class="insight-val" id="ins-recovery">22–28h</span></div>
+              <div class="insight-row"><span class="insight-label">Weekly Volume</span><span class="insight-val" id="ins-volume">~14,200 kg</span></div>
+              <div class="insight-row"><span class="insight-label">Streak</span><span class="insight-val" id="ins-streak">4 days</span></div>
+              <div class="insight-row"><span class="insight-label">Energy Mode</span><span class="insight-val" id="ins-energy">Standard ⚡</span></div>
+            </div>
+          </div>
+
+          <!-- Today's Workout Card -->
+          <p class="section-label">Today's Session</p>
+          <div class="today-workout-card" id="today-workout-card">
+            <div class="tw-left">
+              <p class="tw-tag" id="tw-tag">Adaptive Focus</p>
+              <p class="tw-name" id="tw-name">Lower Body</p>
+              <p class="tw-meta" id="tw-meta">4 exercises · ~40 min</p>
+            </div>
+            <div class="tw-arrow">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+            </div>
+          </div>
+
+          <!-- Weekly Split Preview -->
+          <p class="section-label">This Week</p>
+          <div class="week-strip" id="week-strip-home">
+            <!-- JS rendered -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: WORKOUT (Train tab) ═══ -->
+      <div class="screen" id="screen-workout">
+        <!-- Calendar Header -->
+        <div class="workout-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div>
+              <p class="screen-eyebrow" id="workout-day-label">Saturday · Legs</p>
+              <h1 class="screen-title-sm" id="workout-session-title" style="display:inline-block;">Lower Body</h1>
+              <p class="screen-subtitle" id="workout-session-meta" style="font-size:12px; color:var(--text-2); margin-top:2px;"></p>
+            </div>
+            <button class="icon-btn" id="workout-energy-mode-btn" style="width:28px; height:28px; font-size:12px; border-radius:8px; padding:0; flex-shrink:0;" title="Change Session Flow">⚡</button>
+          </div>
+          <div class="cal-view-toggle">
+            <button class="cal-btn active" id="cal-today-btn" data-view="today">Day</button>
+            <button class="cal-btn" id="cal-week-btn" data-view="week">Week</button>
+            <button class="cal-btn" id="cal-month-btn" data-view="month">Month</button>
+          </div>
+        </div>
+
+        <!-- Calendar: Today View (exercise grid) -->
+        <div class="cal-view active" id="cal-view-today">
+          <!-- Session Volume Progress -->
+          <div class="volume-progress-wrap" id="volume-progress-wrap" style="display:flex; justify-content:space-between; align-items:center; padding: 8px 16px 10px;">
+            <div style="flex:1; display:flex; align-items:center; gap:8px;">
+              <div class="volume-bar-track" style="flex:1; height:4px; background:var(--surface-3); border-radius:4px; overflow:hidden;">
+                <div class="volume-bar-fill" id="volume-bar-fill" style="height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--mint)); border-radius:4px; transition:width 0.4s ease;"></div>
+              </div>
+              <span class="volume-bar-label" id="volume-bar-label" style="font-size:10px; font-weight:700; color:var(--text-3); white-space:nowrap;">0 / 0 sets</span>
+            </div>
+            <button class="primary-btn" id="custom-logger-trigger-btn" style="width:auto; margin:0 0 0 12px; padding:6px 12px; font-size:10px; font-weight:800; border-radius:8px; background:linear-gradient(135deg, var(--accent), var(--violet)); border:none; cursor:pointer; color:#000; font-family:var(--font);">+ Add Extra Work</button>
+          </div>
+          <div class="screen-scroll-nopad">
+            <div class="workout-grid" id="workout-grid">
+              <!-- JS rendered -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar: Week View -->
+        <div class="cal-view" id="cal-view-week">
+          <div class="screen-scroll">
+            <div class="week-calendar" id="week-calendar">
+              <!-- JS rendered -->
+            </div>
+            <div class="history-detail-card hidden" id="history-card">
+              <p class="hc-date" id="hc-date">—</p>
+              <div class="hc-body" id="hc-body">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar: Month View -->
+        <div class="cal-view" id="cal-view-month">
+          <div class="screen-scroll">
+            <div class="month-header">
+              <button class="month-nav" id="month-prev">‹</button>
+              <p class="month-title" id="month-title">May 2026</p>
+              <button class="month-nav" id="month-next">›</button>
+            </div>
+            <div class="month-day-labels">
+              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+            <div class="month-grid" id="month-grid"><!-- JS rendered --></div>
+            <div class="history-detail-card hidden" id="month-history-card">
+              <p class="hc-date" id="month-hc-date">—</p>
+              <div class="hc-body" id="month-hc-body">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercise Bottom Sheet -->
+        <div class="sheet-backdrop hidden" id="sheet-backdrop"></div>
+        <div class="bottom-sheet" id="bottom-sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-header">
+            <div>
+              <p class="sheet-ex-name" id="sheet-ex-name">Goblet Squat</p>
+              <p class="sheet-ex-muscle" id="sheet-ex-muscle">Quads · Glutes</p>
+            </div>
+            <button class="sheet-close" id="sheet-close">✕</button>
+          </div>
+
+          <div class="sheet-scroll">
+            <!-- Last Session Comparison -->
+            <div class="last-session-row" id="last-session-row">
+              <span class="ls-label">Last Session</span>
+              <span class="ls-val" id="ls-val">—</span>
+            </div>
+
+            <!-- Animated Exercise Demo Mockup -->
+            <div class="exercise-mockup-wrap" id="exercise-mockup-wrap">
+              <svg class="muscle-overlay-svg" viewBox="0 0 100 100">
+                <path class="muscle-path-glow" d="M30 40 Q50 20 70 40 Q50 60 30 40 Z"/>
+              </svg>
+              <div class="mockup-motion-arrow">⇅</div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--accent); opacity: 0.6; z-index: 10; margin-left: 24px; text-transform: uppercase; letter-spacing: 0.05em;"></span>
+            </div>
+
+            <!-- Progressive Overload Suggestion -->
+            <div class="overload-chip" id="overload-chip" style="display:none">
+              <span class="oc-icon">📈</span>
+              <span class="oc-text" id="overload-text">Try +2.5kg today</span>
+              <button class="oc-apply" id="oc-apply-btn">Apply</button>
+            </div>
+
+            <!-- Rest Timer -->
+            <div class="rest-timer-row">
+              <div class="rest-ring-wrap">
+                <svg class="rest-ring-svg" viewBox="0 0 52 52">
+                  <circle class="rr-bg" cx="26" cy="26" r="22"/>
+                  <circle class="rr-prog" id="rr-prog" cx="26" cy="26" r="22"/>
+                </svg>
+                <span class="rest-val" id="rest-val">—</span>
+              </div>
+              <div class="rest-info">
+                <p class="rest-title">Rest Timer</p>
+                <div class="rest-selectors" id="rest-selectors">
+                  <button class="rest-sel-btn active" data-secs="60">60s</button>
+                  <button class="rest-sel-btn" data-secs="30">30s</button>
+                  <button class="rest-sel-btn" data-secs="45">45s</button>
+                  <button class="rest-sel-btn" data-secs="90">90s</button>
+                  <button class="rest-sel-btn" data-secs="120">120s</button>
+                </div>
+              </div>
+              <button class="rest-action-btn" id="rest-action-btn">Start</button>
+            </div>
+
+            <!-- Session Controls -->
+            <div class="session-controls" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+              <div class="sc-item">
+                <label class="sc-label">Weight (kg)</label>
+                <div class="sc-dual">
+                  <input type="number" class="sc-num" id="sc-weight-num" value="16" min="0" max="200">
+                  <input type="range" class="sc-slider" id="sc-weight-slider" min="0" max="150" value="16">
+                </div>
+              </div>
+              <div class="sc-item">
+                <label class="sc-label">Target Reps</label>
+                <div class="sc-dual">
+                  <input type="number" class="sc-num" id="sc-reps-num" value="10" min="1" max="50">
+                  <input type="range" class="sc-slider" id="sc-reps-slider" min="1" max="30" value="10">
+                </div>
+              </div>
+              <div class="sc-item">
+                <label class="sc-label">Difficulty (1-10)</label>
+                <div class="sc-dual">
+                  <input type="number" class="sc-num" id="sc-diff-num" value="8" min="1" max="10">
+                  <input type="range" class="sc-slider" id="sc-diff-slider" min="1" max="10" value="8">
+                </div>
+              </div>
+            </div>
+
+            <!-- Sets Log -->
+            <div class="sets-section">
+              <div class="sets-header-row">
+                <p class="sets-title">Sets</p>
+                <button class="add-set-btn" id="add-set-btn">+ Add Set</button>
+              </div>
+              <div class="sets-table-header">
+                <span>Set</span><span>kg</span><span>Reps</span><span>Difficulty</span><span></span>
+              </div>
+              <div id="sets-rows"><!-- JS rendered --></div>
+            </div>
+
+            <!-- Quick Notes -->
+            <div class="notes-section">
+              <p class="notes-label">Session Note</p>
+              <div class="quick-notes-tags" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                <span class="quick-note-tag" style="font-size:11px; padding:4px 8px; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; cursor:pointer;" data-note-text="Felt strong 🔥">Felt strong 🔥</span>
+                <span class="quick-note-tag" style="font-size:11px; padding:4px 8px; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; cursor:pointer;" data-note-text="Low sleep 😴">Low sleep 😴</span>
+                <span class="quick-note-tag" style="font-size:11px; padding:4px 8px; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; cursor:pointer;" data-note-text="Shoulder tight 🩹">Shoulder tight 🩹</span>
+                <span class="quick-note-tag" style="font-size:11px; padding:4px 8px; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; cursor:pointer;" data-note-text="Hit PR! ⚡">Hit PR! ⚡</span>
+                <span class="quick-note-tag" style="font-size:11px; padding:4px 8px; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; cursor:pointer;" data-note-text="Calm focus 🍃">Calm focus 🍃</span>
+              </div>
+              <textarea class="notes-input" id="sheet-notes" placeholder="How did this feel? Any PRs or breakthroughs?" maxlength="240" rows="2"></textarea>
+            </div>
+
+            <!-- Exercise Complete CTA -->
+            <button class="exercise-complete-btn" id="exercise-complete-btn" style="width:100%; padding:14px; background:linear-gradient(135deg, var(--mint), #059669); border:none; border-radius:16px; color:#fff; font-size:14px; font-weight:800; font-family:var(--font); cursor:pointer; margin-top:4px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s ease; letter-spacing:0.02em;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Mark Exercise Done
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: DIET ═══ -->
+      <div class="screen" id="screen-diet">
+        <div class="screen-header">
+          <div>
+            <p class="screen-eyebrow">Nutrition</p>
+            <h1 class="screen-title">Diet Engine</h1>
+          </div>
+          <div class="diet-header-right">
+            <!-- Fuel Score Ring -->
+            <div class="fuel-score-wrap" id="fuel-score-wrap" title="Fuel Score">
+              <svg class="fuel-ring-svg" viewBox="0 0 44 44">
+                <circle class="fuel-ring-bg" cx="22" cy="22" r="18"/>
+                <circle class="fuel-ring-prog" id="fuel-ring-prog" cx="22" cy="22" r="18"/>
+              </svg>
+              <div class="fuel-score-center">
+                <span class="fuel-score-val" id="fuel-score-val">0</span>
+                <span class="fuel-score-lbl">Fuel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen-scroll">
+          <!-- Macro Progress -->
+          <div class="macro-card">
+            <div class="macro-row">
+              <span class="macro-label">Calories</span>
+              <span class="macro-nums"><span id="cal-logged" class="macro-current">0</span> / 2100</span>
+            </div>
+            <div class="macro-bar"><div class="macro-fill violet" id="cal-bar"></div></div>
+            <div class="macro-row" style="margin-top:12px;">
+              <span class="macro-label">Protein</span>
+              <span class="macro-nums"><span id="prot-logged" class="macro-current" style="color:var(--mint)">0g</span> / 110g</span>
+            </div>
+            <div class="macro-bar"><div class="macro-fill mint" id="prot-bar"></div></div>
+          </div>
+
+          <!-- Adaptive Nutrition Tip -->
+          <div class="diet-tip-card hidden" id="diet-tip-card" style="margin-top: 12px; background: linear-gradient(135deg, var(--surface-2), rgba(16,185,129,0.04)); border: 1px solid var(--border); border-radius: 20px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; transition: all 0.3s ease;">
+            <span style="font-size: 20px; flex-shrink: 0;" id="diet-tip-icon">🌱</span>
+            <div>
+              <p style="font-size: 10px; font-weight: 700; color: var(--text-3); font-family: var(--font-2); text-transform: uppercase; letter-spacing: 0.05em;" id="diet-tip-title">Beginner Diet Priority</p>
+              <p style="font-size: 13px; color: var(--text-1); margin-top: 4px; line-height: 1.45;" id="diet-tip-text">Focus on basic protein source consistency (like paneer and dal) and clean hydration before moving to complex supplements.</p>
+            </div>
+          </div>
+
+          <p class="section-label" style="margin-top:16px; margin-bottom:8px;">Diet & Lifestyle Settings</p>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; font-family:var(--font-2);">Food Type</span>
+              <select class="auth-input auth-select" id="diet-dropdown-type" style="width:100%; padding:8px 6px; font-size:11px; margin:0; border-radius:10px;">
+                <option value="veg">🟢 Veg</option>
+                <option value="eggetarian">🟡 Egg</option>
+                <option value="nonveg">🔴 Non-Veg</option>
+              </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; font-family:var(--font-2);">Budget</span>
+              <select class="auth-input auth-select" id="diet-dropdown-budget" style="width:100%; padding:8px 6px; font-size:11px; margin:0; border-radius:10px;">
+                <option value="low">🪙 Low</option>
+                <option value="medium">💵 Mid</option>
+                <option value="high">💎 Prem</option>
+              </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; font-family:var(--font-2);">Stay Type</span>
+              <select class="auth-input auth-select" id="diet-dropdown-lifestyle" style="width:100%; padding:8px 6px; font-size:11px; margin:0; border-radius:10px;">
+                <option value="hostel">🏢 Hostel</option>
+                <option value="home">🏠 Home</option>
+                <option value="alone">🍳 Alone</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Hydration Tracker -->
+          <p class="section-label">Hydration Tracker</p>
+          <div class="hydration-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:10px; color:var(--text-3); font-weight:700; font-family:var(--font-2); letter-spacing:0.04em;">DAILY WATER INTAKE</span>
+                <p style="font-size:22px; font-weight:800; color:#3b82f6; margin-top:2px;" id="water-litres-display">0.0L / 4.0L</p>
+              </div>
+              <div style="font-size:28px; animation: waterFloat 3s ease-in-out infinite;">💧</div>
+            </div>
+            <div class="water-progress-bar-wrap" style="height:6px; background:var(--surface-3); border-radius:4px; overflow:hidden; position:relative;">
+              <div class="water-progress-fill" id="water-progress-fill" style="height:100%; width:0%; background:linear-gradient(90deg, #3b82f6, #60a5fa); border-radius:4px; transition:width 0.45s cubic-bezier(0.1, 0.8, 0.2, 1);"></div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="water-add-btn" id="water-add-250" style="flex:1; padding:10px; background:var(--surface-3); border:1px solid var(--border); color:var(--text-1); font-size:11px; font-weight:700; border-radius:12px; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">+250ml</button>
+              <button class="water-add-btn" id="water-add-500" style="flex:1; padding:10px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); color:#60a5fa; font-size:11px; font-weight:700; border-radius:12px; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">+500ml</button>
+              <button class="water-add-btn" id="water-reset-btn" style="padding:10px 14px; background:var(--surface-3); border:1px solid var(--border); color:var(--text-3); font-size:11px; font-weight:700; border-radius:12px; cursor:pointer; transition:all var(--dur-fast) ease; font-family:var(--font);">Reset</button>
+            </div>
+          </div>
+
+          <!-- Quick Food Logger -->
+          <p class="section-label">Quick Food Logger</p>
+          <div class="custom-log-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="custom-food-name" placeholder="What did you eat? (e.g. Eggs, Dal)" style="flex:1; background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:12px; font-size:12px; color:var(--text-1); outline:none; font-family:var(--font);">
+              <input type="number" id="custom-food-grams" placeholder="Grams" style="width:72px; background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:12px; font-size:12px; color:var(--text-1); outline:none; text-align:center; font-family:var(--font);">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:11px; color:var(--text-3); font-weight:600; font-family:var(--font-2);">TIME:</span>
+                <select id="custom-food-time" style="background:var(--surface-3); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:11px; color:var(--text-2); outline:none; cursor:pointer; font-family:var(--font); font-weight:600;">
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                  <option value="Snack">Snack</option>
+                </select>
+              </div>
+              <button class="primary-btn" id="custom-food-log-btn" style="width:auto; margin:0; padding:10px 18px; font-size:12px; border-radius:12px; font-weight:700;">Log & Estimate ✦</button>
+            </div>
+          </div>
+
+          <p class="section-label">Meal Suggestions</p>
+          <div id="meals-container"><!-- JS rendered --></div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: RECOVERY ═══ -->
+      <div class="screen" id="screen-recovery">
+        <div class="screen-header">
+          <div>
+            <p class="screen-eyebrow">Parasympathetic</p>
+            <h1 class="screen-title">Recovery</h1>
+          </div>
+          <div class="badge-mint">REST</div>
+        </div>
+
+        <div class="screen-scroll">
+
+          <!-- Recovery Readiness Banner -->
+          <div class="recovery-readiness-banner" id="recovery-readiness-banner">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div>
+                <p style="font-size:10px;font-weight:700;color:var(--mint);text-transform:uppercase;letter-spacing:0.1em;">Recovery Status</p>
+                <p style="font-size:28px;font-weight:900;color:var(--text-1);margin-top:2px;" id="rec-readiness-score">—</p>
+              </div>
+              <div class="rec-status-badge" id="rec-status-badge">Syncing</div>
+            </div>
+            <div style="height:4px;background:var(--surface-3);border-radius:3px;overflow:hidden;">
+              <div id="rec-readiness-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--mint),#34d399);border-radius:3px;transition:width 0.6s ease;"></div>
+            </div>
+            <p style="font-size:11px;color:var(--text-3);margin-top:8px;" id="rec-readiness-msg">Complete your daily sync to generate your recovery score.</p>
+          </div>
+
+          <!-- CNS Fatigue Analysis -->
+          <p class="section-label" style="margin-top:20px;">CNS Load Analysis</p>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">Central Nervous System Load</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:2px;">Based on soreness, sleep, and intensity</p>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:var(--violet);background:rgba(139,92,246,0.12);padding:4px 10px;border-radius:10px;" id="cns-load-tag">Moderate</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+              <div style="background:var(--surface-3);border-radius:10px;padding:8px;text-align:center;">
+                <span style="font-size:13px;font-weight:800;color:var(--rose);display:block;" id="cns-soreness">—</span>
+                <span style="font-size:9px;color:var(--text-3);">Soreness</span>
+              </div>
+              <div style="background:var(--surface-3);border-radius:10px;padding:8px;text-align:center;">
+                <span style="font-size:13px;font-weight:800;color:var(--accent);display:block;" id="cns-stress">—</span>
+                <span style="font-size:9px;color:var(--text-3);">Stress</span>
+              </div>
+              <div style="background:var(--surface-3);border-radius:10px;padding:8px;text-align:center;">
+                <span style="font-size:13px;font-weight:800;color:var(--mint);display:block;" id="cns-sleep">—</span>
+                <span style="font-size:9px;color:var(--text-3);">Sleep</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Breathing Coach -->
+          <p class="section-label" style="margin-top:20px;">Box Breathing</p>
+          <div class="breathing-card">
+            <div class="breathing-ring-wrap">
+              <div class="breathing-ring" id="breathing-ring"></div>
+              <p class="breathing-prompt" id="breathing-prompt">Tap to begin</p>
+            </div>
+            <p class="breathing-sub">4s Inhale · 4s Hold · 4s Exhale · 4s Hold</p>
+            <button class="primary-btn mint-btn" id="breathing-btn">Start Session</button>
+          </div>
+
+          <!-- Sleep Recovery Tips -->
+          <p class="section-label" style="margin-top:20px;">Sleep Recovery</p>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🌙</span>
+              <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">Optimal Sleep Window</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:2px;">10:30pm — 6:30am · 8hr target</p>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <span style="font-size:10px;color:var(--mint);font-weight:800;margin-top:1px;">→</span>
+                <p style="font-size:11px;color:var(--text-2);">No screens 45min before bed. Blue light blocks melatonin production.</p>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <span style="font-size:10px;color:var(--mint);font-weight:800;margin-top:1px;">→</span>
+                <p style="font-size:11px;color:var(--text-2);">Room temp 18–20°C triggers deeper sleep cycles.</p>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <span style="font-size:10px;color:var(--mint);font-weight:800;margin-top:1px;">→</span>
+                <p style="font-size:11px;color:var(--text-2);">Magnesium glycinate (200mg) can improve deep sleep quality.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobility & Stretch -->
+          <p class="section-label" style="margin-top:20px;">Mobility Recommendations</p>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="mobility-recs">
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <span style="font-size:20px;">🦵</span>
+              <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">Hip Flexor Release</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:1px;">60s each side · 3 sets · Low load</p>
+              </div>
+            </div>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <span style="font-size:20px;">🙆</span>
+              <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">Thoracic Spine Rotation</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:1px;">30s hold · 2 sets · Seated</p>
+              </div>
+            </div>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <span style="font-size:20px;">💪</span>
+              <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">Shoulder External Rotation</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:1px;">45s each arm · 2 sets · Band</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ambient Sound -->
+          <p class="section-label" style="margin-top:20px;">Ambient Grounding</p>
+          <div class="ambient-card">
+            <div class="ambient-info">
+              <p class="ambient-name" id="ambient-name">Deep Brown Noise</p>
+              <p class="ambient-sub">Looping · Recovery mode</p>
+            </div>
+            <button class="ambient-play-btn" id="ambient-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: SQUAD (Accountability Hub) ═══ -->
+      <div class="screen" id="screen-squad">
+        <div class="screen-header">
+          <div>
+            <p class="screen-eyebrow">Accountability</p>
+            <h1 class="screen-title">Socials</h1>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="inbox-btn" id="socials-inbox-btn" style="position:relative;width:36px;height:36px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--dur-fast) ease;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <span class="inbox-badge hidden" id="inbox-badge" style="position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--accent);color:#000;font-size:9px;font-weight:900;border-radius:50%;display:flex;align-items:center;justify-content:center;">1</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="screen-scroll">
+
+          <!-- Profile Quick Card -->
+          <div class="profile-quick-card" id="profile-quick-card">
+            <div class="pqc-avatar" id="pqc-avatar">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="opacity:0.5"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </div>
+            <div class="pqc-info">
+              <p class="pqc-name" id="pqc-name">Your Name</p>
+              <p class="pqc-handle" id="pqc-handle">@username</p>
+            </div>
+            <button class="pqc-view-btn" id="view-profile-btn">View Profile →</button>
+          </div>
+
+          <!-- Discipline Score Card -->
+          <div class="discipline-card" style="background:linear-gradient(135deg, var(--surface-2), var(--violet-dim)); border:1.5px solid rgba(139,92,246,0.35); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:14px; margin-bottom:20px; position:relative; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; font-family:var(--font-2);">AURA Consistency Index</span>
+                <p style="font-size:36px; font-weight:900; color:var(--text-1); margin-top:4px;" id="discipline-score-val">—</p>
+              </div>
+              <span class="discipline-tag" id="discipline-status-tag" style="background:var(--surface-3); color:var(--text-2); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; padding:4px 10px; border-radius:12px;">Syncing</span>
+            </div>
+            <!-- Mini metrics -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--text-1);display:block;" id="acc-streak-val">4</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Day Streak</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--mint);display:block;" id="acc-weekly-val">5/7</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Weekly</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--violet);display:block;" id="acc-reliability-val">A+</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Reliability</span>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px 14px; border-radius:14px;">
+              <p style="font-size:10px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Consistency Factor</p>
+              <p style="font-size:12px; color:var(--text-2); margin-top:4px; line-height:1.45;" id="discipline-expl">Complete your daily sync to activate your consistency index.</p>
+            </div>
+          </div>
+
+          <!-- No partner state -->
+          <div class="find-partner-card" id="find-partner-card">
+            <div class="fpc-icon">🤝</div>
+            <div class="fpc-text">
+              <p class="fpc-title">Find an Accountability Partner</p>
+              <p class="fpc-sub">We match you based on discipline score, goals, schedule, and lifestyle compatibility. Not random. Not instant.</p>
+            </div>
+            <button class="primary-btn" id="find-partner-btn" style="margin-top:14px;font-size:13px;">Find My Match →</button>
+          </div>
+
+          <!-- Pending match state (hidden by default) -->
+          <div class="match-pending-card hidden" id="match-pending-card">
+            <div class="mpc-anim">
+              <div class="mpc-pulse-ring"></div>
+              <span class="mpc-icon">🔍</span>
+            </div>
+            <p class="mpc-title">Analyzing Compatibility</p>
+            <p class="mpc-sub">Still finding your accountability match... This may take up to 24 hours for the best compatibility.</p>
+            <div class="mpc-progress-dots">
+              <span class="mpc-dot active"></span>
+              <span class="mpc-dot"></span>
+              <span class="mpc-dot"></span>
+            </div>
+            <button class="ghost-btn" id="cancel-match-btn" style="font-size:12px;margin-top:8px;">Cancel Request</button>
+          </div>
+
+          <!-- Active Partner Card (hidden by default) -->
+          <div class="active-partner-card hidden" id="active-partner-card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div class="sm-avatar mint" id="partner-avatar-badge">AK</div>
+              <div style="flex:1;">
+                <p style="font-size:15px;font-weight:700;color:var(--text-1);" id="partner-name">Arjun K.</p>
+                <p style="font-size:11px;color:var(--text-3);margin-top:2px;" id="partner-location">Mumbai, India</p>
+              </div>
+              <div style="text-align:right;">
+                <div class="compat-score" id="partner-compat">87%</div>
+                <p style="font-size:9px;color:var(--text-3);margin-top:2px;">Compatible</p>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:8px;border-radius:10px;text-align:center;">
+                <span style="font-size:11px;font-weight:700;color:var(--mint);display:block;" id="partner-discipline">91</span>
+                <span style="font-size:9px;color:var(--text-3);">Discipline</span>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:8px;border-radius:10px;text-align:center;">
+                <span style="font-size:11px;font-weight:700;color:var(--violet);display:block;" id="partner-training">Gym · Evening</span>
+                <span style="font-size:9px;color:var(--text-3);">Training</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="secondary-btn" style="flex:1;font-size:12px;" id="partner-msg-btn">Message</button>
+              <button class="ghost-btn" style="flex:1;font-size:12px;" id="end-partnership-btn">End Partnership</button>
+            </div>
+          </div>
+
+          <!-- Progression Charts -->
+          <p class="section-label" style="margin-top:24px;">Discipline Index</p>
+          <div class="chart-card">
+            <div class="chart-top">
+              <span class="chart-lbl">Past 7 Days</span>
+              <span class="chart-avg" id="chart-avg">— avg</span>
+            </div>
+            <canvas id="discipline-chart" class="chart-canvas"></canvas>
+          </div>
+
+          <!-- Privacy Settings -->
+          <p class="section-label" style="margin-top:24px;">Privacy & Matching</p>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-size:13px;font-weight:600;color:var(--text-1);">Enable Matching</p>
+                <p style="font-size:11px;color:var(--text-3);margin-top:1px;">Allow others to find you</p>
+              </div>
+              <label class="toggle"><input type="checkbox" id="privacy-matching" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-size:13px;font-weight:600;color:var(--text-1);">Hide City</p>
+                <p style="font-size:11px;color:var(--text-3);margin-top:1px;">Show only country</p>
+              </div>
+              <label class="toggle"><input type="checkbox" id="privacy-city"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <p style="font-size:13px;font-weight:600;color:var(--text-1);">Private Profile</p>
+                <p style="font-size:11px;color:var(--text-3);margin-top:1px;">Only visible to partners</p>
+              </div>
+              <label class="toggle"><input type="checkbox" id="privacy-profile"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+          </div>
+
+          <button class="secondary-btn" id="reset-btn" style="margin-top:20px;opacity:0.5;font-size:12px;">Re-initialize Aura Setup</button>
+        </div>
+      </div>
+
+      <!-- ═══ OVERLAY: PROFILE PAGE ═══ -->
+      <div class="profile-overlay hidden" id="profile-overlay">
+        <div class="profile-overlay-inner">
+          <div class="profile-header-bar">
+            <button class="auth-back-btn" id="profile-close-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </button>
+            <span style="font-size:14px;font-weight:700;color:var(--text-1);">My Profile</span>
+            <button class="auth-back-btn" id="settings-trigger-btn" style="background:none; border:none; color:var(--text-2); cursor:pointer;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+          </div>
+
+          <div style="overflow-y:auto;padding:0 20px 60px;flex:1;">
+            <!-- Avatar + Name -->
+            <div style="display:flex;flex-direction:column;align-items:center;padding:24px 0 20px;">
+              <div class="profile-avatar-large" id="profile-avatar-large">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="36" height="36" style="opacity:0.4"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+              </div>
+              <h2 style="font-size:22px;font-weight:800;color:var(--text-1);margin-top:14px;" id="profile-display-name">Your Name</h2>
+              <p style="font-size:13px;color:var(--text-3);margin-top:2px;" id="profile-username-display">@username</p>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;" id="profile-goals-tags"></div>
+            </div>
+
+            <!-- Discipline Score -->
+            <div style="background:linear-gradient(135deg,var(--surface-2),var(--violet-dim));border:1.5px solid rgba(139,92,246,0.3);border-radius:20px;padding:16px;margin-bottom:16px;text-align:center;">
+              <p style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Discipline Score</p>
+              <p style="font-size:48px;font-weight:900;color:var(--text-1);line-height:1.1;margin-top:4px;" id="profile-score-large">—</p>
+              <p style="font-size:12px;color:var(--text-2);margin-top:4px;" id="profile-status-display">Complete daily sync to score</p>
+            </div>
+
+            <!-- Stats Row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:12px 8px;border-radius:14px;text-align:center;">
+                <span style="font-size:20px;font-weight:800;color:var(--text-1);display:block;" id="profile-streak">4</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Streak</span>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:12px 8px;border-radius:14px;text-align:center;">
+                <span style="font-size:20px;font-weight:800;color:var(--mint);display:block;" id="profile-weekly">5/7</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">This Week</span>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:12px 8px;border-radius:14px;text-align:center;">
+                <span style="font-size:20px;font-weight:800;color:var(--violet);display:block;" id="profile-reliability">A</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Reliability</span>
+              </div>
+            </div>
+
+            <!-- Training Info -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
+              <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Training Profile</p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Training Style</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-training-style">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Ambition</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-ambition">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Schedule</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-schedule">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Location</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-location">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Readiness Trends -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
+              <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Readiness Trends</p>
+              <canvas id="profile-readiness-chart" style="width:100%;height:60px;"></canvas>
+            </div>
+
+            <!-- Trust Signals -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
+              <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Trust Signals</p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:var(--text-2);">Streak Reliability</span>
+                  <div class="trust-bar-wrap"><div class="trust-bar-fill" style="width:85%;background:var(--mint);"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:var(--text-2);">Recovery Respect</span>
+                  <div class="trust-bar-wrap"><div class="trust-bar-fill" style="width:70%;background:var(--violet);"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:var(--text-2);">Sync Consistency</span>
+                  <div class="trust-bar-wrap"><div class="trust-bar-fill" style="width:90%;background:var(--accent);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quote -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
+              <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Training Quote</p>
+              <p style="font-size:13px;color:var(--text-2);line-height:1.5;font-style:italic;" id="profile-quote">"The discipline you build today is the shield that guards your future self."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ OVERLAY: NOTIFICATION PANEL ═══ -->
+      <div class="notif-panel hidden" id="notif-panel">
+        <div class="notif-panel-header">
+          <h3 style="font-size:16px;font-weight:700;color:var(--text-1);">Notifications</h3>
+          <button class="sheet-close" id="notif-panel-close" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="sheet-backdrop hidden" id="notif-backdrop"></div>
+
+      <!-- ═══ OVERLAY: MATCH FILTER MODAL ═══ -->
+      <div class="match-filter-backdrop hidden" id="match-filter-backdrop">
+        <div class="match-filter-modal" id="match-filter-modal">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:700;color:var(--text-1);">Match Preferences</h3>
+            <button class="sheet-close" id="match-filter-close" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+          </div>
+
+          <div style="overflow-y:auto;max-height:calc(100% - 120px);padding-bottom:20px;">
+            <p class="section-label" style="margin-bottom:8px;">Gender Preference</p>
+            <div style="display:flex;gap:8px;margin-bottom:20px;">
+              <button class="match-filter-pill selected" data-filter-gender="any">Any</button>
+              <button class="match-filter-pill" data-filter-gender="male">Male</button>
+              <button class="match-filter-pill" data-filter-gender="female">Female</button>
+            </div>
+
+            <p class="section-label" style="margin-bottom:8px;">Age Range</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              <button class="match-filter-pill" data-filter-age="18-22">18–22</button>
+              <button class="match-filter-pill selected" data-filter-age="23-27">23–27</button>
+              <button class="match-filter-pill" data-filter-age="28-35">28–35</button>
+              <button class="match-filter-pill" data-filter-age="36+">36+</button>
+              <button class="match-filter-pill" data-filter-age="any">Any</button>
+            </div>
+
+            <p class="section-label" style="margin-bottom:8px;">Ambition Level</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              <button class="match-filter-pill" data-filter-ambition="casual">Casual</button>
+              <button class="match-filter-pill selected" data-filter-ambition="consistent">Consistent</button>
+              <button class="match-filter-pill" data-filter-ambition="ambitious">Highly Ambitious</button>
+              <button class="match-filter-pill" data-filter-ambition="any">Any</button>
+            </div>
+
+            <p class="section-label" style="margin-bottom:8px;">Goal Match</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              <button class="match-filter-pill" data-filter-goal="weight-loss">Weight Loss</button>
+              <button class="match-filter-pill" data-filter-goal="muscle-gain">Muscle Gain</button>
+              <button class="match-filter-pill selected" data-filter-goal="discipline">Discipline</button>
+              <button class="match-filter-pill" data-filter-goal="athlete">Athlete</button>
+              <button class="match-filter-pill" data-filter-goal="hybrid">Hybrid</button>
+            </div>
+
+            <p class="section-label" style="margin-bottom:8px;">Location</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              <button class="match-filter-pill" data-filter-location="city">Same City</button>
+              <button class="match-filter-pill selected" data-filter-location="country">Same Country</button>
+              <button class="match-filter-pill" data-filter-location="worldwide">Worldwide</button>
+            </div>
+
+            <p class="section-label" style="margin-bottom:8px;">Training Mode</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              <button class="match-filter-pill selected" data-filter-training="gym">Gym</button>
+              <button class="match-filter-pill" data-filter-training="home">Home</button>
+              <button class="match-filter-pill" data-filter-training="hybrid">Hybrid</button>
+              <button class="match-filter-pill" data-filter-training="any">Any</button>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="start-matching-btn">Start Finding Match →</button>
+        </div>
+      </div>
+
+      <!-- ═══ OVERLAY: MATCH REQUEST CONFIRM ═══ -->
+      <div class="match-confirm-backdrop hidden" id="match-confirm-backdrop">
+        <div class="match-confirm-modal">
+          <div class="match-confirm-icon">🤝</div>
+          <h3 style="font-size:16px;font-weight:700;color:var(--text-1);margin-bottom:8px;">Request Sent</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.55;margin-bottom:20px;">We're analyzing compatibility patterns and finding the most aligned accountability match for your journey.<br><br>This may take up to <strong style="color:var(--text-1);">24 hours</strong>.</p>
+          <button class="primary-btn" id="match-confirm-ok-btn">Got It</button>
+        </div>
+      </div>
+
+      <!-- ═══ ENERGY MODE MODAL ═══ -->
+      <div class="energy-modal-backdrop hidden" id="energy-modal-backdrop">
+        <div class="energy-modal" id="energy-modal">
+          <div class="em-header">
+            <p class="em-eyebrow">Session Setup</p>
+            <h2 class="em-title">How are you showing up today?</h2>
+          </div>
+          <div class="em-options" id="em-options">
+            <div class="em-option" data-mode="full-push">
+              <div class="em-option-left"><span class="em-emoji">🔥</span><div><p class="em-option-name">Full Push</p><p class="em-option-desc">Peak performance, extra volume</p></div></div>
+              <span class="em-duration" id="em-dur-full">~55 min</span>
+            </div>
+            <div class="em-option selected" data-mode="standard">
+              <div class="em-option-left"><span class="em-emoji">⚡</span><div><p class="em-option-name">Standard</p><p class="em-option-desc">Full plan, controlled focus</p></div></div>
+              <span class="em-duration" id="em-dur-standard">~40 min</span>
+            </div>
+            <div class="em-option" data-mode="recovery">
+              <div class="em-option-left"><span class="em-emoji">🌿</span><div><p class="em-option-name">Recovery Mode</p><p class="em-option-desc">Light load, mobility focus</p></div></div>
+              <span class="em-duration" id="em-dur-recovery">~25 min</span>
+            </div>
+            <div class="em-option" data-mode="mvs">
+              <div class="em-option-left"><span class="em-emoji">🛡️</span><div><p class="em-option-name">Minimum Viable</p><p class="em-option-desc">Protect the streak — 2 core moves</p></div></div>
+              <span class="em-duration">~20 min</span>
+            </div>
+          </div>
+          <button class="primary-btn" id="em-confirm-btn">Begin Session →</button>
+        </div>
+      </div>
+
+      <!-- ═══ WORKOUT COMPLETION CELEBRATION ═══ -->
+      <div class="celebration-overlay hidden" id="celebration-overlay">
+        <div class="celebration-content">
+          <div class="celebration-particles" id="celebration-particles"></div>
+          <div class="cel-emblem">✦</div>
+          <p class="cel-eyebrow" id="cel-focus-label">LEG DAY</p>
+          <h2 class="cel-title">Session Complete</h2>
+          <p class="cel-subtitle">You showed up. That's everything.</p>
+          <div class="cel-stats">
+            <div class="cel-stat">
+              <span class="cel-stat-val" id="cel-discipline">+8</span>
+              <span class="cel-stat-lbl">Discipline</span>
+            </div>
+            <div class="cel-stat">
+              <span class="cel-stat-val" id="cel-streak">4</span>
+              <span class="cel-stat-lbl">Day Streak 🔥</span>
+            </div>
+            <div class="cel-stat">
+              <span class="cel-stat-val" id="cel-volume">—</span>
+              <span class="cel-stat-lbl">kg Volume</span>
+            </div>
+            <div class="cel-stat">
+              <span class="cel-stat-val" id="cel-duration">—</span>
+              <span class="cel-stat-lbl">min Session</span>
+            </div>
+          </div>
+          <button class="primary-btn cel-share-btn" id="cel-share-btn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;margin-bottom:8px;">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15" style="margin-right:6px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+            Share Progress
+          </button>
+          <button class="primary-btn" id="cel-close-btn" style="margin-bottom:0;">Save &amp; Continue →</button>
+        </div>
+      </div>
+
+      <!-- ═══ SAFE RESET CONFIRMATION MODAL ═══ -->
+      <div class="safe-reset-backdrop hidden" id="safe-reset-backdrop">
+        <div class="safe-reset-modal" id="safe-reset-modal">
+          <div class="srm-icon">⚠️</div>
+          <h2 class="srm-title">Re-initialize AURA?</h2>
+          <p class="srm-desc">This will permanently clear your current setup, custom weekly splits, personal records, and all logged history.</p>
+          <div class="srm-actions">
+            <button class="srm-btn srm-export" id="srm-export-btn">💾 Export Progress</button>
+            <div style="display:flex; gap:10px; width:100%;">
+              <button class="srm-btn srm-cancel" id="srm-cancel-btn">Cancel</button>
+              <button class="srm-btn srm-confirm" id="srm-confirm-btn">Yes, Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ UNDO DELETE TOAST ═══ -->
+      <div class="undo-toast hidden" id="undo-toast">
+        <span class="undo-toast-text">Set deleted</span>
+        <button class="undo-toast-btn" id="undo-toast-btn">Undo ↩</button>
+      </div>
+
+      <!-- ═══ FOOD DETAIL BOTTOM SHEET ═══ -->
+      <div class="sheet-backdrop hidden" id="food-sheet-backdrop"></div>
+      <div class="bottom-sheet" id="food-sheet" style="height:76%; background:#0c0c12; border-top:1px solid var(--border-2); border-radius:32px 32px 0 0; z-index:700;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:10px;">
+          <div>
+            <p class="sheet-ex-name" id="food-sheet-name" style="font-size:18px; font-weight:700; color:var(--text-1);">Paneer Bhurji & Roti</p>
+            <span class="meal-tag veg" id="food-sheet-tag" style="font-size:9px; font-weight:700; border-radius:20px; padding:2px 7px; display:inline-block; margin-top:4px;">🟢 Pure Veg</span>
+          </div>
+          <button class="sheet-close" id="food-sheet-close" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-2); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+        
+        <div class="sheet-scroll" style="padding:16px 20px 40px; overflow-y:auto; flex:1;">
+          <!-- Macros Grid -->
+          <div class="food-macros-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:18px;">
+            <div style="background:var(--surface-2); border:1px solid var(--border); padding:8px 4px; border-radius:12px; text-align:center;">
+              <span style="font-size:8px; color:var(--text-3); display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Calories</span>
+              <span style="font-size:14px; font-weight:800; color:var(--accent); display:block; margin-top:2px;" id="food-sheet-cal">520</span>
+            </div>
+            <div style="background:var(--surface-2); border:1px solid var(--border); padding:8px 4px; border-radius:12px; text-align:center;">
+              <span style="font-size:8px; color:var(--text-3); display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Protein</span>
+              <span style="font-size:14px; font-weight:800; color:var(--mint); display:block; margin-top:2px;" id="food-sheet-prot">24g</span>
+            </div>
+            <div style="background:var(--surface-2); border:1px solid var(--border); padding:8px 4px; border-radius:12px; text-align:center;">
+              <span style="font-size:8px; color:var(--text-3); display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Carbs</span>
+              <span style="font-size:14px; font-weight:800; color:#3b82f6; display:block; margin-top:2px;" id="food-sheet-carbs">48g</span>
+            </div>
+            <div style="background:var(--surface-2); border:1px solid var(--border); padding:8px 4px; border-radius:12px; text-align:center;">
+              <span style="font-size:8px; color:var(--text-3); display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Fats</span>
+              <span style="font-size:14px; font-weight:800; color:var(--rose); display:block; margin-top:2px;" id="food-sheet-fats">18g</span>
+            </div>
+          </div>
+
+          <!-- Cost Intelligence -->
+          <div style="background:var(--surface-2); border:1px solid var(--border); padding:12px; border-radius:16px; display:flex; flex-direction:column; gap:6px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11px; color:var(--text-2);">Est. Home Cost:</span>
+              <span style="font-size:13px; font-weight:700; color:var(--mint);" id="food-sheet-cost-home">₹40 - ₹60</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11px; color:var(--text-2);">Est. Restaurant/Outside:</span>
+              <span style="font-size:13px; font-weight:700; color:var(--rose);" id="food-sheet-cost-outside">₹120 - ₹180</span>
+            </div>
+            <div style="font-size:9px; color:var(--text-3); line-height:1.4; border-top:1px solid var(--border); padding-top:6px; margin-top:4px;" id="food-sheet-cost-expl">
+              * Restaurant markups, delivery fees, and inflation affect eating out significantly.
+            </div>
+          </div>
+
+          <!-- Overview -->
+          <div style="margin-bottom:18px;">
+            <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:4px;">Nutrition Overview</span>
+            <p style="font-size:12px; color:var(--text-2); line-height:1.5;" id="food-sheet-overview">High-protein balanced meal. Paneer provides recovery amino acids, and complex carbs give steady energy flow.</p>
+          </div>
+
+          <!-- Instructions -->
+          <div style="margin-bottom:18px;">
+            <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:4px;">Cooking Instructions</span>
+            <p style="font-size:12px; color:var(--text-2); line-height:1.55; white-space:pre-line;" id="food-sheet-cooking">Cook on pan with 1 tsp oil, spices, paneer, and serve hot.</p>
+          </div>
+
+          <!-- Tutorial -->
+          <div id="food-sheet-youtube-wrap" style="background:var(--surface-3); border:1px solid var(--border); padding:10px 14px; border-radius:16px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all var(--dur-fast) ease;">
+            <div style="font-size:22px; color:#ef4444; line-height:1;">📺</div>
+            <div style="flex:1;">
+              <p style="font-size:12px; font-weight:700; color:var(--text-1);">Watch Recipe Tutorial</p>
+              <p style="font-size:10px; color:var(--text-3); margin-top:1px;">Visual step-by-step guide</p>
+            </div>
+            <div style="font-size:14px; color:var(--text-3);">↗</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ OVERLAY: PROFILE SETTINGS ═══ -->
+      <div class="settings-overlay hidden" id="settings-overlay">
+        <div class="profile-header-bar">
+          <button class="auth-back-btn" id="settings-close-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </button>
+          <span style="font-size:14px;font-weight:700;color:var(--text-1);">Profile Settings</span>
+          <div style="width:36px;"></div>
+        </div>
+        <div style="overflow-y:auto; padding:20px; flex:1;">
+          <p class="section-label">Primary Goal</p>
+          <select class="auth-input auth-select" id="settings-goal" style="width:100%; margin-bottom:14px;">
+            <option value="strength">Strength</option>
+            <option value="consistency">Consistency</option>
+            <option value="recovery">Recovery</option>
+            <option value="weight">Fat Loss</option>
+          </select>
+
+          <p class="section-label">Diet Preference</p>
+          <select class="auth-input auth-select" id="settings-diet" style="width:100%; margin-bottom:14px;">
+            <option value="veg">🟢 Pure Veg</option>
+            <option value="eggetarian">🟡 Eggitarian</option>
+            <option value="nonveg">🔴 Non-Veg</option>
+          </select>
+
+          <p class="section-label">Budget Tier (India-focused)</p>
+          <select class="auth-input auth-select" id="settings-budget" style="width:100%; margin-bottom:14px;">
+            <option value="low">Low Budget (Staples & Mess)</option>
+            <option value="medium">Medium Budget (Whey & Paneer)</option>
+            <option value="high">Premium Budget (Organic & Salmon)</option>
+          </select>
+
+          <p class="section-label">Living Situation (Lifestyle)</p>
+          <select class="auth-input auth-select" id="settings-lifestyle" style="width:100%; margin-bottom:14px;">
+            <option value="hostel">Hostel Mode</option>
+            <option value="home">Home Mode</option>
+            <option value="alone">Living Alone</option>
+          </select>
+
+          <p class="section-label">Training Setup</p>
+          <select class="auth-input auth-select" id="settings-setup" style="width:100%; margin-bottom:14px;">
+            <option value="gym">Gym Workout</option>
+            <option value="home">Home Workout</option>
+          </select>
+
+          <p class="section-label">Experience Level</p>
+          <select class="auth-input auth-select" id="settings-experience" style="width:100%; margin-bottom:14px;">
+            <option value="beginner">Beginner</option>
+            <option value="returning">Returning</option>
+            <option value="experienced">Experienced</option>
+          </select>
+
+          <p class="section-label">Accountability Preferences</p>
+          <select class="auth-input auth-select" id="settings-accountability" style="width:100%; margin-bottom:14px;">
+            <option value="partner">Find Partner (Highest Priority)</option>
+            <option value="friends">Friends support circle only</option>
+          </select>
+
+          <p class="section-label">Notification Settings</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-2); padding:10px 14px; border-radius:14px; border:1px solid var(--border); margin-bottom:24px;">
+            <span style="font-size:12px; color:var(--text-2);">Enable Push Notifications</span>
+            <label class="toggle"><input type="checkbox" id="settings-notif-toggle" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          </div>
+
+          <button class="primary-btn" id="settings-save-btn" style="width:100%; margin-bottom:40px;">Save Configuration ✦</button>
+        </div>
+      </div>
+
+      <!-- ═══ ACCOUNTABILITY INBOX DRAWER ═══ -->
+      <div class="sheet-backdrop hidden" id="inbox-backdrop" style="z-index: 850;"></div>
+      <div class="inbox-panel hidden" id="inbox-panel">
+        <div class="inbox-panel-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px; font-weight:800; color:var(--text-1);">Accountability Inbox</span>
+          </div>
+          <button class="sheet-close" id="inbox-close-btn">✕</button>
+        </div>
+        <div class="inbox-scroll" id="inbox-scroll">
+          <!-- JS rendered dynamic inbox card listings (Requests, Chats, Partners) -->
+        </div>
+      </div>
+
+      <!-- ═══ INTERACTIVE ACCOUNTABILITY CHAT SCREEN ═══ -->
+      <div class="chat-screen-overlay hidden" id="chat-screen-overlay">
+        <div class="profile-header-bar" style="border-bottom:1px solid var(--border);">
+          <button class="auth-back-btn" id="chat-back-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </button>
+          <span style="font-size:13px; font-weight:800; color:var(--text-1);" id="chat-header-name">Partner Chat</span>
+          <button class="ghost-btn" id="chat-profile-btn" style="width:auto; margin:0; font-size:11px; padding:4px 8px; border:1px solid var(--border); border-radius:10px;">Inspect</button>
+        </div>
+        <div class="chat-msg-area" id="chat-msg-area">
+          <!-- JS Rendered messages -->
+        </div>
+        <div class="chat-input-bar">
+          <input type="text" class="auth-input" id="chat-input-field" placeholder="Send discipline proof..." style="flex:1; font-size:13px;">
+          <button class="primary-btn" id="chat-send-btn" style="width:auto; margin:0; padding:10px 16px;">Send</button>
+        </div>
+      </div>
+
+      <!-- ═══ COMPANION COMPATIBILITY SCORECARD ═══ -->
+      <div class="scorecard-backdrop hidden" id="scorecard-backdrop">
+        <div class="scorecard-modal" id="scorecard-modal">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <span style="font-size:12px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:0.08em;">Accountability Profile</span>
+            <button class="sheet-close" id="scorecard-close-btn" style="font-size:12px;">✕</button>
+          </div>
+          <div id="scorecard-content">
+            <!-- JS populated: compatibility score, transformation archetype, consistency index -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CUSTOM EXERCISE LOGGER MODAL ═══ -->
+      <div class="custom-logger-overlay hidden" id="custom-logger-overlay">
+        <div class="profile-header-bar" style="border-bottom:1px solid var(--border);">
+          <button class="auth-back-btn" id="custom-logger-close-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </button>
+          <span style="font-size:14px; font-weight:800; color:var(--text-1);">Add Daily Work</span>
+          <div style="width:36px;"></div>
+        </div>
+        <div style="overflow-y:auto; padding:20px; flex:1;" id="custom-logger-scroll">
+          <p class="section-label" style="margin-bottom:12px;">Select Muscle Group</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px;" id="custom-muscle-grid">
+            <div class="muscle-logger-card" data-muscle="Chest"><span>💪</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Chest</span></div>
+            <div class="muscle-logger-card" data-muscle="Back"><span>🎒</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Back</span></div>
+            <div class="muscle-logger-card" data-muscle="Biceps"><span>💪</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Biceps</span></div>
+            <div class="muscle-logger-card" data-muscle="Triceps"><span>🔽</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Triceps</span></div>
+            <div class="muscle-logger-card" data-muscle="Shoulders"><span>↔️</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Shoulders</span></div>
+            <div class="muscle-logger-card" data-muscle="Legs"><span>🦵</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Legs</span></div>
+            <div class="muscle-logger-card" data-muscle="Arms"><span>🔨</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Arms</span></div>
+            <div class="muscle-logger-card" data-muscle="Cardio"><span>🏃</span><span style="font-size:12px; font-weight:700; margin-top:4px;">Cardio</span></div>
+          </div>
+          <div id="custom-logger-inputs-section" class="hidden" style="animation: slideUp 0.3s ease;">
+            <p class="section-label" id="custom-logger-ex-lbl">Select Exercise</p>
+            <select class="auth-input auth-select" id="custom-logger-ex-select" style="width:100%; margin-bottom:14px;"></select>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+              <div>
+                <label class="sc-label" style="margin-bottom:4px; display:block;">Weight (kg)</label>
+                <input type="number" class="auth-input" id="custom-logger-weight" value="20" style="width:100%;">
+              </div>
+              <div>
+                <label class="sc-label" style="margin-bottom:4px; display:block;">Target Reps</label>
+                <input type="number" class="auth-input" id="custom-logger-reps" value="10" style="width:100%;">
+              </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px;">
+              <div>
+                <label class="sc-label" style="margin-bottom:4px; display:block;">Sets</label>
+                <input type="number" class="auth-input" id="custom-logger-sets" value="3" style="width:100%;">
+              </div>
+              <div>
+                <label class="sc-label" style="margin-bottom:4px; display:block;">Duration (mins)</label>
+                <input type="number" class="auth-input" id="custom-logger-duration" value="10" style="width:100%;">
+              </div>
+            </div>
+            
+            <button class="primary-btn" id="custom-logger-submit-btn" style="width:100%; margin-bottom:40px;">Add Extra Work ✦</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /app-viewport -->
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav hidden" id="bottom-nav">
+      <button class="nav-btn" id="nav-home" data-screen="screen-vision">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="nav-btn" id="nav-train" data-screen="screen-workout">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.57 14.86L22 13.43 19 10.4l-1.43 1.43-1.57-1.57c.38-1.07.17-2.32-.64-3.13l-3-3a3 3 0 00-4.24 0L6.69 6.56a3 3 0 000 4.24l3 3c.81.81 2.06 1.02 3.13.64l1.57 1.57-1.43 1.43L16 20.57l1.43-1.43 1.43 1.43 1.42-1.42-1.43-1.43 1.72-1.86zm-13-5a1 1 0 010-1.42l1.42-1.41a1 1 0 011.42 0l3 3a1 1 0 010 1.42l-1.42 1.41a1 1 0 01-1.42 0l-3-3z"/></svg>
+        <span>Train</span>
+      </button>
+      <button class="nav-btn" id="nav-diet" data-screen="screen-diet">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-2.39-3.38-5-8.03-5s-8 2.61-8 5v4h16.03v-4z"/></svg>
+        <span>Diet</span>
+      </button>
+      <button class="nav-btn" id="nav-recovery" data-screen="screen-recovery">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35z"/></svg>
+        <span>Recovery</span>
+      </button>
+      <button class="nav-btn" id="nav-squad" data-screen="screen-squad">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <span>Socials</span>
+      </button>
+    </nav>
+
+    <div class="home-bar"></div>
+  </div><!-- /phone-frame -->
+</div><!-- /app-wrapper -->
+
+<script src="app.js"></script>
+</body>
+</html>
