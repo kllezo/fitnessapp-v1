@@ -3649,4 +3649,131 @@ body::after {
   transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
+/* ── Phase 2: Training + Recovery Intelligence Styles ── */
+.consistency-shield-banner {
+  transition: all 0.22s ease-in-out;
+}
+.consistency-shield-banner:hover {
+  background: rgba(251, 146, 60, 0.09) !important;
+  border-color: rgba(251, 146, 60, 0.45) !important;
+}
+.shield-opt-btn {
+  transition: all 0.15s ease-in-out;
+}
+.shield-opt-btn:hover {
+  background: rgba(251, 146, 60, 0.14) !important;
+  border-color: rgba(251, 146, 60, 0.35) !important;
+  color: #fb923c !important;
+}
+.shield-opt-btn:active {
+  transform: scale(0.96);
+}
+
+.progression-panel {
+  transition: all 0.22s ease-in-out;
+}
+.progression-panel:hover {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+#prog-apply-btn {
+  transition: all 0.15s ease-in-out;
+}
+#prog-apply-btn:hover {
+  background: #34d399 !important;
+  transform: scale(1.04);
+}
+#prog-apply-btn:active {
+  transform: scale(0.96);
+}
+
+#recovery-insights-container {
+  transition: all 0.22s ease;
+}
+
+/* ── Phase 3: Nutrition Engine v2 + Food Swaps ── */
+.plan-meal-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all var(--dur-fast) var(--ease);
+}
+.plan-meal-card.completed {
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  background: rgba(16, 185, 129, 0.03);
+}
+.plan-meal-card.completed .plan-meal-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.plan-meal-check {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-spring);
+  flex-shrink: 0;
+}
+.plan-meal-check:active {
+  transform: scale(0.85);
+}
+.plan-meal-card.completed .plan-meal-check {
+  background: var(--mint) !important;
+  border-color: var(--mint) !important;
+  color: #000 !important;
+}
+.plan-meal-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all var(--dur-fast) ease;
+  font-family: var(--font);
+}
+.plan-meal-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+.plan-meal-btn:active {
+  transform: scale(0.95);
+}
+.swap-option-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.swap-option-card:hover {
+  border-color: var(--accent);
+  transform: scale(1.01);
+}
+.swap-option-card:active {
+  transform: scale(0.98);
+}
+.grocery-item-checkbox:checked + span {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+
+
 

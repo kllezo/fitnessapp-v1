@@ -265,6 +265,50 @@ High-fidelity premium components and responsive systems verified working:
 - [x] **6. Nutrition Filter Polish**: Synchronized dropdowns globally with full state persistence and smooth fade-in meal list transitions.
 - [x] **7. Final Mobile Polish & Sweeps**: Absolute touch feedback spring taps, spacing refinements, and zero dead button flows.
 
+---
+
+## 9. AURA AI PHASE 1 — FOUNDATION INTELLIGENCE LAYER (COMPLETED)
+
+### COMPLETED PHASE 1 SYSTEMS
+- [x] **AURA Intelligence Setup (Step 8)**: Added a final onboarding step collecting:
+  - Gender (Male/Female)
+  - Age, Height, Weight (as BMR inputs)
+  - Current Body Type (Skinny, Average, Athletic, Overweight)
+  - Goal Body Type (Lean, Athletic, Muscular, Weight Loss, Performance)
+  - Activity Level (Sedentary, Lightly Active, Active, Very Active)
+  - Occupation (Student, Office Worker, Field Work, Athlete, Other)
+  - Work Schedule (Morning, Afternoon, Evening, Night Shift)
+  - Training Days Per Week (2, 3, 4, 5, 6, 7)
+  - Average Water Intake & Average Sleep Hours
+  - Cooking Ability (Cannot Cook, Basic Cooking, Comfortable Cooking)
+  - Eating Habits (Skip Meals, Late Night Eating, Emotional Eating, Frequent Snacking, Normal)
+- [x] **Target Muscle Priority System**: Replaced unlimited checkboxes with single Primary Focus and single Secondary Focus selectors (Chest, Back, Shoulders, Arms, Legs, Core, Full Body).
+- [x] **BMR Engine**: Mifflin-St Jeor Formula calculation based on gender, age, weight, and height.
+- [x] **Maintenance Calorie Engine**: BMR * activity multiplier factor.
+- [x] **Goal Calorie Engine**: Surplus/deficit application based on goal.
+- [x] **Protein Engine**: Weight, goal, and body type based daily protein target.
+- [x] **Hydration Engine**: Weight, activity, and climate based daily water target.
+- [x] **Consistency Risk Score (Foundation)**: Low/Moderate/High risk estimation based on workout completeness, hydration history, sleep, and readiness.
+- [x] **Profile Intelligence Panel**: Dedicated Profile view section displaying all Phase 1 telemetry.
+
+- [x] **AURA AI Phase 2 — Training & Recovery Intelligence**: Added Daily Training Engine (0-100 Readiness), Readiness States, Dynamic Workout Adaptation, Progression Engine (+2.5kg suggestions / Progression Panel), Recovery Engine, Fatigue Detection, Consistency Protection, and Today's AURA Guidance Panel.
+- [x] **AURA AI Phase 3 — Nutrition Intelligence Engine**: Added AI Daily Nutrition Engine, Daily Meal Rotation, Stay Type/Budget/Diet adaptation, Goal-based meal logic, AI Food Swap Engine, Smart Food Exclusions, Grocery Planner, Cost Estimation, Weekly Protein Coverage, Daily Nutrition Insights, and major Nutrition Page improvements.
+
+### PENDING AI PHASES
+- [ ] **Phase 4: AI Insights Hub & Accountability V2**: Weekly Coach Reviews, Habit Pattern Detection, Accountability Compatibility Match scoring, and context-aware starters.
+
+### ARCHITECTURE DECISIONS
+- **Modular Foundation**: Rule-based implementation structured as `intelligenceEngine`, `trainingEngine`, `progressionEngine`, `recoveryEngine`, `nutritionEngine`, `foodSwapEngine`, and `groceryEngine` to easily swap out for LLM/API integration in later phases.
+- **Strict Muscle Hierarchy**: Enforced single primary and single secondary muscle focus mapping to prevent user choice paralysis.
+- **Consistency Risk Heuristic**: Built basic calculation mapping streak metrics, water, and sleep trend baselines to risk categories.
+- **Dynamic Training Adaptation**: Rule-based system that scales sets, reps, and exercise selection depending on high, medium, low, or very low readiness.
+- **Difficulty-Based Progression**: Suggests +/- weight modifications matching RPE/difficulty feedback.
+- **Fatigue Tracking Buffer**: Utilizes last 7 days check-in history to detect cumulative sleep debt, soreness peaks, and declining sleep trends, distinguishing single-day strain from systemic fatigue.
+- **Consistency Protection Shield**: Prunes workout duration to 10-20 min options or recovery flows upon detecting missed workouts, preserving psychological momentum without imposing guilt.
+- **Modular Nutrition Architecture**: Split engine into distinct decoupled components (`nutritionEngine`, `foodSwapEngine`, `groceryEngine`) that interface through structured JSON models, ensuring seamless future LLM plug-in capabilities.
+
+
+
 
 
 

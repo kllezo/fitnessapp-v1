@@ -55,6 +55,20 @@ const state = {
     experience: 'beginner',
     equipment: [],
     customEquipment: '',
+    gender: 'male',
+    bodyType: 'average',
+    goalBodyType: 'athletic',
+    activityLevel: 'active',
+    occupation: 'office_worker',
+    workSchedule: 'evening',
+    trainingDays: 4,
+    waterIntake: 2.5,
+    sleepHours: 7,
+    cookingAbility: 'basic',
+    eatingHabit: 'normal',
+    primaryMuscleFocus: 'chest',
+    secondaryMuscleFocus: 'back',
+    consistencyRisk: 'Low Risk',
   },
 
   vision: {
@@ -97,8 +111,13 @@ const state = {
     loggedProt: 0,
     loggedWater: 0,
     loggedMeals: new Set(),
+    maintenanceCal: 2000,
     targetCal: 2100,
     targetProt: 110,
+    targetWater: 4000,
+    dislikedFoods: [],
+    todaySwaps: {},
+    loggedPlanMeals: {},
   },
 
   recovery: {
@@ -134,6 +153,480 @@ const state = {
   whyTimer: null,
   sessionNotes: {},
   prs: {}, // { exId: { weight: maxWeight } } — personal records tracker
+};
+
+// ─── intelligenceEngine ───────────────────────────────────────────────────
+const intelligenceEngine = {
+  calculateBMR(gender, weight, height, age) {
+    if (gender === 'female') {
+      return 10 * weight + 6.25 * height - 5 * age - 161;
+    }
+    return 10 * weight + 6.25 * height - 5 * age + 5;
+  },
+
+  getActivityMultiplier(activityLevel) {
+    const multipliers = {
+      sedentary: 1.2,
+      lightly_active: 1.375,
+      active: 1.55,
+      very_active: 1.725
+    };
+    return multipliers[activityLevel] || 1.55;
+  },
+
+  calculateMaintenance(bmr, activityLevel) {
+    return Math.round(bmr * this.getActivityMultiplier(activityLevel));
+  },
+
+  calculateTargetCalories(maintenance, goalBodyType) {
+    if (goalBodyType === 'muscular') {
+      return maintenance + 350;
+    } else if (goalBodyType === 'weight_loss' || goalBodyType === 'lean') {
+      return maintenance - 450;
+    }
+    return maintenance;
+  },
+
+  calculateProteinGoal(weight, bodyType, goalBodyType, budget) {
+    let proteinFactor = 1.8;
+    if (bodyType === 'skinny') proteinFactor = 2.0;
+    else if (bodyType === 'average') proteinFactor = 1.8;
+    else if (bodyType === 'athletic') proteinFactor = 2.0;
+    else if (bodyType === 'overweight') proteinFactor = 1.6;
+
+    if (goalBodyType === 'muscular') proteinFactor += 0.2;
+    else if (goalBodyType === 'lean') proteinFactor += 0.2;
+    else if (goalBodyType === 'weight_loss') proteinFactor += 0.1;
+    else if (goalBodyType === 'performance') proteinFactor += 0.1;
+
+    let targetProt = Math.round(weight * proteinFactor);
+    if (budget === 'low') {
+      targetProt = Math.min(targetProt, 115);
+    } else if (budget === 'medium') {
+      targetProt = Math.min(targetProt, 135);
+    }
+    return targetProt;
+  },
+
+  calculateWaterGoal(weight, activityLevel, reportedWaterIntake) {
+    let calculatedWater = weight * 35; // ml
+    if (activityLevel === 'lightly_active') calculatedWater += 350;
+    else if (activityLevel === 'active') calculatedWater += 700;
+    else if (activityLevel === 'very_active') calculatedWater += 1000;
+
+    const reportedWaterMl = reportedWaterIntake * 1000;
+    const targetWater = Math.round((calculatedWater + reportedWaterMl) / 2);
+    return Math.min(6000, Math.max(2000, targetWater));
+  },
+
+  calculateConsistencyRisk(history, loggedWater, targetWater, sleepHours, currentReadiness) {
+    let riskPoints = 0;
+
+    // 1. Workout completion trends
+    let missedWorkouts = 0;
+    let loggedDays = 0;
+    const keys = Object.keys(history || {});
+    for (const k of keys) {
+      const h = history[k];
+      if (h && h.logged) {
+        loggedDays++;
+        if (h.completion < 100) missedWorkouts++;
+      }
+    }
+    if (loggedDays > 0) {
+      const missRatio = missedWorkouts / loggedDays;
+      if (missRatio > 0.4) riskPoints += 3;
+      else if (missRatio > 0.15) riskPoints += 1.5;
+    }
+
+    // 2. Hydration completion trend
+    if (loggedWater < targetWater * 0.5) {
+      riskPoints += 1.5;
+    } else if (loggedWater < targetWater * 0.8) {
+      riskPoints += 0.5;
+    }
+
+    // 3. Sleep trends
+    if (sleepHours < 6) riskPoints += 2.5;
+    else if (sleepHours < 7) riskPoints += 1;
+
+    // 4. Readiness trends
+    if (currentReadiness > 0) {
+      if (currentReadiness < 35) riskPoints += 3;
+      else if (currentReadiness < 50) riskPoints += 1.5;
+    }
+
+    if (riskPoints >= 4) return 'High Risk';
+    if (riskPoints >= 2) return 'Moderate Risk';
+    return 'Low Risk';
+  }
+};
+
+// ─── trainingEngine ───────────────────────────────────────────────────────
+const trainingEngine = {
+  calculateReadiness(answers, history, onboarding) {
+    const { soreness, stress, sleep, energy, motivation } = answers;
+    const vals = [soreness, stress, sleep, energy, motivation].map(Number).filter(v => !isNaN(v) && v > 0);
+    
+    // 1. Base Score calculation (Map 1-5 to 0-100)
+    let baseScore = 78;
+    if (vals.length > 0) {
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      baseScore = Math.round(((avg - 1) / 4) * 100);
+    }
+    
+    // 2. Workout completion history & missed sessions in last 7 logged entries
+    let completedCount = 0;
+    let missedCount = 0;
+    const keys = Object.keys(history || {});
+    const recentKeys = keys.sort().slice(-7);
+    recentKeys.forEach(k => {
+      const h = history[k];
+      if (h && h.logged) {
+        if (h.completion === 100) {
+          completedCount++;
+        } else if (h.completion < 100 || !h.completion) {
+          missedCount++;
+        }
+      }
+    });
+
+    if (missedCount > 0) {
+      baseScore -= (missedCount * 5); // deduct 5 points per missed session
+    }
+    
+    // 3. Streak Count bonus
+    const streak = calculateStreak();
+    baseScore += Math.min(10, Math.floor(streak / 2));
+    
+    // 4. Readiness Trends (fatigue tracking)
+    let trendPenalty = 0;
+    const pastReadiness = recentKeys
+      .map(k => history[k].readiness)
+      .filter(r => typeof r === 'number' && r > 0);
+    
+    if (pastReadiness.length >= 2) {
+      let decline = 0;
+      for (let i = 1; i < pastReadiness.length; i++) {
+        if (pastReadiness[i] < pastReadiness[i-1]) {
+          decline += (pastReadiness[i-1] - pastReadiness[i]);
+        }
+      }
+      if (decline > 15) {
+        trendPenalty = 8;
+      }
+    }
+    baseScore -= trendPenalty;
+
+    // 5. Consistency Risk Score
+    const risk = onboarding.consistencyRisk || 'Low Risk';
+    if (risk === 'High Risk') {
+      baseScore -= 10;
+    } else if (risk === 'Moderate Risk') {
+      baseScore -= 5;
+    }
+
+    return Math.min(100, Math.max(0, baseScore));
+  },
+
+  getReadinessState(score) {
+    if (score >= 80) {
+      return {
+        state: 'HIGH',
+        label: 'High Readiness',
+        sublabel: 'Push Day',
+        action: 'standard workout, progression suggestions enabled, full volume'
+      };
+    } else if (score >= 50) {
+      return {
+        state: 'MEDIUM',
+        label: 'Moderate Readiness',
+        sublabel: 'Controlled Volume',
+        action: 'reduce volume 10-15%, slightly reduce accessory work'
+      };
+    } else if (score >= 35) {
+      return {
+        state: 'LOW',
+        label: 'Recovery Recommended',
+        sublabel: 'Fatigue Protection',
+        action: 'remove taxing compounds, reduce set count, reduce workout duration'
+      };
+    } else {
+      return {
+        state: 'VERY_LOW',
+        label: 'Recovery Priority',
+        sublabel: 'Complete Rest / Restore',
+        action: 'replace workout, mobility session, stretching session, walking recommendation, breathing session'
+      };
+    }
+  },
+
+  adaptWorkout(exercises, score) {
+    const stateInfo = this.getReadinessState(score);
+    let adapted = JSON.parse(JSON.stringify(exercises));
+
+    if (stateInfo.state === 'HIGH') {
+      return {
+        exercises: adapted,
+        notes: "Full session recommended. Aura readiness high.",
+        durationMod: 1.0
+      };
+    } else if (stateInfo.state === 'MEDIUM') {
+      adapted.forEach(ex => {
+        const isAccessory = ['lfl', 'cu', 'fd', 'cr', 'tri', 'dip_c', 'cur_h', 't_pull', 'calf_h', 'cr_t', 'sc', 'tp', 'sh', 'db_c'].includes(ex.id);
+        if (isAccessory) {
+          if (ex.sets && ex.sets.length > 0) {
+            ex.sets = ex.sets.slice(0, Math.max(2, ex.sets.length - 1));
+          } else {
+            ex.defaultSets = 2;
+          }
+        } else {
+          ex.reps = Math.max(5, Math.round(ex.reps * 0.9));
+          if (ex.sets && ex.sets.length > 0) {
+            ex.sets.forEach(s => s.reps = Math.max(5, Math.round(s.reps * 0.9)));
+          }
+        }
+      });
+      return {
+        exercises: adapted,
+        notes: "Moderate readiness. Volume reduced by 10-15%. Accessories scaled down.",
+        durationMod: 0.85
+      };
+    } else if (stateInfo.state === 'LOW') {
+      const taxingIds = ['dl', 'sq', 'rdl', 'bp', 'ohp'];
+      adapted = adapted.filter(ex => !taxingIds.includes(ex.id));
+      
+      if (adapted.length === 0) {
+        adapted = [{ id: 'plk', name: 'Plank Hold', muscle: 'Core', icon: '🧘', defaultWeight: 0, defaultReps: 45, sets: [] }];
+      }
+
+      adapted.forEach(ex => {
+        ex.reps = Math.max(5, Math.round(ex.reps * 0.8));
+        if (ex.sets && ex.sets.length > 0) {
+          ex.sets = ex.sets.slice(0, 2);
+          ex.sets.forEach(s => s.reps = Math.max(5, Math.round(s.reps * 0.8)));
+        } else {
+          ex.defaultSets = 2;
+        }
+      });
+
+      return {
+        exercises: adapted,
+        notes: "Recovery recommended. Taxing compound lifts removed. Set counts reduced to 2.",
+        durationMod: 0.6
+      };
+    } else {
+      const recoveryRoutine = [
+        { id: 'mob_1', name: 'Dynamic Joint Mobility', muscle: 'Full Body Joints', icon: '🤸', weight: 0, reps: 10, sets: [{weight:0, reps:10, rpe:'', done:false},{weight:0, reps:10, rpe:'', done:false}], notes: 'Focus on hips, shoulders, thoracic spine.' },
+        { id: 'str_1', name: 'Deep Static Stretching', muscle: 'Muscle Lengthening', icon: '🧘', weight: 0, reps: 30, sets: [{weight:0, reps:30, rpe:'', done:false}], notes: 'Hold each stretch for 30s.' },
+        { id: 'walk_1', name: 'Outdoor Recovery Walk', muscle: 'Cardiovascular', icon: '🚶', weight: 0, reps: 15, sets: [{weight:0, reps:15, rpe:'', done:false}], notes: '15-20 min light pace.' }
+      ];
+      return {
+        exercises: recoveryRoutine,
+        notes: "Recovery Priority. Routine replaced with mobility, stretching, and walking.",
+        durationMod: 0.4
+      };
+    }
+  }
+};
+
+// ─── progressionEngine ────────────────────────────────────────────────────
+const progressionEngine = {
+  analyzeProgress(exId, exName) {
+    const lastData = getLastSessionData(exId, exName);
+    if (!lastData) {
+      return {
+        lastWeight: 0,
+        suggestedWeight: 0,
+        reason: "No previous logs found. Establishing baseline load."
+      };
+    }
+    
+    const weightMatch = lastData.match(/(\d+(?:\.\d+)?)\s*kg/i);
+    const repsMatch = lastData.match(/(\d+)\s*reps/i);
+    const diffMatch = lastData.match(/diff:\s*(\d+)/i);
+    
+    let lastWeight = weightMatch ? parseFloat(weightMatch[1]) : 0;
+    let difficulty = diffMatch ? parseInt(diffMatch[1], 10) : 6;
+    
+    let suggestedWeight = lastWeight;
+    let reason = "";
+    
+    if (difficulty <= 6) {
+      suggestedWeight = lastWeight > 0 ? lastWeight + 2.5 : 2.5;
+      reason = "All sets completed with low difficulty.";
+    } else if (difficulty <= 8) {
+      suggestedWeight = lastWeight;
+      reason = "Maintain current load.";
+    } else {
+      if (lastWeight >= 15) {
+        suggestedWeight = lastWeight - 2.5;
+        reason = "High difficulty (>= 9) detected. Recommend slight load reduction.";
+      } else {
+        suggestedWeight = lastWeight;
+        reason = "High difficulty (>= 9) detected. Maintain same load.";
+      }
+    }
+    
+    return {
+      lastWeight,
+      suggestedWeight,
+      reason
+    };
+  }
+};
+
+// ─── recoveryEngine ───────────────────────────────────────────────────────
+const recoveryEngine = {
+  calculateFatigue(history, checkInAnswers, currentReadiness) {
+    let lowReadinessDays = 0;
+    let highSorenessDays = 0;
+    let decliningSleep = false;
+
+    const keys = Object.keys(history || {}).sort().slice(-7);
+    
+    let consecutiveLow = 0;
+    let maxConsecutiveLow = 0;
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && typeof h.readiness === 'number') {
+        if (h.readiness < 50) {
+          consecutiveLow++;
+          if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+        } else {
+          consecutiveLow = 0;
+        }
+      }
+    });
+
+    if (currentReadiness < 50) {
+      consecutiveLow++;
+      if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+    }
+
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && h.notes && (h.notes.toLowerCase().includes('sore') || h.notes.toLowerCase().includes('wrecked') || h.notes.toLowerCase().includes('tight'))) {
+        highSorenessDays++;
+      }
+    });
+    if (checkInAnswers && (checkInAnswers.soreness <= 2)) {
+      highSorenessDays++;
+    }
+
+    let sleepScores = [];
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && h.notes && h.notes.toLowerCase().includes('sleep')) {
+        sleepScores.push(2);
+      } else {
+        sleepScores.push(4);
+      }
+    });
+    if (checkInAnswers && checkInAnswers.sleep) {
+      sleepScores.push(checkInAnswers.sleep);
+    }
+    if (sleepScores.length >= 3) {
+      const len = sleepScores.length;
+      if (sleepScores[len - 1] < sleepScores[len - 2] && sleepScores[len - 2] < sleepScores[len - 3]) {
+        decliningSleep = true;
+      }
+    }
+
+    if (maxConsecutiveLow >= 3 || (highSorenessDays >= 3 && decliningSleep)) {
+      return 'High Fatigue';
+    } else if (maxConsecutiveLow >= 1 || highSorenessDays >= 2 || decliningSleep || currentReadiness < 50) {
+      return 'Elevated';
+    } else {
+      return 'Normal';
+    }
+  },
+
+  generateInsights(answers, readiness, fatigue) {
+    const insights = [];
+    if (!state.checkIn.done) return ["Complete daily sync to generate insights."];
+    
+    if (answers.sleep <= 2) insights.push("Sleep debt detected: Restless or short sleep cycle.");
+    if (answers.soreness <= 2) insights.push("Muscle soreness elevated: Leg/compound fatigue markers.");
+    if (answers.stress <= 2) insights.push("Mental load elevated: Elevated cortisol potential.");
+    
+    if (fatigue === 'High Fatigue') {
+      insights.push("Cumulative CNS overtaxation: Recovery deficit accumulated.");
+    } else if (fatigue === 'Elevated') {
+      insights.push("Pacing warning: Mild exhaustion trend detected.");
+    }
+
+    if (insights.length === 0) {
+      insights.push("CNS systems recovered: Low systemic stress.");
+    }
+
+    return insights;
+  },
+
+  generateRecommendations(answers, readiness, fatigue, experience) {
+    const recs = [];
+    if (!state.checkIn.done) {
+      return [
+        { label: "Sync Intention", detail: "Complete check-in to get recovery tips.", icon: "🧘" }
+      ];
+    }
+
+    if (answers.soreness <= 3) {
+      recs.push({
+        label: "Joint Mobility Session",
+        detail: "Focus on active range-of-motion to flush metabolic waste.",
+        icon: "🤸"
+      });
+    }
+
+    if (answers.soreness <= 2) {
+      recs.push({
+        label: "Deep Static Stretching",
+        detail: "Hold static positions for 30-40s to reduce muscle tone.",
+        icon: "🧘"
+      });
+    }
+
+    if (readiness < 70 || fatigue !== 'Normal') {
+      recs.push({
+        label: "Nasal-Only Recovery Walk",
+        detail: "15-20 min light walk to stimulate blood flow.",
+        icon: "🚶"
+      });
+    }
+
+    if (answers.stress <= 3 || readiness < 50) {
+      recs.push({
+        label: "Box Breathing Pacer",
+        detail: "5 mins coherent box breathing to activate parasympathetic system.",
+        icon: "🌬️"
+      });
+    }
+
+    recs.push({
+      label: "Hydration Acceleration",
+      detail: `Target water intake: ${(state.nutrition.targetWater / 1000).toFixed(1)}L to support cell recovery.`,
+      icon: "💧"
+    });
+
+    if (answers.sleep <= 3 || fatigue === 'High Fatigue') {
+      recs.push({
+        label: "Early Sleep Protocol",
+        detail: "Target sleep 45 mins earlier tonight; limit blue light by 9:30 PM.",
+        icon: "🌙"
+      });
+    }
+
+    if (recs.length === 0) {
+      recs.push({
+        label: "Maintenance Stretching",
+        detail: "10 mins light stretching after session.",
+        icon: "🧘"
+      });
+    }
+
+    return recs;
+  }
 };
 
 // ─── Exercise Database ─────────────────────────────────────────────────────
@@ -792,6 +1285,53 @@ function openProfile() {
   const locationText = state.auth.hideCity ? (user.country || 'India').toUpperCase() : `${user.city || 'Hyderabad'}, ${user.country || 'India'}`;
   if (el('profile-location')) el('profile-location').textContent = locationText;
 
+  // Recalculate metrics first to ensure everything is fresh
+  recalculateSmartProtein();
+
+  // Populate AURA Profile Intelligence Panel
+  const intelGender = el('profile-intel-gender');
+  if (intelGender) intelGender.textContent = (state.onboarding.gender || 'male').toUpperCase();
+
+  const intelBody = el('profile-intel-body');
+  if (intelBody) intelBody.textContent = (state.onboarding.bodyType || 'average').toUpperCase();
+
+  const intelPrimary = el('profile-intel-primary');
+  if (intelPrimary) intelPrimary.textContent = (state.onboarding.primaryMuscleFocus || 'chest').toUpperCase();
+
+  const intelSecondary = el('profile-intel-secondary');
+  if (intelSecondary) intelSecondary.textContent = (state.onboarding.secondaryMuscleFocus || 'back').toUpperCase();
+
+  const intelFreq = el('profile-intel-freq');
+  if (intelFreq) intelFreq.textContent = `${state.onboarding.trainingDays || 4} Days / wk`;
+
+  const intelMcal = el('profile-intel-mcal');
+  if (intelMcal) intelMcal.textContent = `${state.nutrition.maintenanceCal || 2000} kcal`;
+
+  const intelTcal = el('profile-intel-tcal');
+  if (intelTcal) intelTcal.textContent = `${state.nutrition.targetCal || 2100} kcal`;
+
+  const intelProtein = el('profile-intel-protein');
+  if (intelProtein) intelProtein.textContent = `${state.nutrition.targetProt || 110}g`;
+
+  const intelWater = el('profile-intel-water');
+  if (intelWater) intelWater.textContent = `${((state.nutrition.targetWater || 4000) / 1000).toFixed(1)}L`;
+
+  const intelRisk = el('profile-intel-risk');
+  if (intelRisk) {
+    const risk = state.onboarding.consistencyRisk || 'Low Risk';
+    intelRisk.textContent = risk;
+    if (risk === 'Low Risk') {
+      intelRisk.style.background = 'rgba(16,185,129,0.15)';
+      intelRisk.style.color = 'var(--mint)';
+    } else if (risk === 'Moderate Risk') {
+      intelRisk.style.background = 'rgba(245,158,11,0.15)';
+      intelRisk.style.color = '#fb923c';
+    } else {
+      intelRisk.style.background = 'rgba(239,68,68,0.15)';
+      intelRisk.style.color = '#f87171';
+    }
+  }
+
   // Inline editing for profile name
   const nameEl = el('profile-display-name');
   if (nameEl && !nameEl.dataset.editBound) {
@@ -996,7 +1536,7 @@ function renderProfileReadinessChart() {
 
 
 // ─── Onboarding ────────────────────────────────────────────────────────────
-const OB_TOTAL = 8;
+const OB_TOTAL = 9;
 
 function initOnboarding() {
   // Wire sliders ↔ number inputs
@@ -1018,11 +1558,80 @@ function initOnboarding() {
 
   recalcBMI();
   updateSleepFeedback(7);
-
   const customEquip = el('ob-equipment-custom');
   if (customEquip) {
     customEquip.addEventListener('input', () => {
       state.onboarding.customEquipment = customEquip.value;
+      saveToStorage();
+    });
+  }
+
+  // Wire Step 8 BMR inputs and details
+  const intelAge = el('intel-age');
+  if (intelAge) {
+    intelAge.addEventListener('input', () => {
+      state.onboarding.age = +intelAge.value || 21;
+      recalculateSmartProtein();
+      saveToStorage();
+    });
+  }
+  const intelHeight = el('intel-height');
+  if (intelHeight) {
+    intelHeight.addEventListener('input', () => {
+      state.onboarding.height = +intelHeight.value || 172;
+      recalculateSmartProtein();
+      saveToStorage();
+    });
+  }
+  const intelWeight = el('intel-weight');
+  if (intelWeight) {
+    intelWeight.addEventListener('input', () => {
+      state.onboarding.weight = +intelWeight.value || 70;
+      recalculateSmartProtein();
+      saveToStorage();
+    });
+  }
+
+  // Wire select dropdowns
+  ['intel-activity', 'intel-occupation', 'intel-schedule', 'intel-training-days', 'intel-cooking', 'intel-eating-habit', 'intel-muscle-primary', 'intel-muscle-secondary'].forEach(id => {
+    const select = el(id);
+    if (select) {
+      select.addEventListener('change', () => {
+        const val = select.value;
+        if (id === 'intel-activity') state.onboarding.activityLevel = val;
+        else if (id === 'intel-occupation') state.onboarding.occupation = val;
+        else if (id === 'intel-schedule') state.onboarding.workSchedule = val;
+        else if (id === 'intel-training-days') state.onboarding.trainingDays = +val;
+        else if (id === 'intel-cooking') state.onboarding.cookingAbility = val;
+        else if (id === 'intel-eating-habit') state.onboarding.eatingHabit = val;
+        else if (id === 'intel-muscle-primary') state.onboarding.primaryMuscleFocus = val;
+        else if (id === 'intel-muscle-secondary') state.onboarding.secondaryMuscleFocus = val;
+        recalculateSmartProtein();
+        saveToStorage();
+      });
+    }
+  });
+
+  // Wire sliders
+  const intelWater = el('intel-water');
+  if (intelWater) {
+    intelWater.addEventListener('input', () => {
+      const val = parseFloat(intelWater.value).toFixed(1);
+      const valEl = el('intel-water-val');
+      if (valEl) valEl.textContent = `${val}L`;
+      state.onboarding.waterIntake = +val;
+      recalculateSmartProtein();
+      saveToStorage();
+    });
+  }
+  const intelSleep = el('intel-sleep');
+  if (intelSleep) {
+    intelSleep.addEventListener('input', () => {
+      const val = intelSleep.value;
+      const valEl = el('intel-sleep-val');
+      if (valEl) valEl.textContent = `${val}h`;
+      state.onboarding.sleepHours = +val;
+      recalculateSmartProtein();
       saveToStorage();
     });
   }
@@ -1105,9 +1714,9 @@ function recalcBMI() {
 
 function getObSequence() {
   if (state.onboarding.gymEnv === 'home') {
-    return [0, 1, 2, 6, 3, 4, 5, 7];
+    return [0, 1, 2, 6, 3, 4, 5, 7, 8];
   }
-  return [0, 1, 2, 3, 4, 5, 7];
+  return [0, 1, 2, 3, 4, 5, 7, 8];
 }
 
 function updateObProgress() {
@@ -1144,6 +1753,48 @@ function updateObProgress() {
   const customEquip = el('ob-equipment-custom');
   if (customEquip) {
     customEquip.value = state.onboarding.customEquipment || '';
+  }
+
+  // Step 8: Sync UI inputs with state
+  if (state.onboarding.step === 8) {
+    // Gender
+    document.querySelectorAll('[data-intel-gender]').forEach(c => {
+      c.classList.toggle('selected', c.dataset.intelGender === (state.onboarding.gender || 'male'));
+    });
+    // Age, height, weight
+    const iAge = el('intel-age'); if (iAge) iAge.value = state.onboarding.age;
+    const iHeight = el('intel-height'); if (iHeight) iHeight.value = state.onboarding.height;
+    const iWeight = el('intel-weight'); if (iWeight) iWeight.value = state.onboarding.weight;
+    // Body type
+    document.querySelectorAll('[data-intel-body]').forEach(c => {
+      c.classList.toggle('selected', c.dataset.intelBody === (state.onboarding.bodyType || 'average'));
+    });
+    // Goal body type
+    document.querySelectorAll('[data-intel-goal-body]').forEach(c => {
+      c.classList.toggle('selected', c.dataset.intelGoalBody === (state.onboarding.goalBodyType || 'athletic'));
+    });
+    // Dropdowns
+    const iAct = el('intel-activity'); if (iAct) iAct.value = state.onboarding.activityLevel || 'active';
+    const iOcc = el('intel-occupation'); if (iOcc) iOcc.value = state.onboarding.occupation || 'office_worker';
+    const iSch = el('intel-schedule'); if (iSch) iSch.value = state.onboarding.workSchedule || 'evening';
+    const iDays = el('intel-training-days'); if (iDays) iDays.value = state.onboarding.trainingDays || 4;
+    const iCook = el('intel-cooking'); if (iCook) iCook.value = state.onboarding.cookingAbility || 'basic';
+    const iHab = el('intel-eating-habit'); if (iHab) iHab.value = state.onboarding.eatingHabit || 'normal';
+    const iMusP = el('intel-muscle-primary'); if (iMusP) iMusP.value = state.onboarding.primaryMuscleFocus || 'chest';
+    const iMusS = el('intel-muscle-secondary'); if (iMusS) iMusS.value = state.onboarding.secondaryMuscleFocus || 'back';
+    // Sliders
+    const iWat = el('intel-water');
+    if (iWat) {
+      iWat.value = state.onboarding.waterIntake || 2.5;
+      const valEl = el('intel-water-val');
+      if (valEl) valEl.textContent = `${parseFloat(state.onboarding.waterIntake || 2.5).toFixed(1)}L`;
+    }
+    const iSlp = el('intel-sleep');
+    if (iSlp) {
+      iSlp.value = state.onboarding.sleepHours || 7;
+      const valEl = el('intel-sleep-val');
+      if (valEl) valEl.textContent = `${state.onboarding.sleepHours || 7}h`;
+    }
   }
 
   const nextBtn = el('ob-next-btn');
@@ -1194,48 +1845,39 @@ function recalculateSmartProtein() {
   const weight = state.onboarding.weight || 70;
   const height = state.onboarding.height || 172;
   const age = state.onboarding.age || 21;
-  const goals = state.onboarding.goals || ['strength'];
-  const primGoal = goals[0] || 'strength';
+  const gender = state.onboarding.gender || 'male';
+  const activityLevel = state.onboarding.activityLevel || 'active';
+  const goalBodyType = state.onboarding.goalBodyType || 'athletic';
+  const bodyType = state.onboarding.bodyType || 'average';
   const budget = state.onboarding.budget || 'low';
+  const waterIntake = state.onboarding.waterIntake || 2.5;
+  const sleepHours = state.onboarding.sleepHours || 7;
 
-  // Realistic daily calorie baseline (BMR)
-  let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-  let targetCal = Math.round(bmr * 1.3); // standard active factor
-  let targetProt = Math.round(weight * 1.6); // baseline factor
+  // BMR Calculation (Mifflin-St Jeor)
+  const bmr = intelligenceEngine.calculateBMR(gender, weight, height, age);
+  // Maintenance Calories
+  const maintenance = intelligenceEngine.calculateMaintenance(bmr, activityLevel);
+  // Target Calories
+  const targetCal = intelligenceEngine.calculateTargetCalories(maintenance, goalBodyType);
+  // Protein Goal
+  const targetProt = intelligenceEngine.calculateProteinGoal(weight, bodyType, goalBodyType, budget);
+  // Water Goal (in ml)
+  const targetWater = intelligenceEngine.calculateWaterGoal(weight, activityLevel, waterIntake);
 
-  if (primGoal === 'strength') {
-    targetCal = Math.round(bmr * 1.45); // surplus
-    targetProt = Math.round(weight * 1.85); // high protein muscle build
-  } else if (primGoal === 'weight') {
-    targetCal = Math.round(bmr * 1.12); // controlled deficit
-    targetProt = Math.round(weight * 2.0); // very high protein fat loss satiety
-  } else if (primGoal === 'recovery') {
-    targetCal = Math.round(bmr * 1.2); 
-    targetProt = Math.round(weight * 1.45);
-  }
-
-  // Experience adjustment: Beginners need slightly fewer calories/protein, Experienced need more
-  const exp = state.onboarding.experience || 'beginner';
-  if (exp === 'beginner') {
-    targetProt = Math.round(targetProt * 0.9);
-    targetCal = Math.round(targetCal * 0.95);
-  } else if (exp === 'experienced') {
-    targetProt = Math.round(targetProt * 1.1);
-    targetCal = Math.round(targetCal * 1.05);
-  }
-
-  // Budget Tier limitations:
-  // Low budget enforces realistic protein thresholds to fit affordable whole foods
-  if (budget === 'low') {
-    targetProt = Math.min(targetProt, 115);
-  } else if (budget === 'medium') {
-    targetProt = Math.max(80, Math.min(targetProt, 135));
-  } else if (budget === 'high') {
-    targetProt = Math.max(120, targetProt);
-  }
-
+  // Store in global state
+  state.nutrition.maintenanceCal = maintenance;
   state.nutrition.targetCal = targetCal;
   state.nutrition.targetProt = targetProt;
+  state.nutrition.targetWater = targetWater;
+
+  // Consistency Risk Score (Foundation architecture)
+  state.onboarding.consistencyRisk = intelligenceEngine.calculateConsistencyRisk(
+    state.workout.history,
+    state.nutrition.loggedWater || 0,
+    targetWater,
+    sleepHours,
+    state.readiness || 0
+  );
 }
 
 // ─── Weekly Split Builder ──────────────────────────────────────────────────
@@ -1618,12 +2260,18 @@ function syncCiDots() {
 }
 
 function computeReadiness() {
-  const { soreness, stress, sleep, energy, motivation } = state.checkIn.answers;
-  const vals = [soreness, stress, sleep, energy, motivation].map(Number).filter(v => !isNaN(v) && v > 0);
-  if (vals.length === 0) { state.readiness = 78; return; }
-  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-  state.readiness = Math.round(((avg - 1) / 4) * 65 + 35);
+  state.readiness = trainingEngine.calculateReadiness(state.checkIn.answers, state.workout.history, state.onboarding);
   applyRecoveryTheme(state.readiness);
+  
+  // Adapt today's workout
+  const today = state.workout.weekSplit[state.workout.todayIndex];
+  if (today && !today.rest && today.exercises) {
+    const adaptation = trainingEngine.adaptWorkout(today.exercises, state.readiness);
+    state.workout.exercises = adaptation.exercises;
+    state.workout.adapted = true;
+  }
+  
+  updateAuraGuidanceUI();
 }
 
 function applyRecoveryTheme(readiness) {
@@ -1680,6 +2328,38 @@ function updateRecoveryStateHeader() {
   }
 }
 
+function updateAuraGuidanceUI() {
+  const panel = el('guidance-card');
+  if (!panel) return;
+  
+  if (state.checkIn.done) {
+    panel.style.display = 'flex';
+    
+    if (el('guidance-readiness')) el('guidance-readiness').textContent = `${state.readiness}%`;
+    
+    const stateInfo = trainingEngine.getReadinessState(state.readiness);
+    if (el('guidance-recommendation')) el('guidance-recommendation').textContent = stateInfo.label;
+    
+    const fatigue = recoveryEngine.calculateFatigue(state.workout.history, state.checkIn.answers, state.readiness);
+    if (el('guidance-recovery')) el('guidance-recovery').textContent = fatigue;
+    
+    let progText = "Maintain load";
+    if (state.workout.exercises && state.workout.exercises.length > 0) {
+      for (const ex of state.workout.exercises) {
+        const progResult = progressionEngine.analyzeProgress(ex.id, ex.name);
+        if (progResult.suggestedWeight > progResult.lastWeight) {
+          const shortName = ex.name.split(' ').slice(0, 2).join(' ');
+          progText = `${shortName} +2.5kg`;
+          break;
+        }
+      }
+    }
+    if (el('guidance-progression')) el('guidance-progression').textContent = progText;
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
 function onEnterDashboard() {
   el('dashboard-date').textContent = fmtDateDisplay(new Date());
   animateRing(state.readiness || 0);
@@ -1689,6 +2369,7 @@ function onEnterDashboard() {
   updateEngineInsights();
   updateRecoveryStateHeader();
   updateStreakUI();
+  updateAuraGuidanceUI();
 }
 
 function animateRing(target) {
@@ -1765,6 +2446,101 @@ function updateWorkoutCard() {
     : `${exCount} exercises · ${formatDuration(mins)}`;
 }
 
+// ─── Consistency & Adaptation Helpers ─────────────────────────────────────
+function detectMissedWorkout() {
+  const history = state.workout.history;
+  const today = new Date();
+  
+  for (let i = 1; i <= 3; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() - i);
+    const key = fmtDateKey(checkDate);
+    
+    const dayIndex = (state.workout.todayIndex - i + 35) % 7;
+    const daySplit = state.workout.weekSplit[dayIndex];
+    
+    if (daySplit && !daySplit.rest) {
+      const log = history[key];
+      if (!log || !log.logged || log.completion < 50) {
+        return true; 
+      }
+      return false; 
+    }
+  }
+  return false;
+}
+
+function checkConsistencyShield() {
+  const banner = el('consistency-shield-banner');
+  if (!banner) return;
+  
+  if (detectMissedWorkout()) {
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function applyConsistencyReduction(option) {
+  playSound('chime');
+  
+  if (!state.workout.originalExercises) {
+    state.workout.originalExercises = JSON.parse(JSON.stringify(state.workout.exercises));
+  }
+  
+  if (option === '10') {
+    state.workout.exercises = state.workout.originalExercises.slice(0, 2).map(ex => {
+      ex.sets = ex.sets.slice(0, 2);
+      if (ex.sets.length === 0) {
+        ex.sets = [
+          { weight: ex.weight, reps: ex.reps, rpe: '', done: false },
+          { weight: ex.weight, reps: ex.reps, rpe: '', done: false }
+        ];
+      }
+      return ex;
+    });
+    showSaveSuccessFeedback("✦ Express Session Active");
+  } else if (option === '20') {
+    state.workout.exercises = state.workout.originalExercises.slice(0, 3).map(ex => {
+      ex.sets = ex.sets.slice(0, 3);
+      if (ex.sets.length === 0) {
+        ex.sets = [
+          { weight: ex.weight, reps: ex.reps, rpe: '', done: false },
+          { weight: ex.weight, reps: ex.reps, rpe: '', done: false },
+          { weight: ex.weight, reps: ex.reps, rpe: '', done: false }
+        ];
+      }
+      return ex;
+    });
+    showSaveSuccessFeedback("✦ Focus Session Active");
+  } else if (option === 'rec') {
+    state.workout.exercises = [
+      { id: 'mob_1', name: 'Dynamic Joint Mobility', muscle: 'Full Body', icon: '🤸', weight: 0, reps: 10, sets: [{ weight: 0, reps: 10, rpe: '', done: false }, { weight: 0, reps: 10, rpe: '', done: false }] },
+      { id: 'str_1', name: 'Deep Stretching Flow', muscle: 'Flexibility', icon: '🧘', weight: 0, reps: 30, sets: [{ weight: 0, reps: 30, rpe: '', done: false }] }
+    ];
+    showSaveSuccessFeedback("✦ Recovery Flow Active");
+  }
+  
+  renderWorkoutGrid();
+  const banner = el('consistency-shield-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+function adaptWorkoutIfNeeded() {
+  const today = state.workout.weekSplit[state.workout.todayIndex];
+  if (!today || today.rest) return;
+  
+  if (!state.workout.exercises || state.workout.exercises.length === 0) {
+    state.workout.exercises = today.exercises || [];
+  }
+  
+  if (state.checkIn.done && state.readiness > 0 && !state.workout.adapted) {
+    const adaptation = trainingEngine.adaptWorkout(state.workout.exercises, state.readiness);
+    state.workout.exercises = adaptation.exercises;
+    state.workout.adapted = true;
+  }
+}
+
 // ─── Workout Screen ─────────────────────────────────────────────────────────
 function updateWorkoutEnergyModeButton() {
   const btn = el('workout-energy-mode-btn');
@@ -1778,6 +2554,9 @@ function onEnterWorkout() {
   const today = state.workout.weekSplit[state.workout.todayIndex];
   el('workout-day-label').textContent = `${today.day} · ${today.type}`;
   el('workout-session-title').textContent = today.focus;
+  
+  adaptWorkoutIfNeeded();
+  checkConsistencyShield();
   
   // Update estimated session duration under header title
   const isMVS = state.mvsEnabled || state.energyMode === 'mvs';
@@ -2208,17 +2987,42 @@ function openSheet(exId) {
   const lastData = getLastSessionData(exId, ex.name);
   if (el('ls-val')) el('ls-val').textContent = lastData || '—';
 
-  // Progressive overload suggestion
-  const chip    = el('overload-chip');
-  const chipTxt = el('overload-text');
-  const suggestion = getOverloadSuggestion(ex);
-  if (chip && chipTxt && suggestion) {
-    chipTxt.textContent = suggestion.text;
-    chip.dataset.delta  = suggestion.delta;
-    chip.dataset.field  = suggestion.field;
-    chip.style.display  = 'flex';
-  } else if (chip) {
-    chip.style.display = 'none';
+  // Progressive overload suggestion (legacy chip is hidden, we use detailed progression panel)
+  const chip = el('overload-chip');
+  if (chip) chip.style.display = 'none';
+
+  // AURA Progression Panel
+  const progResult = progressionEngine.analyzeProgress(ex.id, ex.name);
+  if (el('prog-last-weight')) {
+    el('prog-last-weight').textContent = progResult.lastWeight > 0 ? `${progResult.lastWeight}kg` : '—';
+  }
+  if (el('prog-suggested-weight')) {
+    el('prog-suggested-weight').textContent = progResult.suggestedWeight > 0 ? `${progResult.suggestedWeight}kg` : '—';
+  }
+  if (el('prog-reason')) {
+    el('prog-reason').textContent = progResult.reason;
+  }
+  
+  const progApplyBtn = el('prog-apply-btn');
+  if (progApplyBtn) {
+    if (progResult.suggestedWeight > 0 && progResult.suggestedWeight !== progResult.lastWeight) {
+      progApplyBtn.style.display = 'inline-block';
+      progApplyBtn.onclick = () => {
+        playSound('chime');
+        ex.weight = progResult.suggestedWeight;
+        el('sc-weight-num').value = ex.weight;
+        el('sc-weight-slider').value = ex.weight;
+        ex.sets.forEach(set => {
+          if (!set.done) {
+            set.weight = ex.weight;
+          }
+        });
+        renderSetsRows(ex);
+        showSaveSuccessFeedback(`✦ Suggested load applied`);
+      };
+    } else {
+      progApplyBtn.style.display = 'none';
+    }
   }
 
   // Restore saved notes
@@ -2630,11 +3434,388 @@ const MEALS = [
     label: 'Elite Recovery',
     costHome: '₹380 - ₹480',
     costOutside: '₹750 - ₹1100',
-    overview: 'Elite anti-inflammatory nutrition. Omega-3 rich marine fatty acids (EPA/DHA) actively soothe muscle soreness.',
     cooking: '1. Season salmon with salt and pepper.\n2. Pan sear skin-down for 5 mins, flip for 3 mins.\n3. Serve alongside warm steamed rice.',
     youtube: 'https://www.youtube.com/results?search_query=pan+seared+salmon+recipe+healthy'
+  },
+  {
+    id: 'm13',
+    name: 'Tofu Bhurji & Whole-Wheat Roti',
+    cal: 480,
+    prot: 25,
+    carbs: 52,
+    fats: 16,
+    sugars: 3,
+    serving: '120g tofu + 2 rotis',
+    tag: 'veg',
+    hostel: true,
+    budget: 'medium',
+    label: 'Dinner',
+    costHome: '₹35 - ₹45',
+    costOutside: '₹120 - ₹160',
+    overview: 'Dairy-free high protein dinner. Perfect substitute for Paneer Bhurji with clean soy-based amino acids.',
+    cooking: '1. Crumble 100g of firm tofu.\n2. Saute onions, tomatoes, and chilies in 1 tsp oil.\n3. Add tofu, turmeric, salt and coriander. Serve with rotis.',
+    youtube: 'https://www.youtube.com/results?search_query=healthy+tofu+bhurji+recipe'
+  },
+  {
+    id: 'm14',
+    name: 'Greek Yogurt Berry Bowl',
+    cal: 310,
+    prot: 22,
+    carbs: 36,
+    fats: 8,
+    sugars: 15,
+    serving: '200g Greek yogurt + 50g berries',
+    tag: 'veg',
+    hostel: true,
+    budget: 'high',
+    label: 'Breakfast / Snack',
+    costHome: '₹80 - ₹100',
+    costOutside: '₹180 - ₹240',
+    overview: 'High protein probiotic breakfast. Promotes muscle recovery and improves gut health.',
+    cooking: '1. Scoop 200g Greek Yogurt into a bowl.\n2. Top with fresh berries and a handful of oats.\n3. Drizzle honey or add stevia to sweeten.',
+    youtube: 'https://www.youtube.com/results?search_query=greek+yogurt+bowl+healthy'
+  },
+  {
+    id: 'm15',
+    name: 'Soy Milk Oats Shake',
+    cal: 380,
+    prot: 18,
+    carbs: 56,
+    fats: 9,
+    sugars: 10,
+    serving: '400ml Soy Milk + 40g Oats',
+    tag: 'veg',
+    hostel: true,
+    budget: 'medium',
+    label: 'Snack / Fuel',
+    costHome: '₹40 - ₹50',
+    costOutside: '₹110 - ₹140',
+    overview: 'Lactose-free muscle refuel. Rich in plant-based proteins and high-fiber oats supporting sustained release energy.',
+    cooking: '1. Add 400ml soy milk and 40g oats to shaker/blender.\n2. Add one sliced banana or honey.\n3. Shake or blend thoroughly and serve.',
+    youtube: 'https://www.youtube.com/results?search_query=soy+milk+oats+shake'
+  },
+  {
+    id: 'm16',
+    name: 'Grilled Fish Tikka & Steamed Rice',
+    cal: 520,
+    prot: 35,
+    carbs: 60,
+    fats: 14,
+    sugars: 1,
+    serving: '150g grilled fish + 1 cup rice',
+    tag: 'nonveg',
+    hostel: false,
+    budget: 'high',
+    label: 'Dinner',
+    costHome: '₹140 - ₹180',
+    costOutside: '₹320 - ₹450',
+    overview: 'Omega-3 rich lean dinner. Aids recovery, reduces inflammation, and offers complete proteins.',
+    cooking: '1. Marinate fish cubes with yogurt, lemon juice, and tikkas spices.\n2. Grill or bake at 180C for 15 minutes.\n3. Serve hot with steamed basmati rice.',
+    youtube: 'https://www.youtube.com/results?search_query=healthy+fish+tikka+recipe'
+  },
+  {
+    id: 'm17',
+    name: 'Mixed Sprouts Salad & Roasted Peanuts',
+    cal: 340,
+    prot: 15,
+    carbs: 48,
+    fats: 10,
+    sugars: 4,
+    serving: '1 bowl (200g)',
+    tag: 'veg',
+    hostel: true,
+    budget: 'low',
+    label: 'Breakfast / Snack',
+    costHome: '₹12 - ₹18',
+    costOutside: '₹50 - ₹70',
+    overview: 'High fiber, low prep raw breakfast. Sprouts are rich in micronutrients and digestive enzymes.',
+    cooking: '1. Steam or wash 150g sprouted moong/chana.\n2. Add chopped cucumber, onion, tomato, green chili.\n3. Squeeze fresh lemon juice, add salt, and toss with peanuts.',
+    youtube: 'https://www.youtube.com/results?search_query=healthy+sprouts+salad+recipe'
   }
 ];
+
+// ─── AURA AI Nutrition Engine (Phase 3) ───
+const nutritionEngine = {
+  // Generates 4 meals matching calorie & protein goals, diet, budget, stay exclusions
+  generatePlan(inputs) {
+    const { goal, calories, protein, diet, budget, stay, dayOffset, dislikedFoods } = inputs;
+    
+    // 1. Filter meals based on diet, budget, stay type, and exclusions (dislikes)
+    let availableMeals = MEALS.filter(m => {
+      // Exclude disliked ingredients/items
+      if (dislikedFoods && dislikedFoods.length > 0) {
+        const nameLower = m.name.toLowerCase();
+        const overviewLower = m.overview.toLowerCase();
+        const cookingLower = m.cooking.toLowerCase();
+        const hasDisliked = dislikedFoods.some(dis => 
+          nameLower.includes(dis.toLowerCase()) || 
+          overviewLower.includes(dis.toLowerCase()) ||
+          cookingLower.includes(dis.toLowerCase())
+        );
+        if (hasDisliked) return false;
+      }
+      
+      // Diet type matching
+      if (diet === 'veg' && m.tag !== 'veg') return false;
+      if (diet === 'eggetarian' && m.tag === 'nonveg') return false; // veg or egg is fine
+      
+      // Budget matching
+      if (budget === 'low') {
+        if (m.budget !== 'low') return false;
+      } else if (budget === 'medium') {
+        if (m.budget === 'high') return false;
+      }
+      
+      // Stay type matching
+      if (stay === 'hostel' && !m.hostel) return false;
+      
+      return true;
+    });
+
+    // If no meals left, fallback to full pool minus dislikes
+    if (availableMeals.length === 0) {
+      availableMeals = MEALS.filter(m => {
+        if (dislikedFoods && dislikedFoods.length > 0) {
+          const nameLower = m.name.toLowerCase();
+          return !dislikedFoods.some(dis => nameLower.includes(dis.toLowerCase()));
+        }
+        return true;
+      });
+    }
+
+    // Split meals into categories: Breakfast, Lunch, Dinner, Snack
+    const categorize = (label) => {
+      return availableMeals.filter(m => {
+        const lbl = (m.label || '').toLowerCase();
+        return lbl.includes(label.toLowerCase());
+      });
+    };
+
+    let breakfasts = categorize('breakfast');
+    let lunches = categorize('lunch');
+    let dinners = categorize('dinner');
+    let snacks = categorize('snack');
+    if (snacks.length === 0) snacks = categorize('fuel') || categorize('special');
+
+    // Fallbacks if categories are empty
+    if (breakfasts.length === 0) breakfasts = availableMeals.filter(m => m.cal < 450);
+    if (lunches.length === 0) lunches = availableMeals.filter(m => m.cal >= 400 && m.cal <= 650);
+    if (dinners.length === 0) dinners = availableMeals.filter(m => m.cal >= 450);
+    if (snacks.length === 0) snacks = availableMeals.filter(m => m.cal < 400);
+
+    const getRotated = (list, offset) => {
+      if (list.length === 0) return MEALS[0]; // absolute fallback
+      const idx = Math.abs(offset) % list.length;
+      return list[idx];
+    };
+
+    const breakfast = getRotated(breakfasts, dayOffset);
+    const lunch = getRotated(lunches, dayOffset + 1);
+    const dinner = getRotated(dinners, dayOffset + 2);
+    const snack = getRotated(snacks, dayOffset + 3);
+
+    // Dynamic adjustment to scale portion sizes to match user target calories/protein
+    const rawTotalCal = breakfast.cal + lunch.cal + dinner.cal + snack.cal;
+    const rawTotalProt = breakfast.prot + lunch.prot + dinner.prot + snack.prot;
+    
+    const calScale = calories / rawTotalCal;
+    const protScale = protein / rawTotalProt;
+    const scaleFactor = Math.min(1.5, Math.max(0.6, (calScale + protScale) / 2));
+
+    const adjustPortion = (m) => {
+      const scale = parseFloat(scaleFactor.toFixed(2));
+      return {
+        ...m,
+        cal: Math.round(m.cal * scale),
+        prot: Math.round(m.prot * scale),
+        carbs: Math.round((m.carbs || 45) * scale),
+        fats: Math.round((m.fats || 15) * scale),
+        portionScale: scale
+      };
+    };
+
+    return {
+      breakfast: adjustPortion(breakfast),
+      lunch: adjustPortion(lunch),
+      dinner: adjustPortion(dinner),
+      snack: adjustPortion(snack),
+      totalCal: Math.round(rawTotalCal * scaleFactor),
+      totalProt: Math.round(rawTotalProt * scaleFactor)
+    };
+  },
+
+  getPrimaryIngredient(mealName) {
+    const name = mealName.toLowerCase();
+    if (name.includes('paneer')) return 'paneer';
+    if (name.includes('chicken')) return 'chicken';
+    if (name.includes('egg')) return 'egg';
+    if (name.includes('milk')) return 'milk';
+    if (name.includes('salmon') || name.includes('fish')) return 'fish';
+    if (name.includes('tofu')) return 'tofu';
+    if (name.includes('soy')) return 'soy chunks';
+    if (name.includes('peanut')) return 'peanuts';
+    if (name.includes('whey') || name.includes('oatmeal')) return 'whey';
+    return '';
+  }
+};
+
+const foodSwapEngine = {
+  // Find alternatives for a specific meal, matching diet, budget, stay, and dislikes
+  getSwapsForCategory(category, originalMeal, inputs) {
+    const { diet, budget, stay, dislikedFoods } = inputs;
+    
+    // Find all meals that fit the criteria
+    let pool = MEALS.filter(m => {
+      if (m.id === originalMeal.id) return false;
+      
+      // Exclude dislikes
+      if (dislikedFoods && dislikedFoods.length > 0) {
+        const nameLower = m.name.toLowerCase();
+        if (dislikedFoods.some(dis => nameLower.includes(dis.toLowerCase()))) return false;
+      }
+      
+      // Diet type matching
+      if (diet === 'veg' && m.tag !== 'veg') return false;
+      if (diet === 'eggetarian' && m.tag === 'nonveg') return false;
+      
+      // Budget matching
+      if (budget === 'low' && m.budget !== 'low') return false;
+      if (budget === 'medium' && m.budget === 'high') return false;
+      
+      return true;
+    });
+
+    if (pool.length === 0) {
+      pool = MEALS.filter(m => {
+        if (diet === 'veg' && m.tag !== 'veg') return false;
+        if (diet === 'eggetarian' && m.tag === 'nonveg') return false;
+        return true;
+      });
+    }
+
+    // Sort by proximity of calorie content
+    pool.sort((a, b) => Math.abs(a.cal - originalMeal.cal) - Math.abs(b.cal - originalMeal.cal));
+
+    // Return top 3 choices scaled to match original meal's calories
+    return pool.slice(0, 3).map(m => {
+      const scale = originalMeal.cal / m.cal;
+      return {
+        ...m,
+        cal: originalMeal.cal,
+        prot: Math.round(m.prot * scale),
+        carbs: Math.round((m.carbs || 45) * scale),
+        fats: Math.round((m.fats || 15) * scale),
+        portionScale: scale,
+        swappedFrom: originalMeal.name
+      };
+    });
+  }
+};
+
+const groceryEngine = {
+  generateList(inputs) {
+    const { diet, budget, stay, targetCal, targetProt } = inputs;
+    
+    const weeklyMeals = [];
+    for (let day = 0; day < 7; day++) {
+      const plan = nutritionEngine.generatePlan({
+        goal: state.onboarding.goalBodyType || 'athletic',
+        calories: targetCal,
+        protein: targetProt,
+        diet,
+        budget,
+        stay,
+        dayOffset: day,
+        dislikedFoods: state.nutrition.dislikedFoods
+      });
+      
+      // Merge swaps if the user has custom swaps saved
+      const finalMeals = ['breakfast', 'lunch', 'dinner', 'snack'].map(cat => {
+        if (state.nutrition.todaySwaps && state.nutrition.todaySwaps[cat]) {
+          return state.nutrition.todaySwaps[cat];
+        }
+        return plan[cat];
+      });
+
+      weeklyMeals.push(...finalMeals);
+    }
+    
+    const itemMap = {};
+    const proteinCoverage = {};
+    
+    weeklyMeals.forEach(m => {
+      const name = m.name.toLowerCase();
+      let key = '';
+      let qty = '';
+      let category = 'Grains & Pantry';
+      let protSource = '';
+
+      if (name.includes('paneer')) {
+        key = 'Fresh Paneer'; qty = '1.2 kg'; category = 'Proteins & Dairy'; protSource = 'Paneer';
+      } else if (name.includes('chicken')) {
+        key = 'Chicken Breast'; qty = '1.5 kg'; category = 'Proteins & Dairy'; protSource = 'Chicken';
+      } else if (name.includes('egg')) {
+        key = 'Fresh Eggs'; qty = '2 Dozen'; category = 'Proteins & Dairy'; protSource = 'Eggs';
+      } else if (name.includes('salmon')) {
+        key = 'Salmon Fillets'; qty = '800g'; category = 'Proteins & Dairy'; protSource = 'Fish';
+      } else if (name.includes('tofu')) {
+        key = 'Organic Tofu'; qty = '1.2 kg'; category = 'Proteins & Dairy'; protSource = 'Tofu';
+      } else if (name.includes('soy chunk')) {
+        key = 'Soy Chunks'; qty = '500g pack'; category = 'Proteins & Dairy'; protSource = 'Soy Chunks';
+      } else if (name.includes('milk')) {
+        key = 'Toned Milk'; qty = '3.5 Litres'; category = 'Proteins & Dairy'; protSource = 'Milk';
+      } else if (name.includes('soy milk')) {
+        key = 'Soy Milk'; qty = '3.0 Litres'; category = 'Proteins & Dairy'; protSource = 'Soy Milk';
+      } else if (name.includes('whey')) {
+        key = 'Whey Protein Isolate'; qty = '1 Tub (1kg)'; category = 'Proteins & Dairy'; protSource = 'Whey';
+      } else if (name.includes('oatmeal') || name.includes('oats')) {
+        key = 'Rolled Oats'; qty = '1 kg pack'; category = 'Grains & Pantry';
+      } else if (name.includes('peanut')) {
+        key = 'Roasted Peanuts / Peanut Butter'; qty = '500g jar'; category = 'Grains & Pantry'; protSource = 'Peanuts';
+      } else if (name.includes('dal')) {
+        key = 'Red Lentils (Masoor Dal)'; qty = '1 kg'; category = 'Grains & Pantry'; protSource = 'Dal';
+      } else if (name.includes('rice')) {
+        key = 'Basmati Rice'; qty = '2 kg'; category = 'Grains & Pantry';
+      } else if (name.includes('roti') || name.includes('wheat')) {
+        key = 'Whole Wheat Atta'; qty = '2.5 kg'; category = 'Grains & Pantry';
+      } else if (name.includes('poha')) {
+        key = 'Rice Flakes (Poha)'; qty = '1 kg'; category = 'Grains & Pantry';
+      } else if (name.includes('banana')) {
+        key = 'Ripe Bananas'; qty = '1 Dozen'; category = 'Fresh Produce';
+      } else if (name.includes('curd') || name.includes('yogurt')) {
+        key = 'Greek Yogurt / Fresh Curd'; qty = '2 kg'; category = 'Proteins & Dairy'; protSource = 'Yogurt';
+      } else {
+        key = 'Veggies & Spices'; qty = 'Assorted'; category = 'Fresh Produce';
+      }
+
+      if (key) {
+        itemMap[key] = { name: key, qty, category };
+      }
+      if (protSource) {
+        proteinCoverage[protSource] = (proteinCoverage[protSource] || 0) + m.prot;
+      } else {
+        proteinCoverage['Others'] = (proteinCoverage['Others'] || 0) + m.prot;
+      }
+    });
+
+    const items = Object.values(itemMap);
+    
+    const protList = Object.entries(proteinCoverage)
+      .filter(([name, grams]) => grams > 5)
+      .map(([name, grams]) => `${name} (${Math.round(grams / 7)}g/day)`)
+      .slice(0, 4);
+
+    let cost = '₹1200–2500';
+    if (budget === 'low') cost = '₹600–1200';
+    else if (budget === 'high') cost = '₹2500+';
+
+    return {
+      items,
+      cost,
+      proteinCoverageText: `${targetProt}g/day target. Covered by: ${protList.join(', ')}`
+    };
+  }
+};
 
 
 // Simulated match database of compatible peer candidates
@@ -3299,6 +4480,217 @@ function renderDisciplineChart() {
   }
 }
 
+// Render Today's AURA Meal Plan
+function renderTodayPlan() {
+  const container = el('aura-today-plan-container');
+  if (!container) return;
+
+  const dayOffset = new Date().getDay();
+  const plan = nutritionEngine.generatePlan({
+    goal: state.onboarding.goalBodyType || 'athletic',
+    calories: state.nutrition.targetCal || 2100,
+    protein: state.nutrition.targetProt || 110,
+    diet: state.onboarding.diet || 'veg',
+    budget: state.onboarding.budget || 'low',
+    stay: state.onboarding.lifestyle || 'hostel',
+    dayOffset: dayOffset,
+    dislikedFoods: state.nutrition.dislikedFoods || []
+  });
+
+  const categories = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const emojis = { breakfast: '🥞', lunch: '🍱', dinner: '🍛', snack: '🍇' };
+
+  container.innerHTML = categories.map(cat => {
+    // Check if swapped
+    let m = plan[cat];
+    if (state.nutrition.todaySwaps && state.nutrition.todaySwaps[cat]) {
+      m = state.nutrition.todaySwaps[cat];
+    }
+
+    if (!state.nutrition.loggedPlanMeals) state.nutrition.loggedPlanMeals = {};
+    const completed = !!state.nutrition.loggedPlanMeals[cat];
+    const cardId = `plan-${cat}`;
+
+    // Smart ingredient swaps display
+    let swapTipHtml = '';
+    const mainIngredient = nutritionEngine.getPrimaryIngredient(m.name);
+    if (mainIngredient === 'paneer') {
+      swapTipHtml = `<div style="font-size:10px; color:var(--text-3); margin-top:6px; background:rgba(255,255,255,0.02); padding:4px 8px; border-radius:6px; border:1px solid var(--border);">💡 Swap Paneer → Tofu / Greek Yogurt</div>`;
+    } else if (mainIngredient === 'chicken') {
+      swapTipHtml = `<div style="font-size:10px; color:var(--text-3); margin-top:6px; background:rgba(255,255,255,0.02); padding:4px 8px; border-radius:6px; border:1px solid var(--border);">💡 Swap Chicken → Eggs / Paneer</div>`;
+    } else if (mainIngredient === 'milk') {
+      swapTipHtml = `<div style="font-size:10px; color:var(--text-3); margin-top:6px; background:rgba(255,255,255,0.02); padding:4px 8px; border-radius:6px; border:1px solid var(--border);">💡 Swap Milk → Soy Milk</div>`;
+    }
+
+    const badgeText = m.tag === 'veg' ? '🟢 Veg' : m.tag === 'egg' ? '🥚 Egg' : '🔴 Non-Veg';
+
+    return `
+      <div class="plan-meal-card${completed ? ' completed' : ''}" id="${cardId}" style="margin-bottom:8px;">
+        <button class="plan-meal-check" data-category="${cat}" data-cal="${m.cal}" data-prot="${m.prot}">${completed ? '✓' : '+'}</button>
+        <div style="flex:1; min-width:0; margin-left: 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+            <span style="font-size:10px; font-weight:800; color:var(--violet); text-transform:uppercase; letter-spacing:0.06em;">${cat.toUpperCase()} ${emojis[cat]}</span>
+            <span class="meal-tag ${m.tag}" style="margin:0; font-size:8px; padding:1px 6px;">${badgeText}</span>
+          </div>
+          <p class="meal-name plan-meal-title" style="font-size:13px; font-weight:700; color:var(--text-1); margin:0;">${m.name}</p>
+          <p style="font-size:11px; color:var(--text-2); margin:3px 0 0 0;">
+            <span style="color:var(--violet); font-weight:700;">${m.cal} kcal</span> · 
+            <span style="color:var(--mint); font-weight:700;">${m.prot}g protein</span> 
+            ${m.portionScale && m.portionScale !== 1 ? `· <span style="color:var(--text-3); font-weight:600;">${Math.round(m.portionScale * 100)}% portion</span>` : ''}
+          </p>
+          ${swapTipHtml}
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            <button class="plan-meal-btn swap-btn" data-category="${cat}" data-meal-id="${m.id}">Swap 🔄</button>
+            <button class="plan-meal-btn dislike-btn" data-category="${cat}" data-meal-name="${m.name}">Exclude 👎</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Open Food Swaps Sheet
+function openSwapSheet(category) {
+  const dayOffset = new Date().getDay();
+  const plan = nutritionEngine.generatePlan({
+    goal: state.onboarding.goalBodyType || 'athletic',
+    calories: state.nutrition.targetCal || 2100,
+    protein: state.nutrition.targetProt || 110,
+    diet: state.onboarding.diet || 'veg',
+    budget: state.onboarding.budget || 'low',
+    stay: state.onboarding.lifestyle || 'hostel',
+    dayOffset: dayOffset,
+    dislikedFoods: state.nutrition.dislikedFoods || []
+  });
+
+  const originalMeal = plan[category];
+  const listEl = el('swap-options-list');
+  if (!listEl) return;
+
+  const swaps = foodSwapEngine.getSwapsForCategory(category, originalMeal, {
+    diet: state.onboarding.diet || 'veg',
+    budget: state.onboarding.budget || 'low',
+    stay: state.onboarding.lifestyle || 'hostel',
+    dislikedFoods: state.nutrition.dislikedFoods || []
+  });
+
+  if (swaps.length === 0) {
+    listEl.innerHTML = `<p style="font-size:12px; color:var(--text-3); text-align:center; padding:20px;">No compatible swaps found. Try relaxing budget/stay options.</p>`;
+  } else {
+    listEl.innerHTML = swaps.map(s => `
+      <div class="swap-option-card" data-category="${category}" data-swap-json='${JSON.stringify(s).replace(/'/g, "&apos;")}' style="margin-bottom:8px;">
+        <div style="flex:1; min-width:0; padding-right:12px;">
+          <p class="meal-name" style="font-size:13px; font-weight:700; color:var(--text-1); margin:0;">${s.name}</p>
+          <p style="font-size:11px; color:var(--text-2); margin:3px 0 0 0;">
+            <span style="color:var(--violet); font-weight:700;">${s.cal} kcal</span> · 
+            <span style="color:var(--mint); font-weight:700;">${s.prot}g protein</span>
+          </p>
+        </div>
+        <span style="font-size:11px; font-weight:700; color:var(--accent);">Select ➔</span>
+      </div>
+    `).join('');
+  }
+
+  el('swap-sheet-backdrop').classList.remove('hidden');
+  el('swap-sheet-backdrop').classList.add('visible');
+  el('swap-sheet').classList.add('open');
+  playSound('tap');
+}
+
+function closeSwapSheet() {
+  el('swap-sheet-backdrop').classList.remove('visible');
+  el('swap-sheet-backdrop').classList.add('hidden');
+  el('swap-sheet').classList.remove('open');
+  playSound('tap');
+}
+
+// Render Grocery Planner Panel
+function renderGroceryPlanner() {
+  const costEl = el('grocery-cost-estimate');
+  const coverageEl = el('grocery-protein-coverage');
+  const listEl = el('grocery-items-list');
+  if (!listEl) return;
+
+  const data = groceryEngine.generateList({
+    diet: state.onboarding.diet || 'veg',
+    budget: state.onboarding.budget || 'low',
+    stay: state.onboarding.lifestyle || 'hostel',
+    targetCal: state.nutrition.targetCal || 2100,
+    targetProt: state.nutrition.targetProt || 110
+  });
+
+  if (costEl) costEl.textContent = data.cost;
+  if (coverageEl) coverageEl.textContent = data.proteinCoverageText;
+
+  listEl.innerHTML = data.items.map((item, idx) => `
+    <label style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--surface-3); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition: all 0.2s ease;">
+      <input type="checkbox" class="grocery-item-checkbox" style="accent-color:var(--mint); width:15px; height:15px; cursor:pointer; flex-shrink:0; border-radius:4px;" ${state.nutrition.loggedMeals.has(`grocery_${idx}`) ? 'checked' : ''} data-grocery-idx="${idx}">
+      <span style="font-size:12px; color:var(--text-1); font-weight:600;">${item.name} <span style="font-size:10px; color:var(--text-3); font-weight:500; margin-left:4px;">(${item.qty})</span></span>
+    </label>
+  `).join('');
+}
+
+// Render dynamic daily nutrition insights
+function renderNutritionInsights() {
+  const container = el('aura-nutrition-insights');
+  if (!container) return;
+
+  const insights = generateNutritionInsights();
+  container.innerHTML = insights.map(ins => `
+    <div style="display:flex; gap:8px; align-items:flex-start;">
+      <span style="font-size:11px; color:var(--violet); font-weight:800; margin-top:1px;">✦</span>
+      <p style="font-size:11.5px; color:var(--text-2); margin:0; line-height:1.45;">${ins}</p>
+    </div>
+  `).join('');
+}
+
+function generateNutritionInsights() {
+  const n = state.nutrition;
+  const insights = [];
+
+  // Calorie insight
+  const calDiff = n.targetCal - n.loggedCal;
+  if (n.loggedCal === 0) {
+    insights.push(`Calorie intake aligned. Target is ${n.targetCal} kcal today.`);
+  } else if (calDiff > 100) {
+    insights.push(`Calorie intake aligned (logged ${Math.round(n.loggedCal)} kcal, ${Math.round(calDiff)} kcal remaining).`);
+  } else if (calDiff >= -100 && calDiff <= 100) {
+    insights.push(`Calorie target fully achieved! Aligned perfectly.`);
+  } else {
+    insights.push(`Calorie intake exceeded target by ${Math.round(-calDiff)} kcal.`);
+  }
+
+  // Protein insight
+  if (n.loggedProt === 0) {
+    insights.push(`Protein target likely missed. Log meals to track your ${n.targetProt}g target.`);
+  } else if (n.loggedProt < n.targetProt * 0.7) {
+    insights.push(`Protein intake below target. Currently at ${Math.round(n.loggedProt)}g of ${n.targetProt}g. Recommend high protein sources.`);
+  } else {
+    insights.push(`Protein target on track! Excellent nitrogen retention.`);
+  }
+
+  // Hydration insight
+  if (n.loggedWater === 0) {
+    insights.push(`Hydration below target. Remember to log your water intake.`);
+  } else if (n.loggedWater < n.targetWater * 0.5) {
+    insights.push(`Hydration below target. Logged ${((n.loggedWater)/1000).toFixed(1)}L, target ${((n.targetWater)/1000).toFixed(1)}L.`);
+  } else if (n.loggedWater < n.targetWater) {
+    insights.push(`Hydration on track. Just ${((n.targetWater - n.loggedWater)/1000).toFixed(1)}L more to meet your daily goal.`);
+  } else {
+    insights.push(`Hydration goal met! (Logged ${((n.loggedWater)/1000).toFixed(1)}L).`);
+  }
+
+  // Training vs Rest day status
+  const restDay = state.workout.weekSplit[state.workout.todayIndex].rest;
+  if (restDay) {
+    insights.push(`Rest Day: Recovery nutrition prioritized. Keep protein high to repair tissue.`);
+  } else {
+    insights.push(`Training Day: Workout fuel prioritized. Carb loading around training window.`);
+  }
+
+  return insights;
+}
+
 function onEnterDiet() {
   recalculateSmartProtein();
   renderMeals();
@@ -3306,6 +4698,9 @@ function onEnterDiet() {
   syncDietFilterPills();
   syncDietFilterDropdowns();
   updateDietTipCard();
+  renderTodayPlan();
+  renderGroceryPlanner();
+  renderNutritionInsights();
 }
 
 function updateDietTipCard() {
@@ -3407,6 +4802,51 @@ function onEnterRecovery() {
   if (el('cns-soreness')) el('cns-soreness').textContent = state.checkIn.done ? scoreMap[answers.soreness] || '😐' : '—';
   if (el('cns-stress')) el('cns-stress').textContent = state.checkIn.done ? stressMap[answers.stress] || '😐' : '—';
   if (el('cns-sleep')) el('cns-sleep').textContent = state.checkIn.done ? sleepMap[answers.sleep] || '😐' : '—';
+
+  // Systemic Fatigue tag
+  const fatigue = recoveryEngine.calculateFatigue(state.workout.history, state.checkIn.answers, r);
+  const fatigueTag = el('fatigue-level-tag');
+  if (fatigueTag) {
+    fatigueTag.textContent = state.checkIn.done ? fatigue : '—';
+    if (fatigue === 'High Fatigue') {
+      fatigueTag.style.color = 'var(--rose)';
+    } else if (fatigue === 'Elevated') {
+      fatigueTag.style.color = 'var(--violet)';
+    } else {
+      fatigueTag.style.color = 'var(--mint)';
+    }
+  }
+
+  // Recovery Insights
+  const insights = recoveryEngine.generateInsights(answers, r, fatigue);
+  const insightsContainer = el('recovery-insights-container');
+  if (insightsContainer) {
+    if (!state.checkIn.done) {
+      insightsContainer.innerHTML = `<p style="font-size:11px;color:var(--text-3);margin:0;text-align:center;">Sync to view daily recovery insights.</p>`;
+    } else {
+      insightsContainer.innerHTML = insights.map(ins => `
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <span style="font-size:10px;color:var(--mint);font-weight:800;margin-top:1px;">✦</span>
+          <p style="font-size:11px;color:var(--text-2);margin:0;line-height:1.45;">${ins}</p>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Recovery recommendations (replacing static mobility recommendations list)
+  const recs = recoveryEngine.generateRecommendations(answers, r, fatigue, exp);
+  const recsContainer = el('mobility-recs');
+  if (recsContainer) {
+    recsContainer.innerHTML = recs.map(rec => `
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:20px;">${rec.icon}</span>
+        <div>
+          <p style="font-size:12px;font-weight:700;color:var(--text-1);margin:0;">${rec.label}</p>
+          <p style="font-size:10px;color:var(--text-3);margin-top:1px;line-height:1.35;">${rec.detail}</p>
+        </div>
+      </div>
+    `).join('');
+  }
 }
 
 function syncDietFilterDropdowns() {
@@ -3575,8 +5015,10 @@ function toggleMeal(mealId) {
 function syncMacroUI() {
   const n = state.nutrition;
   
-  el('cal-logged').textContent = Math.round(n.loggedCal);
-  el('prot-logged').textContent = Math.round(n.loggedProt) + 'g';
+  if (el('cal-logged')) el('cal-logged').textContent = Math.round(n.loggedCal);
+  if (el('prot-logged')) el('prot-logged').textContent = Math.round(n.loggedProt) + 'g';
+  if (el('cal-target')) el('cal-target').textContent = Math.round(n.targetCal);
+  if (el('prot-target')) el('prot-target').textContent = Math.round(n.targetProt) + 'g';
   
   const calPct = Math.min(100, (n.loggedCal / n.targetCal) * 100);
   const protPct = Math.min(100, (n.loggedProt / n.targetProt) * 100);
@@ -3584,7 +5026,7 @@ function syncMacroUI() {
   el('prot-bar').style.width = protPct + '%';
   
   const ltr = (n.loggedWater / 1000).toFixed(1);
-  const targetLtr = 4.0;
+  const targetLtr = ((n.targetWater || 4000) / 1000).toFixed(1);
   const displayEl = el('water-litres-display');
   if (displayEl) {
     displayEl.textContent = `${ltr}L / ${targetLtr}L`;
@@ -3592,9 +5034,9 @@ function syncMacroUI() {
   const waterFill = el('water-progress-fill');
   const waterCard = waterFill ? waterFill.closest('.hydration-card') : null;
   if (waterFill) {
-    const wPct = Math.min(100, (n.loggedWater / 4000) * 100);
+    const wPct = Math.min(100, (n.loggedWater / (n.targetWater || 4000)) * 100);
     waterFill.style.width = wPct + '%';
-    const completed = n.loggedWater >= 4000;
+    const completed = n.loggedWater >= (n.targetWater || 4000);
     if (completed) {
       waterFill.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
       if (waterCard) {
@@ -4053,7 +5495,8 @@ function logTodaySession() {
       .filter(ex => ex.sets.some(s => s.done))
       .map(ex => {
         const done = ex.sets.filter(s => s.done);
-        return `${ex.name}: ${done.length} sets x ${done[0]?.reps || ex.reps} reps${ex.weight ? ' @ ' + ex.weight + 'kg' : ''}`;
+        const avgDiff = Math.round(done.reduce((acc, s) => acc + (+s.rpe || 8), 0) / done.length) || 6;
+        return `${ex.name}: ${done.length} sets x ${done[0]?.reps || ex.reps} reps${ex.weight ? ' @ ' + ex.weight + 'kg' : ''} (Diff: ${avgDiff})`;
       }),
     readiness: state.readiness,
     discipline: 90 + Math.round(Math.random() * 8),
@@ -4204,6 +5647,139 @@ function loadFromStorage() {
 document.addEventListener('click', e => {
   const t = e.target;
 
+  // Today's Plan meal checking
+  const planCheckBtn = t.closest('.plan-meal-check');
+  if (planCheckBtn) {
+    const cat = planCheckBtn.dataset.category;
+    const cal = parseFloat(planCheckBtn.dataset.cal);
+    const prot = parseFloat(planCheckBtn.dataset.prot);
+    
+    if (!state.nutrition.loggedPlanMeals) state.nutrition.loggedPlanMeals = {};
+    const checked = !state.nutrition.loggedPlanMeals[cat];
+    state.nutrition.loggedPlanMeals[cat] = checked;
+    
+    if (checked) {
+      state.nutrition.loggedCal = (state.nutrition.loggedCal || 0) + cal;
+      state.nutrition.loggedProt = (state.nutrition.loggedProt || 0) + prot;
+      playSound('chime');
+    } else {
+      state.nutrition.loggedCal = Math.max(0, (state.nutrition.loggedCal || 0) - cal);
+      state.nutrition.loggedProt = Math.max(0, (state.nutrition.loggedProt || 0) - prot);
+      playSound('tap');
+    }
+    
+    syncMacroUI();
+    renderTodayPlan();
+    renderNutritionInsights();
+    saveToStorage();
+    return;
+  }
+
+  // Today's Plan meal swapping trigger
+  const swapBtn = t.closest('.swap-btn');
+  if (swapBtn) {
+    const cat = swapBtn.dataset.category;
+    openSwapSheet(cat);
+    return;
+  }
+
+  // Swap sheet close
+  if (t.id === 'swap-sheet-close' || t.closest('#swap-sheet-close')) {
+    closeSwapSheet();
+    return;
+  }
+  const swapBackdrop = t.closest('#swap-sheet-backdrop');
+  if (swapBackdrop) {
+    closeSwapSheet();
+    return;
+  }
+
+  // Select swap option
+  const swapOptionCard = t.closest('.swap-option-card');
+  if (swapOptionCard) {
+    const cat = swapOptionCard.dataset.category;
+    const s = JSON.parse(swapOptionCard.dataset.swapJson);
+    
+    if (!state.nutrition.loggedPlanMeals) state.nutrition.loggedPlanMeals = {};
+    if (!state.nutrition.todaySwaps) state.nutrition.todaySwaps = {};
+    
+    // If old meal in this category was checked/logged, subtract macros first!
+    if (state.nutrition.loggedPlanMeals[cat]) {
+      const planContainer = el(`plan-${cat}`);
+      const checkEl = planContainer ? planContainer.querySelector('.plan-meal-check') : null;
+      if (checkEl) {
+        const cal = parseFloat(checkEl.dataset.cal);
+        const prot = parseFloat(checkEl.dataset.prot);
+        state.nutrition.loggedCal = Math.max(0, (state.nutrition.loggedCal || 0) - cal);
+        state.nutrition.loggedProt = Math.max(0, (state.nutrition.loggedProt || 0) - prot);
+      }
+      state.nutrition.loggedPlanMeals[cat] = false;
+    }
+    
+    state.nutrition.todaySwaps[cat] = s;
+    
+    closeSwapSheet();
+    onEnterDiet();
+    saveToStorage();
+    playSound('done');
+    return;
+  }
+
+  // Exclude/Dislike meal
+  const dislikeBtn = t.closest('.dislike-btn');
+  if (dislikeBtn) {
+    const cat = dislikeBtn.dataset.category;
+    const mealName = dislikeBtn.dataset.mealName;
+    const primaryIng = nutritionEngine.getPrimaryIngredient(mealName);
+    
+    if (!state.nutrition.dislikedFoods) state.nutrition.dislikedFoods = [];
+    if (primaryIng && !state.nutrition.dislikedFoods.includes(primaryIng)) {
+      state.nutrition.dislikedFoods.push(primaryIng);
+    }
+    
+    if (!state.nutrition.loggedPlanMeals) state.nutrition.loggedPlanMeals = {};
+    if (state.nutrition.loggedPlanMeals[cat]) {
+      const planContainer = el(`plan-${cat}`);
+      const checkEl = planContainer ? planContainer.querySelector('.plan-meal-check') : null;
+      if (checkEl) {
+        const cal = parseFloat(checkEl.dataset.cal);
+        const prot = parseFloat(checkEl.dataset.prot);
+        state.nutrition.loggedCal = Math.max(0, (state.nutrition.loggedCal || 0) - cal);
+        state.nutrition.loggedProt = Math.max(0, (state.nutrition.loggedProt || 0) - prot);
+      }
+      state.nutrition.loggedPlanMeals[cat] = false;
+    }
+    
+    if (state.nutrition.todaySwaps) {
+      delete state.nutrition.todaySwaps[cat];
+    }
+    
+    onEnterDiet();
+    saveToStorage();
+    playSound('done');
+    
+    showSaveSuccessFeedback();
+    const diText = el('island-text') || el('dynamic-island');
+    if (diText) {
+      diText.textContent = `✦ Excluded ${primaryIng || 'item'}`;
+    }
+    return;
+  }
+
+  // Consistency Protection Shield
+  const shieldBtn = t.closest('.shield-opt-btn');
+  if (shieldBtn) {
+    const dur = shieldBtn.dataset.dur;
+    if (dur) {
+      applyConsistencyReduction(dur);
+    }
+    if (shieldBtn.id === 'shield-dismiss-btn') {
+      playSound('tap');
+      const banner = el('consistency-shield-banner');
+      if (banner) banner.style.display = 'none';
+    }
+  }
+
   // Auth & Signup flows
   if (t.id === 'goto-signup-btn' || t.closest('#goto-signup-btn')) {
     state.auth.signupStep = 0;
@@ -4292,6 +5868,39 @@ document.addEventListener('click', e => {
   // Onboarding next/back
   if (t.id === 'ob-next-btn') obNext();
   if (t.id === 'ob-back-btn') obBack();
+
+  // Step 8: Gender selection
+  const genderCard = t.closest('[data-intel-gender]');
+  if (genderCard) {
+    document.querySelectorAll('[data-intel-gender]').forEach(c => c.classList.remove('selected'));
+    genderCard.classList.add('selected');
+    state.onboarding.gender = genderCard.dataset.intelGender;
+    recalculateSmartProtein();
+    playSound('tap');
+    saveToStorage();
+  }
+
+  // Step 8: Current Body Type selection
+  const bodyCard = t.closest('[data-intel-body]');
+  if (bodyCard) {
+    document.querySelectorAll('[data-intel-body]').forEach(c => c.classList.remove('selected'));
+    bodyCard.classList.add('selected');
+    state.onboarding.bodyType = bodyCard.dataset.intelBody;
+    recalculateSmartProtein();
+    playSound('tap');
+    saveToStorage();
+  }
+
+  // Step 8: Goal Body Type selection
+  const goalBodyCard = t.closest('[data-intel-goal-body]');
+  if (goalBodyCard) {
+    document.querySelectorAll('[data-intel-goal-body]').forEach(c => c.classList.remove('selected'));
+    goalBodyCard.classList.add('selected');
+    state.onboarding.goalBodyType = goalBodyCard.dataset.intelGoalBody;
+    recalculateSmartProtein();
+    playSound('tap');
+    saveToStorage();
+  }
 
   // Goal cards
   const goalCard = t.closest('.goal-card');
@@ -5027,6 +6636,22 @@ function openSettingsModal() {
   if (expSel) expSel.value = ob.experience || 'beginner';
   if (accSel) accSel.value = state.auth.matchingEnabled ? 'partner' : 'friends';
   if (notifChk) notifChk.checked = state.auth.notificationsEnabled !== false;
+
+  // Step 8 fields inside settings modal
+  if (el('settings-gender')) el('settings-gender').value = ob.gender || 'male';
+  if (el('settings-age')) el('settings-age').value = ob.age || 21;
+  if (el('settings-height')) el('settings-height').value = ob.height || 172;
+  if (el('settings-weight')) el('settings-weight').value = ob.weight || 70;
+  if (el('settings-body-type')) el('settings-body-type').value = ob.bodyType || 'average';
+  if (el('settings-goal-body')) el('settings-goal-body').value = ob.goalBodyType || 'athletic';
+  if (el('settings-activity')) el('settings-activity').value = ob.activityLevel || 'active';
+  if (el('settings-occupation')) el('settings-occupation').value = ob.occupation || 'office_worker';
+  if (el('settings-schedule')) el('settings-schedule').value = ob.workSchedule || 'evening';
+  if (el('settings-training-days')) el('settings-training-days').value = ob.trainingDays || 4;
+  if (el('settings-cooking')) el('settings-cooking').value = ob.cookingAbility || 'basic';
+  if (el('settings-eating')) el('settings-eating').value = ob.eatingHabit || 'normal';
+  if (el('settings-muscle-primary')) el('settings-muscle-primary').value = ob.primaryMuscleFocus || 'chest';
+  if (el('settings-muscle-secondary')) el('settings-muscle-secondary').value = ob.secondaryMuscleFocus || 'back';
   
   overlay.classList.remove('hidden');
   void overlay.offsetWidth;
@@ -5063,6 +6688,22 @@ function saveSettingsModal() {
   if (expSel) ob.experience = expSel.value;
   if (accSel) state.auth.matchingEnabled = accSel.value === 'partner';
   if (notifChk) state.auth.notificationsEnabled = notifChk.checked;
+
+  // Step 8 fields inside settings modal
+  if (el('settings-gender')) ob.gender = el('settings-gender').value;
+  if (el('settings-age')) ob.age = +el('settings-age').value || 21;
+  if (el('settings-height')) ob.height = +el('settings-height').value || 172;
+  if (el('settings-weight')) ob.weight = +el('settings-weight').value || 70;
+  if (el('settings-body-type')) ob.bodyType = el('settings-body-type').value;
+  if (el('settings-goal-body')) ob.goalBodyType = el('settings-goal-body').value;
+  if (el('settings-activity')) ob.activityLevel = el('settings-activity').value;
+  if (el('settings-occupation')) ob.occupation = el('settings-occupation').value;
+  if (el('settings-schedule')) ob.workSchedule = el('settings-schedule').value;
+  if (el('settings-training-days')) ob.trainingDays = +el('settings-training-days').value || 4;
+  if (el('settings-cooking')) ob.cookingAbility = el('settings-cooking').value;
+  if (el('settings-eating')) ob.eatingHabit = el('settings-eating').value;
+  if (el('settings-muscle-primary')) ob.primaryMuscleFocus = el('settings-muscle-primary').value;
+  if (el('settings-muscle-secondary')) ob.secondaryMuscleFocus = el('settings-muscle-secondary').value;
   
   // Re-generate splits, macros, and diet recommendations dynamically
   recalculateSmartProtein();
@@ -5544,6 +7185,9 @@ function confirmReset() {
   state.nutrition.loggedCal = 0;
   state.nutrition.loggedProt = 0;
   state.nutrition.loggedWater = 0;
+  state.nutrition.dislikedFoods = [];
+  state.nutrition.todaySwaps = {};
+  state.nutrition.loggedPlanMeals = {};
   state.sessionStarted = false;
   state.celebrationShown = false;
   
@@ -5879,33 +7523,40 @@ document.addEventListener('DOMContentLoaded', () => {
     updateObProgress();
   }
 
-  // Bind change event delegation for Diet Filter Dropdowns
+  // Bind change event delegation for Diet Filter Dropdowns & Grocery checkboxes
   document.addEventListener('change', e => {
     const t = e.target;
     if (t.id === 'diet-dropdown-type') {
       state.onboarding.diet = t.value;
-      recalculateSmartProtein();
-      syncDietFilterPills();
-      renderMeals();
-      syncMacroUI();
+      state.nutrition.todaySwaps = {};
+      state.nutrition.loggedPlanMeals = {};
+      onEnterDiet();
       saveToStorage();
       playSound('tap');
     }
     if (t.id === 'diet-dropdown-budget') {
       state.onboarding.budget = t.value;
-      recalculateSmartProtein();
-      syncDietFilterPills();
-      renderMeals();
-      syncMacroUI();
+      state.nutrition.todaySwaps = {};
+      state.nutrition.loggedPlanMeals = {};
+      onEnterDiet();
       saveToStorage();
       playSound('tap');
     }
     if (t.id === 'diet-dropdown-lifestyle') {
       state.onboarding.lifestyle = t.value;
-      recalculateSmartProtein();
-      syncDietFilterPills();
-      renderMeals();
-      syncMacroUI();
+      state.nutrition.todaySwaps = {};
+      state.nutrition.loggedPlanMeals = {};
+      onEnterDiet();
+      saveToStorage();
+      playSound('tap');
+    }
+    if (t.classList.contains('grocery-item-checkbox')) {
+      const idx = t.dataset.groceryIdx;
+      if (t.checked) {
+        state.nutrition.loggedMeals.add(`grocery_${idx}`);
+      } else {
+        state.nutrition.loggedMeals.delete(`grocery_${idx}`);
+      }
       saveToStorage();
       playSound('tap');
     }
@@ -5947,6 +7598,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const scorecard = el('scorecard-backdrop');
       if (scorecard && scorecard.classList.contains('visible')) {
         closePartnerScorecard();
+      }
+      const swapSheet = el('swap-sheet-backdrop');
+      if (swapSheet && swapSheet.classList.contains('visible')) {
+        closeSwapSheet();
       }
       const resetModal = el('safe-reset-backdrop');
       if (resetModal && resetModal.classList.contains('visible')) {

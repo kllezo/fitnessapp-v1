@@ -645,6 +645,187 @@
             </div>
           </div>
 
+          <!-- Step 8: AURA Intelligence Setup -->
+          <div class="ob-step" id="ob-step-8">
+            <div class="ob-step-inner" style="display:flex; flex-direction:column; gap:16px;">
+              <p class="ob-eyebrow">Phase 1 Foundation</p>
+              <h2 class="ob-title" style="margin-bottom:2px;">AURA Intelligence Setup</h2>
+              <p class="ob-hint" style="margin-bottom:8px;">Calibrate your primary data and transformation vectors.</p>
+
+              <!-- Group 1: Core BMR Telemetry -->
+              <div class="intel-group" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+                <h3 class="intel-group-title" style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">1. Core BMR Telemetry</h3>
+                
+                <div class="metric-input-group" style="margin:0;">
+                  <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3); display:block; margin-bottom:6px;">Gender</label>
+                  <div class="gender-selector-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="gender-card selected" data-intel-gender="male" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:12px; padding:10px; text-align:center; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Male</div>
+                    <div class="gender-card" data-intel-gender="female" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:12px; padding:10px; text-align:center; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Female</div>
+                  </div>
+                </div>
+
+                <div class="auth-row-fields" style="display:flex; gap:10px; margin-top:4px;">
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Age</label>
+                    <input type="number" class="intel-input" id="intel-age" value="21" min="14" max="90" style="width:100%; padding:10px 12px; background:var(--surface-3); border:1.5px solid var(--border); border-radius:12px; color:var(--text-1); font-weight:600; outline:none; text-align:center;">
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Height (cm)</label>
+                    <input type="number" class="intel-input" id="intel-height" value="172" min="100" max="250" style="width:100%; padding:10px 12px; background:var(--surface-3); border:1.5px solid var(--border); border-radius:12px; color:var(--text-1); font-weight:600; outline:none; text-align:center;">
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Weight (kg)</label>
+                    <input type="number" class="intel-input" id="intel-weight" value="70" min="30" max="250" style="width:100%; padding:10px 12px; background:var(--surface-3); border:1.5px solid var(--border); border-radius:12px; color:var(--text-1); font-weight:600; outline:none; text-align:center;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 2: Body Profiling -->
+              <div class="intel-group" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:8px;">
+                <h3 class="intel-group-title" style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">2. Somatotype & Goal</h3>
+                
+                <p class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3); margin:4px 0 0;">Current Body Type</p>
+                <div class="intel-grid-4" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;">
+                  <div class="intel-pill selected" data-intel-body="average" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Average</div>
+                  <div class="intel-pill" data-intel-body="skinny" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Skinny</div>
+                  <div class="intel-pill" data-intel-body="athletic" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Athletic</div>
+                  <div class="intel-pill" data-intel-body="overweight" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Overweight</div>
+                </div>
+
+                <p class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3); margin:4px 0 0;">Goal Body Type</p>
+                <div class="intel-grid-5" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
+                  <div class="intel-pill selected" data-intel-goal-body="athletic" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:10px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Athletic</div>
+                  <div class="intel-pill" data-intel-goal-body="lean" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:10px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Lean</div>
+                  <div class="intel-pill" data-intel-goal-body="muscular" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:10px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Muscular</div>
+                  <div class="intel-pill" data-intel-goal-body="weight_loss" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:10px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Loss</div>
+                  <div class="intel-pill" data-intel-goal-body="performance" style="background:var(--surface-3); border:1.5px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:10px; font-weight:700; color:var(--text-2); cursor:pointer; transition:all var(--dur-fast) ease;">Perf</div>
+                </div>
+              </div>
+
+              <!-- Group 3: Lifestyle & Schedule -->
+              <div class="intel-group" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+                <h3 class="intel-group-title" style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">3. Lifestyle & Energy</h3>
+
+                <div class="auth-row-fields" style="display:flex; gap:10px;">
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Activity Level</label>
+                    <select class="auth-input auth-select" id="intel-activity" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="sedentary">Sedentary</option>
+                      <option value="lightly_active">Lightly Active</option>
+                      <option value="active" selected>Active</option>
+                      <option value="very_active">Very Active</option>
+                    </select>
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Occupation</label>
+                    <select class="auth-input auth-select" id="intel-occupation" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="student">Student</option>
+                      <option value="office_worker" selected>Office Worker</option>
+                      <option value="field_work">Field Work</option>
+                      <option value="athlete">Athlete</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="auth-row-fields" style="display:flex; gap:10px;">
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Work Schedule</label>
+                    <select class="auth-input auth-select" id="intel-schedule" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="morning">Morning</option>
+                      <option value="afternoon">Afternoon</option>
+                      <option value="evening" selected>Evening</option>
+                      <option value="night_shift">Night Shift</option>
+                    </select>
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Training Freq</label>
+                    <select class="auth-input auth-select" id="intel-training-days" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="2">2 Days / wk</option>
+                      <option value="3">3 Days / wk</option>
+                      <option value="4" selected>4 Days / wk</option>
+                      <option value="5">5 Days / wk</option>
+                      <option value="6">6 Days / wk</option>
+                      <option value="7">7 Days / wk</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 4: Diet, Habits & Cooking -->
+              <div class="intel-group" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <h3 class="intel-group-title" style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">4. Nutrition & Cooking</h3>
+
+                <div class="auth-row-fields" style="display:flex; gap:10px;">
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Cooking Ability</label>
+                    <select class="auth-input auth-select" id="intel-cooking" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="cannot_cook">Cannot Cook</option>
+                      <option value="basic" selected>Basic Cooking</option>
+                      <option value="comfortable">Comfortable Cooking</option>
+                    </select>
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Eating Habits</label>
+                    <select class="auth-input auth-select" id="intel-eating-habit" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="normal" selected>Normal</option>
+                      <option value="skip_meals">Skip Meals</option>
+                      <option value="late_night">Late Night Eating</option>
+                      <option value="emotional">Emotional Eating</option>
+                      <option value="snacking">Frequent Snacking</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="metric-input-group" style="margin:4px 0 0;">
+                  <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Avg Water Intake: <span id="intel-water-val" style="color:var(--violet); font-weight:700;">2.5L</span></label>
+                  <div class="metric-dual" style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+                    <input type="range" class="metric-slider" id="intel-water" min="1.0" max="6.0" step="0.5" value="2.5" style="flex:1;">
+                  </div>
+                </div>
+
+                <div class="metric-input-group" style="margin:4px 0 0;">
+                  <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Avg Sleep Hours: <span id="intel-sleep-val" style="color:var(--violet); font-weight:700;">7h</span></label>
+                  <div class="metric-dual" style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+                    <input type="range" class="metric-slider" id="intel-sleep" min="4" max="12" step="1" value="7" style="flex:1;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 5: Target Muscle Focus -->
+              <div class="intel-group" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:10px;">
+                <h3 class="intel-group-title" style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">5. Priority Muscle Systems</h3>
+                <p class="ob-hint" style="font-size:11px; color:var(--text-2); margin:0;">Select exactly one primary and one secondary muscle target.</p>
+                
+                <div class="auth-row-fields" style="display:flex; gap:10px; margin-top:4px;">
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Primary Focus</label>
+                    <select class="auth-input auth-select" id="intel-muscle-primary" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="chest" selected>Chest</option>
+                      <option value="back">Back</option>
+                      <option value="shoulders">Shoulders</option>
+                      <option value="arms">Arms</option>
+                      <option value="legs">Legs</option>
+                      <option value="core">Core</option>
+                      <option value="fullbody">Full Body</option>
+                    </select>
+                  </div>
+                  <div class="auth-field-group" style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                    <label class="metric-label" style="font-size:11px; font-weight:600; color:var(--text-3);">Secondary Focus</label>
+                    <select class="auth-input auth-select" id="intel-muscle-secondary" style="width:100%; padding:10px 8px; font-size:12px; margin:0; border-radius:12px; background:var(--surface-3); color:var(--text-1); border-color:var(--border);">
+                      <option value="chest">Chest</option>
+                      <option value="back" selected>Back</option>
+                      <option value="shoulders">Shoulders</option>
+                      <option value="arms">Arms</option>
+                      <option value="legs">Legs</option>
+                      <option value="core">Core</option>
+                      <option value="fullbody">Full Body</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="ob-footer">
@@ -776,6 +957,29 @@
             <p class="advice-body" id="advice-body">Complete your daily sync to receive today's readiness assessment.</p>
           </div>
 
+          <!-- Today's AURA Guidance Panel -->
+          <div class="guidance-card" id="guidance-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; margin-top:12px; display:none; flex-direction:column; gap:12px;">
+            <p style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">Today's AURA Guidance</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div style="background:var(--surface-3); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:10px; color:var(--text-3); font-weight:600;">READINESS</span>
+                <span id="guidance-readiness" style="font-size:16px; font-weight:800; color:var(--text-1);">--</span>
+              </div>
+              <div style="background:var(--surface-3); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:10px; color:var(--text-3); font-weight:600;">RECOMMENDATION</span>
+                <span id="guidance-recommendation" style="font-size:13px; font-weight:800; color:var(--text-1);">--</span>
+              </div>
+              <div style="background:var(--surface-3); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:10px; color:var(--text-3); font-weight:600;">RECOVERY</span>
+                <span id="guidance-recovery" style="font-size:13px; font-weight:800; color:var(--text-1);">--</span>
+              </div>
+              <div style="background:var(--surface-3); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:10px; color:var(--text-3); font-weight:600;">PROGRESSION</span>
+                <span id="guidance-progression" style="font-size:13px; font-weight:800; color:var(--text-1);">--</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Today's Why -->
           <div class="why-card" id="why-card">
             <div class="why-header">
@@ -869,6 +1073,22 @@
             </div>
             <button class="primary-btn" id="custom-logger-trigger-btn" style="width:auto; margin:0 0 0 12px; padding:6px 12px; font-size:10px; font-weight:800; border-radius:8px; background:linear-gradient(135deg, var(--accent), var(--violet)); border:none; cursor:pointer; color:#000; font-family:var(--font);">+ Add Extra Work</button>
           </div>
+          <!-- Consistency Protection Shield Banner -->
+          <div class="consistency-shield-banner" id="consistency-shield-banner" style="display:none; background:rgba(251,146,60,0.06); border:1px dashed rgba(251,146,60,0.3); border-radius:18px; padding:12px 14px; margin:8px 16px 12px; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🛡️</span>
+              <div>
+                <p style="font-size:11px; font-weight:700; color:#fb923c; margin:0;">AURA Consistency Shield Active</p>
+                <p style="font-size:10px; color:var(--text-3); margin-top:2px; line-height:1.3;">Protect your streak and momentum with a customized reduced session.</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="shield-opt-btn" data-dur="10" style="flex:1; padding:6px; font-size:10px; font-weight:700; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; color:var(--text-1); cursor:pointer;">10m Express</button>
+              <button class="shield-opt-btn" data-dur="20" style="flex:1; padding:6px; font-size:10px; font-weight:700; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; color:var(--text-1); cursor:pointer;">20m Focus</button>
+              <button class="shield-opt-btn" data-dur="rec" style="flex:1; padding:6px; font-size:10px; font-weight:700; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; color:var(--text-1); cursor:pointer;">Recovery Flow</button>
+              <button class="shield-opt-btn" id="shield-dismiss-btn" style="padding:6px 10px; font-size:10px; font-weight:700; background:transparent; border:none; color:var(--text-3); cursor:pointer;">Dismiss</button>
+            </div>
+          </div>
           <div class="screen-scroll-nopad">
             <div class="workout-grid" id="workout-grid">
               <!-- JS rendered -->
@@ -941,6 +1161,26 @@
               <span class="oc-icon">📈</span>
               <span class="oc-text" id="overload-text">Try +2.5kg today</span>
               <button class="oc-apply" id="oc-apply-btn">Apply</button>
+            </div>
+
+            <!-- Exercise Progression Panel -->
+            <div class="progression-panel" id="exercise-progression-panel" style="background:var(--surface-2); border:1px solid var(--border); border-radius:18px; padding:14px; margin:0 16px 14px; display:flex; flex-direction:column; gap:8px;">
+              <p style="font-size:10px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.06em; margin:0;">AURA Progression Engine</p>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div style="background:var(--surface-3); padding:8px 10px; border-radius:10px; display:flex; flex-direction:column; gap:2px;">
+                  <span style="font-size:9px; color:var(--text-3); font-weight:600; letter-spacing:0.02em;">LAST WEIGHT</span>
+                  <span id="prog-last-weight" style="font-size:13px; font-weight:800; color:var(--text-1);">—</span>
+                </div>
+                <div style="background:var(--surface-3); padding:8px 10px; border-radius:10px; display:flex; flex-direction:column; gap:2px; position:relative;">
+                  <span style="font-size:9px; color:var(--text-3); font-weight:600; letter-spacing:0.02em;">SUGGESTED LOAD</span>
+                  <span id="prog-suggested-weight" style="font-size:13px; font-weight:800; color:var(--mint);">—</span>
+                  <button id="prog-apply-btn" style="position:absolute; right:8px; bottom:8px; padding:4px 10px; font-size:9px; font-weight:750; background:var(--mint); color:#000; border:none; border-radius:6px; cursor:pointer; font-family:var(--font); display:none; outline:none;">Apply</button>
+                </div>
+              </div>
+              <div style="background:var(--surface-3); padding:8px 10px; border-radius:10px; display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:9px; color:var(--text-3); font-weight:600; letter-spacing:0.02em;">PROGRESSION REASON</span>
+                <p id="prog-reason" style="font-size:11px; color:var(--text-2); margin:0; line-height:1.4;">—</p>
+              </div>
             </div>
 
             <!-- Rest Timer -->
@@ -1051,12 +1291,12 @@
           <div class="macro-card">
             <div class="macro-row">
               <span class="macro-label">Calories</span>
-              <span class="macro-nums"><span id="cal-logged" class="macro-current">0</span> / 2100</span>
+              <span class="macro-nums"><span id="cal-logged" class="macro-current">0</span> / <span id="cal-target">2100</span></span>
             </div>
             <div class="macro-bar"><div class="macro-fill violet" id="cal-bar"></div></div>
             <div class="macro-row" style="margin-top:12px;">
               <span class="macro-label">Protein</span>
-              <span class="macro-nums"><span id="prot-logged" class="macro-current" style="color:var(--mint)">0g</span> / 110g</span>
+              <span class="macro-nums"><span id="prot-logged" class="macro-current" style="color:var(--mint)">0g</span> / <span id="prot-target">110g</span></span>
             </div>
             <div class="macro-bar"><div class="macro-fill mint" id="prot-bar"></div></div>
           </div>
@@ -1068,6 +1308,18 @@
               <p style="font-size: 10px; font-weight: 700; color: var(--text-3); font-family: var(--font-2); text-transform: uppercase; letter-spacing: 0.05em;" id="diet-tip-title">Beginner Diet Priority</p>
               <p style="font-size: 13px; color: var(--text-1); margin-top: 4px; line-height: 1.45;" id="diet-tip-text">Focus on basic protein source consistency (like paneer and dal) and clean hydration before moving to complex supplements.</p>
             </div>
+          </div>
+
+          <!-- Today's AURA Plan Panel -->
+          <p class="section-label" style="margin-top:16px; margin-bottom:8px;">Today's AURA Plan</p>
+          <div id="aura-today-plan-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+            <!-- JS dynamically renders Breakfast, Lunch, Dinner, Snack -->
+          </div>
+
+          <!-- AURA Nutrition Insights Panel -->
+          <p class="section-label" style="margin-top:16px; margin-bottom:8px;">Daily Insights</p>
+          <div id="aura-nutrition-insights" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+            <!-- JS renders dynamic insights -->
           </div>
 
           <p class="section-label" style="margin-top:16px; margin-bottom:8px;">Diet & Lifestyle Settings</p>
@@ -1139,6 +1391,32 @@
             </div>
           </div>
 
+          <!-- Grocery Planner Panel -->
+          <p class="section-label">AURA Grocery Planner</p>
+          <div class="grocery-planner-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:9px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.08em; display:block;">WEEKLY PLANNER</span>
+                <h4 style="font-size:14px; font-weight:800; color:var(--text-1); margin:4px 0 0 0;">Grocery List & Cost Estimate</h4>
+              </div>
+              <span id="grocery-cost-estimate" style="font-size:11px; font-weight:800; color:var(--mint); background:var(--mint-dim); padding:4px 10px; border-radius:10px;">₹600–1200</span>
+            </div>
+            
+            <!-- Weekly Protein Coverage -->
+            <div style="background:var(--surface-3); border-radius:12px; padding:10px 12px; border:1px solid var(--border);">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">WEEKLY PROTEIN COVERAGE</span>
+              <p id="grocery-protein-coverage" style="font-size:11px; color:var(--text-2); margin:4px 0 0 0; line-height:1.45;">80g/day target. Covered by: Milk, Eggs, Paneer, Chicken.</p>
+            </div>
+
+            <!-- Grocery Checklist -->
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">GROCERY ITEMS</span>
+              <div id="grocery-items-list" style="display:flex; flex-direction:column; gap:6px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+                <!-- JS rendered -->
+              </div>
+            </div>
+          </div>
+
           <p class="section-label">Meal Suggestions</p>
           <div id="meals-container"><!-- JS rendered --></div>
         </div>
@@ -1173,7 +1451,7 @@
 
           <!-- CNS Fatigue Analysis -->
           <p class="section-label" style="margin-top:20px;">CNS Load Analysis</p>
-          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
+           <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <p style="font-size:12px;font-weight:700;color:var(--text-1);">Central Nervous System Load</p>
@@ -1195,6 +1473,16 @@
                 <span style="font-size:9px;color:var(--text-3);">Sleep</span>
               </div>
             </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;border-top:1px solid var(--border);padding-top:10px;">
+              <span style="font-size:11px;color:var(--text-3);font-weight:600;">Systemic Fatigue Status</span>
+              <span style="font-size:11px;font-weight:800;color:var(--mint);" id="fatigue-level-tag">Normal</span>
+            </div>
+          </div>
+
+          <!-- Recovery Insights -->
+          <p class="section-label" style="margin-top:20px;">Recovery Insights</p>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:4px;" id="recovery-insights-container">
+            <!-- Dynamic Insights populated by JS -->
           </div>
 
           <!-- Breathing Coach -->
@@ -1499,6 +1787,55 @@
               </div>
             </div>
 
+            <!-- AURA Profile Intelligence Panel -->
+            <div style="background:linear-gradient(135deg,var(--surface-2),rgba(139,92,246,0.05));border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;" id="profile-intel-panel">
+              <p style="font-size:10px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:4px;">
+                <span>✦</span> AURA Profile Intelligence
+              </p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Gender</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-gender">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Body Type</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-body">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Primary Focus</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-primary">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Secondary Focus</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-secondary">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Training Freq</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-freq">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;">
+                  <span style="font-size:12px;color:var(--text-2);">Maintenance Calories</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-mcal">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Target Calories</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--accent);" id="profile-intel-tcal">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Protein Goal</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-intel-protein">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:12px;color:var(--text-2);">Water Goal</span>
+                  <span style="font-size:12px;font-weight:600;color:var(--mint);" id="profile-intel-water">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px;align-items:center;">
+                  <span style="font-size:12px;color:var(--text-2);">Consistency Risk</span>
+                  <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;" id="profile-intel-risk">—</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Readiness Trends -->
             <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
               <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Readiness Trends</p>
@@ -1774,6 +2111,25 @@
         </div>
       </div>
 
+      <!-- ═══ FOOD SWAPS BOTTOM SHEET ═══ -->
+      <div class="sheet-backdrop hidden" id="swap-sheet-backdrop" style="z-index: 750;"></div>
+      <div class="bottom-sheet" id="swap-sheet" style="height:65%; background:#0c0c12; border-top:1px solid var(--border-2); border-radius:32px 32px 0 0; z-index:800;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:10px;">
+          <div>
+            <p class="sheet-ex-name" style="font-size:18px; font-weight:700; color:var(--text-1);">Alternative Food Swaps</p>
+            <span style="font-size:11px; color:var(--text-3); display:inline-block; margin-top:4px;" id="swap-sheet-subtitle">Select a replacement preserving calories & protein.</span>
+          </div>
+          <button class="sheet-close" id="swap-sheet-close" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-2); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+        
+        <div class="sheet-scroll" style="padding:16px 20px 40px; overflow-y:auto; flex:1;">
+          <div id="swap-options-list" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- JS dynamically populates alternatives -->
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ OVERLAY: PROFILE SETTINGS ═══ -->
       <div class="settings-overlay hidden" id="settings-overlay">
         <div class="profile-header-bar">
@@ -1824,6 +2180,117 @@
             <option value="beginner">Beginner</option>
             <option value="returning">Returning</option>
             <option value="experienced">Experienced</option>
+          </select>
+
+          <p class="section-label">Gender</p>
+          <select class="auth-input auth-select" id="settings-gender" style="width:100%; margin-bottom:14px;">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+            <div>
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Age</span>
+              <input type="number" class="auth-input" id="settings-age" value="21" min="14" max="90" style="width:100%; padding:8px 10px; font-size:12px; margin-top:4px; border-radius:10px; text-align:center;">
+            </div>
+            <div>
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Height (cm)</span>
+              <input type="number" class="auth-input" id="settings-height" value="172" min="100" max="250" style="width:100%; padding:8px 10px; font-size:12px; margin-top:4px; border-radius:10px; text-align:center;">
+            </div>
+            <div>
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Weight (kg)</span>
+              <input type="number" class="auth-input" id="settings-weight" value="70" min="30" max="250" style="width:100%; padding:8px 10px; font-size:12px; margin-top:4px; border-radius:10px; text-align:center;">
+            </div>
+          </div>
+
+          <p class="section-label">Current Body Type</p>
+          <select class="auth-input auth-select" id="settings-body-type" style="width:100%; margin-bottom:14px;">
+            <option value="skinny">Skinny</option>
+            <option value="average">Average</option>
+            <option value="athletic">Athletic</option>
+            <option value="overweight">Overweight</option>
+          </select>
+
+          <p class="section-label">Goal Body Type</p>
+          <select class="auth-input auth-select" id="settings-goal-body" style="width:100%; margin-bottom:14px;">
+            <option value="lean">Lean</option>
+            <option value="athletic">Athletic</option>
+            <option value="muscular">Muscular</option>
+            <option value="weight_loss">Weight Loss</option>
+            <option value="performance">Performance</option>
+          </select>
+
+          <p class="section-label">Activity Level</p>
+          <select class="auth-input auth-select" id="settings-activity" style="width:100%; margin-bottom:14px;">
+            <option value="sedentary">Sedentary</option>
+            <option value="lightly_active">Lightly Active</option>
+            <option value="active">Active</option>
+            <option value="very_active">Very Active</option>
+          </select>
+
+          <p class="section-label">Occupation</p>
+          <select class="auth-input auth-select" id="settings-occupation" style="width:100%; margin-bottom:14px;">
+            <option value="student">Student</option>
+            <option value="office_worker">Office Worker</option>
+            <option value="field_work">Field Work</option>
+            <option value="athlete">Athlete</option>
+            <option value="other">Other</option>
+          </select>
+
+          <p class="section-label">Work Schedule</p>
+          <select class="auth-input auth-select" id="settings-schedule" style="width:100%; margin-bottom:14px;">
+            <option value="morning">Morning</option>
+            <option value="afternoon">Afternoon</option>
+            <option value="evening">Evening</option>
+            <option value="night_shift">Night Shift</option>
+          </select>
+
+          <p class="section-label">Training Days Per Week</p>
+          <select class="auth-input auth-select" id="settings-training-days" style="width:100%; margin-bottom:14px;">
+            <option value="2">2 Days</option>
+            <option value="3">3 Days</option>
+            <option value="4">4 Days</option>
+            <option value="5">5 Days</option>
+            <option value="6">6 Days</option>
+            <option value="7">7 Days</option>
+          </select>
+
+          <p class="section-label">Cooking Ability</p>
+          <select class="auth-input auth-select" id="settings-cooking" style="width:100%; margin-bottom:14px;">
+            <option value="cannot_cook">Cannot Cook</option>
+            <option value="basic">Basic Cooking</option>
+            <option value="comfortable">Comfortable Cooking</option>
+          </select>
+
+          <p class="section-label">Eating Habits</p>
+          <select class="auth-input auth-select" id="settings-eating" style="width:100%; margin-bottom:14px;">
+            <option value="normal">Normal</option>
+            <option value="skip_meals">Skip Meals</option>
+            <option value="late_night">Late Night Eating</option>
+            <option value="emotional">Emotional Eating</option>
+            <option value="snacking">Frequent Snacking</option>
+          </select>
+
+          <p class="section-label">Primary Muscle Focus</p>
+          <select class="auth-input auth-select" id="settings-muscle-primary" style="width:100%; margin-bottom:14px;">
+            <option value="chest">Chest</option>
+            <option value="back">Back</option>
+            <option value="shoulders">Shoulders</option>
+            <option value="arms">Arms</option>
+            <option value="legs">Legs</option>
+            <option value="core">Core</option>
+            <option value="fullbody">Full Body</option>
+          </select>
+
+          <p class="section-label">Secondary Muscle Focus</p>
+          <select class="auth-input auth-select" id="settings-muscle-secondary" style="width:100%; margin-bottom:14px;">
+            <option value="chest">Chest</option>
+            <option value="back">Back</option>
+            <option value="shoulders">Shoulders</option>
+            <option value="arms">Arms</option>
+            <option value="legs">Legs</option>
+            <option value="core">Core</option>
+            <option value="fullbody">Full Body</option>
           </select>
 
           <p class="section-label">Accountability Preferences</p>
