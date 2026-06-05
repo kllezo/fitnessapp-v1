@@ -58,6 +58,7 @@ Track the progress of restructuring and features development:
   - [x] Perform responsive pass (320px, 375px, 390px, 430px widths) with zero horizontal scrolling.
   - [x] Add dynamic friends comparison leaderboard chart/graph at the top of Friends sub-tab with index-based multi-color gradient bars.
   - [x] Eliminate hidden states (show demo comparison graphs, show "No history yet.", and show onboarding partner match card when data is null).
+  - [x] Add global CSS display utility rules for `.hidden` to fix sub-panel layouts stacking.
 - [ ] **12. Future AI & Recovery Integrations**
   - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
   - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.
@@ -66,4 +67,4 @@ Track the progress of restructuring and features development:
 
 [SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
-[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, layout alignment fixes, and hidden state removals.
+[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, layout alignment fixes, hidden state removals, and global CSS display fixes.

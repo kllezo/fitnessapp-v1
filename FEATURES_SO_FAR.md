@@ -323,6 +323,7 @@ High-fidelity premium components and responsive systems verified working:
 - [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends with index-based multi-color gradient bars, falling back to a mock demo graph when friends count is zero.
 - [x] **4. Find Partner Tab State Polish**: Allowed viewing the Find Partner tab when matched by displaying the "Active Partnership Exists" card and hiding search preferences.
 - [x] **5. Remove Hidden States**: Enforced that Friends graph renders demo comparisons when empty, Friend History defaults to "No history yet.", and Partner Tab shows the find partner onboarding card instead of blank empty states.
+- [x] **6. Global CSS Hidden Fix**: Added a global `.hidden { display: none !important; }` rule to `app.css` to fix sub-tab panels overlapping and prevent multiple layouts stacking simultaneously.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 

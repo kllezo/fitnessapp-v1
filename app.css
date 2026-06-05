@@ -59,6 +59,10 @@ html, body {
 
 input { user-select: text; }
 
+.hidden {
+  display: none !important;
+}
+
 /* ── Desktop Ambient ── */
 body::before, body::after {
   content: '';
