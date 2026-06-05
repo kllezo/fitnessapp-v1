@@ -61,7 +61,9 @@ Track the progress of restructuring and features development:
   - [x] Add global CSS display utility rules for `.hidden` to fix sub-panel layouts stacking.
 - [x] **12. P0 Authentication Blocker Fix**
   - [x] Resolve pointer-events leak from `.ob-step.active` and `.ci-wheel-card` elements by scoping `pointer-events: auto` strictly to `.screen.active`.
-- [ ] **13. Future AI & Recovery Integrations**
+- [x] **13. Premium Navigation Icons Restoration**
+  - [x] Restore custom premium stroke-based SVGs for Home, Train, Diet, Recovery, and Socials to match AURA visual language.
+- [ ] **14. Future AI & Recovery Integrations**
   - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
   - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.
 

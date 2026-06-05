@@ -39,6 +39,7 @@ The app uses a layout navigation controller displaying a active screen overlay a
 - Fallback mock data and onboarding layout routing to prevent hidden states when local state variables are empty.
 - Global CSS display utility classes to handle screen and panel toggles cleanly.
 - Strict pointer-events isolation: descendant elements that utilize `pointer-events: auto` are scoped strictly under `.screen.active` to prevent invisible overlay steps and cards from stealing user inputs or block event loops on other screens.
+- Premium design aesthetics: Navigation bar features custom, geometric stroke-based SVGs specifically designed to align with AURA's futuristic visual branding (e.g. barbell structure for Train, pulse activity for Recovery, overlapping paths for Socials).
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 

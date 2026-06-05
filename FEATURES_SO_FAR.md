@@ -110,6 +110,7 @@ High-fidelity premium components and responsive systems verified working:
 - **Friend Flow & Chat Overlay**: Updated clicking friends to open the Chat view directly, and clicking the chat username header to view their profile scorecard.
 - **Automated History Logging**: Set up automatic logging for friend additions/removals, accepted/declined requests, and starting/ending accountability partnerships.
 - **Authentication Pointer-Events Blocker Fix**: Scoped `.ob-step.active` and `.ci-wheel-card.active` / `.prev` / `.next` pointer-events to only enable `pointer-events: auto` when their parent screen is `.screen.active`, resolving an issue where invisible overlays intercepted click and key events, completely blocking input and button interactions on the login screen.
+- **Premium Navigation Icons Restoration**: Restored the high-fidelity AURA visual language by replacing generic material icons with custom, geometric stroke-based SVGs for Home, Train, Diet, Recovery, and Socials buttons, fully matching the signature neon/violet aesthetics and active state animation triggers.
 
 ## 3. COMPLETED REFINEMENTS & UX ENHANCEMENTS
 
