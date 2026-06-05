@@ -1232,9 +1232,9 @@
               <div class="rest-info">
                 <p class="rest-title">Rest Timer</p>
                 <div class="rest-selectors" id="rest-selectors">
-                  <button class="rest-sel-btn active" data-secs="60">60s</button>
                   <button class="rest-sel-btn" data-secs="30">30s</button>
                   <button class="rest-sel-btn" data-secs="45">45s</button>
+                  <button class="rest-sel-btn active" data-secs="60">60s</button>
                   <button class="rest-sel-btn" data-secs="90">90s</button>
                   <button class="rest-sel-btn" data-secs="120">120s</button>
                 </div>
@@ -1243,7 +1243,7 @@
             </div>
 
             <!-- Session Controls -->
-            <div class="session-controls" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="session-controls">
               <div class="sc-item">
                 <label class="sc-label">Weight (kg)</label>
                 <div class="sc-dual">
@@ -1706,6 +1706,14 @@
 
           <!-- PANEL 3: FRIENDS -->
           <div class="social-panel hidden" id="panel-friends">
+            <!-- Friend Comparison Graph Section -->
+            <div id="friends-graph-section" style="margin-bottom:16px; background:var(--surface-2); border:1px solid var(--border); border-radius:24px; padding:16px;">
+              <p style="font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px; color:var(--text-1);">Discipline & Streak Leaderboard</p>
+              <div id="friends-comparison-graph" style="display:flex; align-items:flex-end; justify-content:space-around; gap:12px; height:120px; padding:10px 4px 4px;">
+                <!-- JS dynamically renders comparison bars -->
+              </div>
+            </div>
+
             <!-- Pending Requests Section (hidden by default) -->
             <div id="friend-requests-section" style="margin-bottom:16px;" class="hidden">
               <p class="section-label" style="margin-bottom:8px;">Pending Requests</p>

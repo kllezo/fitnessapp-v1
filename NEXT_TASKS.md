@@ -51,10 +51,18 @@ Track the progress of restructuring and features development:
   - [x] Remove global difficulty slider and text controls completely.
   - [x] Resolve rest timer selector highlights and driving countdown.
   - [x] Resolve set checklist double-toggling and independent selection states.
-- [ ] **11. Future AI & Recovery Integrations**
+- [x] **11. UI Layout & Slider Alignment Pass**
+  - [x] Fix Weight & Reps slider knobs extending outside container/viewport bounds.
+  - [x] Reorder rest timer selector buttons to logical ascending order (30s, 45s, 60s, 90s, 120s).
+  - [x] Center and contain rest start button inside card bounds.
+  - [x] Perform responsive pass (320px, 375px, 390px, 430px widths) with zero horizontal scrolling.
+  - [x] Add dynamic friends comparison leaderboard chart/graph at the top of Friends sub-tab.
+- [ ] **12. Future AI & Recovery Integrations**
   - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
   - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.
 
-[SYSTEM] Fixed App Startup crash caused by duplicate variable declarations of findCard and pendingCard inside renderSocialsUI.
+[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
-[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, and automated history logging.
+[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
+
+[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, and layout alignment fixes.

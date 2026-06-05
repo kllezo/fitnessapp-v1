@@ -317,11 +317,14 @@ High-fidelity premium components and responsive systems verified working:
 - **Consistency Protection Shield**: Prunes workout duration to 10-20 min options or recovery flows upon detecting missed workouts, preserving psychological momentum without imposing guilt.
 - **Modular Nutrition Architecture**: Split engine into distinct decoupled components (`nutritionEngine`, `foodSwapEngine`, `groceryEngine`) that interface through structured JSON models, ensuring seamless future LLM plug-in capabilities.
 
+### AURA — UX RESTRUCTURE & UI ALIGNMENT PASS (JUNE 2026)
+- [x] **1. Weight & Reps Slider Overflow Fix**: Configured responsive CSS grid and 10px slider margins to prevent range handles from overflowing or clipping on mobile viewports.
+- [x] **2. Rest Timer Layout Fix**: Reordered rest selector timer buttons logically (30s, 45s, 60s, 90s, 120s) and styled start action button to be vertically centered and fully contained.
+- [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends.
+- [x] **4. Find Partner Tab State Polish**: Allowed viewing the Find Partner tab when matched by displaying the "Active Partnership Exists" card and hiding search preferences.
 
+[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
+[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
-
-
-
-
-\n\n[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.\n\n\n[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).\n
+[SYSTEM] Completed AURA Socials & Workout UX Restructure (UI Layout & Slider Alignment Fix Pass).

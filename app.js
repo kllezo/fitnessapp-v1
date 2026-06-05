@@ -4727,13 +4727,58 @@ function renderFriendsUI() {
   listEl.innerHTML = '';
   
   const friends = state.auth.friends || [];
+  const graphSection = el('friends-graph-section');
+  const graphEl = el('friends-comparison-graph');
+  
   if (friends.length === 0) {
+    if (graphSection) graphSection.classList.add('hidden');
     listEl.innerHTML = `
       <div style="text-align:center; padding:30px 10px; opacity:0.5;">
         <span style="font-size:24px; display:block; margin-bottom:8px;">👥</span>
         <p style="font-size:12px; color:var(--text-3);">Your friend circle is empty. Add friends using the button above.</p>
       </div>`;
+    renderFriendRequestsUI();
+    renderFriendHistoryUI();
     return;
+  }
+  
+  if (graphSection) graphSection.classList.remove('hidden');
+  if (graphEl) {
+    const userScore = calculateDisciplineScore() || 85;
+    const userStreak = calculateStreak() || 4;
+    const userName = (state.auth.user ? state.auth.user.name : 'You');
+    const userInitials = userName.substring(0, 2).toUpperCase();
+    const comparisonList = [
+      { name: 'You', initials: userInitials, score: userScore, streak: userStreak, isSelf: true }
+    ];
+    friends.forEach(f => {
+      comparisonList.push({
+        name: f.name,
+        initials: (f.avatarInitials || f.name).substring(0, 2).toUpperCase(),
+        score: f.disciplineScore || 80,
+        streak: f.streak || 0,
+        isSelf: false
+      });
+    });
+    // Sort by score descending
+    comparisonList.sort((a, b) => b.score - a.score);
+
+    graphEl.innerHTML = comparisonList.map(item => {
+      const heightPercent = Math.max(20, Math.min(100, item.score)); // cap height
+      const barBg = item.isSelf 
+        ? 'linear-gradient(to top, var(--violet), var(--accent))' 
+        : 'linear-gradient(to top, var(--surface-3), rgba(139,92,246,0.25))';
+      const scoreColor = item.isSelf ? 'var(--accent)' : 'var(--text-2)';
+      const borderStyle = item.isSelf ? 'border: 1px solid var(--accent);' : 'border: 1px solid var(--border);';
+      return `
+        <div style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; height:100%; justify-content:flex-end;">
+          <span style="font-size:9px; font-weight:800; color:${scoreColor}; margin-bottom:4px;">${item.score}</span>
+          <div style="width:100%; max-width:28px; height:${heightPercent}%; background:${barBg}; ${borderStyle} border-radius:6px 6px 0 0; transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+          <span style="font-size:9.5px; font-weight:700; color:var(--text-1); margin-top:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${item.name === 'You' ? 'You' : item.initials}</span>
+          <span style="font-size:8px; font-weight:700; color:#fb923c; margin-top:1px;">${item.streak}🔥</span>
+        </div>
+      `;
+    }).join('');
   }
   
   // Group friends by category
@@ -5030,12 +5075,6 @@ function renderSocialsUI() {
   
   if (partner) {
     // State 4: Matched
-    const activeTabBtn = document.querySelector('.sub-tab-btn.active');
-    const activeTab = activeTabBtn ? activeTabBtn.dataset.tab : '';
-    if (activeTab === 'find-partner' || activeTab === '') {
-      switchSocialTab('partner');
-    }
-    
     if (statusText) {
       statusText.textContent = `Matched with ${partner.name}`;
       statusText.style.color = 'var(--mint)';

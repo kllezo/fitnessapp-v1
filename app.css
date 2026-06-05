@@ -1627,9 +1627,39 @@ body::after {
   cursor: pointer;
   transition: all var(--dur-fast) ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .rest-action-btn:active { transform: scale(0.93); }
 .rest-action-btn.running { background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); color: var(--rose); }
+
+/* Responsive adjustments for Rest Timer */
+@media (max-width: 400px) {
+  .rest-timer-row {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .rest-selectors {
+    gap: 3px !important;
+  }
+  .rest-sel-btn {
+    padding: 3px 5px !important;
+    font-size: 8px !important;
+    border-radius: 4px !important;
+  }
+  .rest-action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 350px) {
+  .rest-timer-row {
+    padding: 8px 10px;
+  }
+  .rest-selectors {
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+  }
+}
 
 /* Session Controls */
 .session-controls {
@@ -1637,10 +1667,16 @@ body::after {
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
   margin-bottom: 16px;
+}
+@media (max-width: 380px) {
+  .session-controls {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 .sc-item { display: flex; flex-direction: column; gap: 8px; }
 .sc-label { font-size: 11px; font-weight: 600; color: var(--text-2); font-family: var(--font-2); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -1666,6 +1702,7 @@ body::after {
   background: rgba(255,255,255,0.08);
   border-radius: 4px;
   outline: none;
+  margin: 0 10px; /* add horizontal margin to accommodate knob overflow */
 }
 .sc-slider::-webkit-slider-thumb {
   -webkit-appearance: none;

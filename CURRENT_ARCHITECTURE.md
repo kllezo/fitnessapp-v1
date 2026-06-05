@@ -35,8 +35,10 @@ The app uses a layout navigation controller displaying a active screen overlay a
 - Responsive phone chassis wrapper containing Simulated iPhone notches, gesture pills, and system headers.
 - Gesture-dismissible sheets using touch velocity vector math.
 - Backdrop blurred warning overlays for safe reset flows.
-\n\n[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.\n\n\n[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
+- Responsive CSS Grid layouts for training sheet options with custom viewport media queries down to 320px preventing widget clipping.
 
-[SYSTEM] Fixed App Startup crash caused by duplicate variable declarations of findCard and pendingCard inside renderSocialsUI.
+[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
-[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, and automated history logging.\n
+[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
+
+[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, and layout alignment fixes.
