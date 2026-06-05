@@ -542,6 +542,9 @@ body::after {
 .ob-step.active {
   opacity: 1;
   transform: translateX(0);
+  pointer-events: none;
+}
+.screen.active .ob-step.active {
   pointer-events: auto;
 }
 .ob-step.exit-left {
@@ -958,8 +961,11 @@ body::after {
   opacity: 1;
   transform: scale(1.05) translateZ(0);
   filter: blur(0);
-  pointer-events: auto;
+  pointer-events: none;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05), 0 0 20px var(--accent-glow);
+}
+.screen.active .ci-wheel-card.active {
+  pointer-events: auto;
 }
 
 .ci-wheel-card.prev,
@@ -969,6 +975,10 @@ body::after {
   opacity: 0.45;
   transform: scale(0.82) translateZ(-10px);
   filter: blur(1.5px);
+  pointer-events: none;
+}
+.screen.active .ci-wheel-card.prev,
+.screen.active .ci-wheel-card.next {
   pointer-events: auto;
 }
 
@@ -1007,6 +1017,10 @@ body::after {
 .ci-wheel-card.active .ci-scale-hint,
 .ci-wheel-card.active .ci-emoji-row {
   opacity: 1;
+  pointer-events: none;
+}
+.screen.active .ci-wheel-card.active .ci-scale-hint,
+.screen.active .ci-wheel-card.active .ci-emoji-row {
   pointer-events: auto;
 }
 

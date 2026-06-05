@@ -59,7 +59,9 @@ Track the progress of restructuring and features development:
   - [x] Add dynamic friends comparison leaderboard chart/graph at the top of Friends sub-tab with index-based multi-color gradient bars.
   - [x] Eliminate hidden states (show demo comparison graphs, show "No history yet.", and show onboarding partner match card when data is null).
   - [x] Add global CSS display utility rules for `.hidden` to fix sub-panel layouts stacking.
-- [ ] **12. Future AI & Recovery Integrations**
+- [x] **12. P0 Authentication Blocker Fix**
+  - [x] Resolve pointer-events leak from `.ob-step.active` and `.ci-wheel-card` elements by scoping `pointer-events: auto` strictly to `.screen.active`.
+- [ ] **13. Future AI & Recovery Integrations**
   - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
   - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.
 
