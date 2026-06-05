@@ -320,8 +320,9 @@ High-fidelity premium components and responsive systems verified working:
 ### AURA — UX RESTRUCTURE & UI ALIGNMENT PASS (JUNE 2026)
 - [x] **1. Weight & Reps Slider Overflow Fix**: Stacked inputs and range sliders vertically by default for mobile viewports, applying 12px slider margin guides so knobs never touch container edges or clip.
 - [x] **2. Rest Timer Layout Fix**: Removed "45s" option, leaving (30s, 60s, 90s, 120s), and styled the start button with responsive layout and flex constraints to remain inside the card.
-- [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends with index-based multi-color gradient bars.
+- [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends with index-based multi-color gradient bars, falling back to a mock demo graph when friends count is zero.
 - [x] **4. Find Partner Tab State Polish**: Allowed viewing the Find Partner tab when matched by displaying the "Active Partnership Exists" card and hiding search preferences.
+- [x] **5. Remove Hidden States**: Enforced that Friends graph renders demo comparisons when empty, Friend History defaults to "No history yet.", and Partner Tab shows the find partner onboarding card instead of blank empty states.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 

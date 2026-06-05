@@ -36,9 +36,10 @@ The app uses a layout navigation controller displaying a active screen overlay a
 - Gesture-dismissible sheets using touch velocity vector math.
 - Backdrop blurred warning overlays for safe reset flows.
 - Responsive vertical stacked layouts for training sheet options with custom viewport media queries down to 320px preventing widget clipping.
+- Fallback mock data and onboarding layout routing to prevent hidden states when local state variables are empty.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
 [SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
-[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, and layout alignment fixes.
+[SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, layout alignment fixes, and hidden state removals.

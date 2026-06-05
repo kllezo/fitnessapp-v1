@@ -4587,11 +4587,22 @@ function renderPartnerTabUI() {
   const partner = state.auth.partner;
   if (!partner) {
     container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; opacity:0.6;">
+      <div class="find-partner-card" id="partner-tab-onboarding-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:24px; padding:20px; text-align:center; margin-bottom:16px;">
         <span style="font-size:36px; display:block; margin-bottom:12px;">🤝</span>
-        <p style="font-size:14px; font-weight:700; color:var(--text-1);">No Active Partner</p>
-        <p style="font-size:12px; color:var(--text-3); margin-top:4px; line-height:1.45;">Match with an accountability partner in the "Find Partner" tab to start your shared journey.</p>
-      </div>`;
+        <p style="font-size:15px; font-weight:800; color:var(--text-1); margin:0;">Find an Accountability Partner</p>
+        <p style="font-size:12px; color:var(--text-3); margin-top:6px; line-height:1.45;">We match you based on discipline score, goals, schedule, and lifestyle compatibility. Not random. Not instant.</p>
+        <button class="primary-btn" id="partner-tab-find-btn" style="margin-top:16px; font-size:13px; width:100%;">Find My Match →</button>
+      </div>
+    `;
+    const pBtn = container.querySelector('#partner-tab-find-btn');
+    if (pBtn) {
+      pBtn.addEventListener('click', () => {
+        playSound('tap');
+        switchSocialTab('find-partner');
+        // trigger click on find-partner-btn
+        el('find-partner-btn')?.click();
+      });
+    }
     return;
   }
   
@@ -4730,8 +4741,65 @@ function renderFriendsUI() {
   const graphSection = el('friends-graph-section');
   const graphEl = el('friends-comparison-graph');
   
+  // Always make graph section visible and render leaderboard
+  if (graphSection) graphSection.classList.remove('hidden');
+  if (graphEl) {
+    const userScore = calculateDisciplineScore() || 85;
+    const userStreak = calculateStreak() || 4;
+    const userName = (state.auth.user ? state.auth.user.name : 'You');
+    const userInitials = userName.substring(0, 2).toUpperCase();
+    const comparisonList = [
+      { name: 'You', initials: userInitials, score: userScore, streak: userStreak, isSelf: true }
+    ];
+    
+    if (friends.length === 0) {
+      // Add demo friends for comparison when user has no friends
+      comparisonList.push(
+        { name: 'Arjun (Gym)', initials: 'AJ', score: 90, streak: 12, isSelf: false },
+        { name: 'Neha (Spouse)', initials: 'NH', score: 92, streak: 15, isSelf: false },
+        { name: 'Ravi (Buddy)', initials: 'RV', score: 80, streak: 8, isSelf: false }
+      );
+    } else {
+      friends.forEach(f => {
+        comparisonList.push({
+          name: f.name,
+          initials: (f.avatarInitials || f.name).substring(0, 2).toUpperCase(),
+          score: f.disciplineScore || 80,
+          streak: f.streak || 0,
+          isSelf: false
+        });
+      });
+    }
+    
+    // Sort by score descending
+    comparisonList.sort((a, b) => b.score - a.score);
+
+    const colors = [
+      'linear-gradient(to top, rgba(52,211,153,0.25), var(--mint))',
+      'linear-gradient(to top, rgba(251,146,60,0.25), #fb923c)',
+      'linear-gradient(to top, rgba(14,165,233,0.25), #0ea5e9)',
+      'linear-gradient(to top, rgba(244,63,94,0.25), var(--rose))'
+    ];
+
+    graphEl.innerHTML = comparisonList.map((item, idx) => {
+      const heightPercent = Math.max(20, Math.min(100, item.score)); // cap height
+      const barBg = item.isSelf 
+        ? 'linear-gradient(to top, var(--violet), var(--accent))' 
+        : colors[idx % colors.length];
+      const scoreColor = item.isSelf ? 'var(--accent)' : 'var(--text-2)';
+      const borderStyle = item.isSelf ? 'border: 1px solid var(--accent);' : 'border: 1px solid var(--border);';
+      return `
+        <div style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; height:100%; justify-content:flex-end;">
+          <span style="font-size:9px; font-weight:800; color:${scoreColor}; margin-bottom:4px;">${item.score}</span>
+          <div style="width:100%; max-width:28px; height:${heightPercent}%; background:${barBg}; ${borderStyle} border-radius:6px 6px 0 0; transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+          <span style="font-size:9.5px; font-weight:700; color:var(--text-1); margin-top:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${item.name === 'You' ? 'You' : item.initials}</span>
+          <span style="font-size:8px; font-weight:700; color:#fb923c; margin-top:1px;">${item.streak}🔥</span>
+        </div>
+      `;
+    }).join('');
+  }
+  
   if (friends.length === 0) {
-    if (graphSection) graphSection.classList.add('hidden');
     listEl.innerHTML = `
       <div style="text-align:center; padding:30px 10px; opacity:0.5;">
         <span style="font-size:24px; display:block; margin-bottom:8px;">👥</span>
@@ -4908,7 +4976,7 @@ function renderFriendHistoryUI() {
   
   const history = state.auth.friendHistory || [];
   if (history.length === 0) {
-    listEl.innerHTML = `<p style="font-size:11px; color:var(--text-3); text-align:center; padding:10px 0;">No history logged yet.</p>`;
+    listEl.innerHTML = `<p style="font-size:11px; color:var(--text-3); text-align:center; padding:10px 0;">No history yet.</p>`;
     return;
   }
   
