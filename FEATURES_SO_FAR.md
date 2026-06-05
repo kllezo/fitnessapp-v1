@@ -371,3 +371,27 @@ High-fidelity premium components and responsive systems verified working:
 - **Progressive Disclosure**: Weekly review and habit cards only appear (`display:block`) after `onEnterDashboard` runs — invisible to users who haven't synced.
 
 [SYSTEM] Completed Phase 4 AI Insights Hub & Accountability V2 (Weekly Coach, Habit Patterns, Partner Starters).
+
+---
+
+## 11. AURA PHASE 5 — RECOVERY INTELLIGENCE V2 & PR FEED (COMPLETED)
+
+### RECOVERY INTELLIGENCE PANEL (Recovery Tab)
+- [x] **insightsEngine.calculateRecoveryScore**: 7-day readiness average blended with today's sleep bonus (+/-8) and soreness bonus (+/-6). Score 0-100 with Recovered/Stable/Depleted label.
+- [x] **insightsEngine.calculateRecoveryStreak**: Consecutive days with readiness ≥ 60 from workout history.
+- [x] **insightsEngine.getReadinessTrend**: 7-day sparkline data array (value + isToday flag) keyed to calendar dates.
+- [x] **insightsEngine.calculateSleepDebt**: Maps check-in sleep score (1-5) → estimated hours, accumulates deficit vs 8h target over 7 days. Status: Low/Moderate/Critical.
+- [x] **Recovery Intelligence Card**: 3-metric grid (Rec. Score, Rec. Streak, Sleep Debt) + bar sparkline with day labels and color coding (mint=high, violet=mid, rose=low). Green border gradient card below recovery insights.
+
+### PERSONAL RECORDS FEED (Home Dashboard)
+- [x] **insightsEngine.extractPRFeed**: Scans all workout history for max weight per exercise, returns top-5 sorted by weight with date and reps.
+- [x] **PR Feed Card**: Amber-bordered card with medal ranking (🥇🥈🥉🏅), exercise name, reps, date, and weight in gold. Fallback "Log workouts to track PRs" state.
+- [x] **Placement**: On Home dashboard below Habit Patterns, above Today's Session. Rendered on `onEnterDashboard` and pre-populated on `onEnterWorkout`.
+
+### ARCHITECTURE DECISIONS
+- **Phase 5 engine methods**: All added to existing `insightsEngine` as new methods — zero new global objects.
+- **Graceful fallback**: Recovery panel shows `—` for score/streak if no check-in data. PR feed shows empty-state card if no history.
+- **Sparkline**: Pure CSS bar chart (no canvas) — deterministic height from (value/100) × 36px, rendered as flex column with day labels below.
+- **Sleep debt heuristic**: Maps 1-5 check-in score to 4.5/5.5/6.5/7.5/8.5 estimated hours. Total debt shown in hours with status tag.
+
+[SYSTEM] Completed Phase 5 Recovery Intelligence V2 & Personal Records Feed.

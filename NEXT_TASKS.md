@@ -89,3 +89,8 @@ Track the progress of restructuring and features development:
   - Weekly AI Coach Review card rendered on Home dashboard with star rating, coach message, strengths & focus grid.
   - Habit Pattern Detection card on Home dashboard — 14-day signal analysis across training, sleep, hydration, stress.
   - Context-aware Conversation Starters in Partner tab — 3 tappable pills that pre-fill chat input on tap.
+
+[SYSTEM] Completed Phase 5 Recovery Intelligence V2 & PR Feed:
+  - insightsEngine extended: calculateRecoveryScore, calculateRecoveryStreak, getReadinessTrend, calculateSleepDebt, extractPRFeed.
+  - Recovery Intelligence panel on Recovery tab: 3-metric grid (Score, Streak, Sleep Debt) + 7-day readiness sparkline.
+  - Personal Records feed on Home dashboard: top-5 all-time PRs with medal ranking, exercise name, weight, reps, date.

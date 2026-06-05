@@ -17,7 +17,7 @@ To facilitate scalable future integration with LLM endpoints, the business logic
 - `nutritionEngine`: Filters high-protein regional recipes matching stay type, diet preference, and budget ceiling.
 - `foodSwapEngine`: Computes protein/caloric preservation ratios to suggest alternative ingredient swaps.
 - `groceryEngine`: Extrapolates meal plans into structured checklists and weekly cost estimation brackets.
-- `insightsEngine` *(Phase 4)*: Generates weekly coach review (star rating, strengths, focus, coach message), detects 14-day habit patterns (training/sleep/hydration/stress/momentum), and produces deterministic context-aware conversation starters for accountability partners.
+- `insightsEngine` *(Phase 4 & 5)*: Weekly coach review, 14-day habit pattern detection, accountability conversation starters; Recovery Score, Recovery Streak, 7-day readiness sparkline, Sleep Debt tracker, All-time PR feed.
 
 ## 3. Socials & Accountability Architecture
 - **Tab Hierarchy**: The Socials screen splits into three panels: `Find Partner`, `Partner`, and `Friends`.
@@ -51,3 +51,5 @@ The app uses a layout navigation controller displaying a active screen overlay a
 [SYSTEM] Completed Socials & Workout Cleanup Pass (Inbox button removed, Flat Friends list rendered directly below Add Friend, Relocated privacy toggles, reset actions, and friend history list to Profile Settings, added light/dark theme class toggling, and removed global weight/reps sliders in favor of set-level inputs with null guards).
 
 [SYSTEM] Completed Phase 4 AI Insights Hub & Accountability V2 (insightsEngine added, Weekly Coach Review card, Habit Pattern Detection card, Partner Conversation Starters with chat prefill).
+
+[SYSTEM] Completed Phase 5 Recovery Intelligence V2 & PR Feed (calculateRecoveryScore, calculateRecoveryStreak, getReadinessTrend, calculateSleepDebt, extractPRFeed — Recovery Intelligence panel on Recovery tab, PR Feed on Home dashboard).
