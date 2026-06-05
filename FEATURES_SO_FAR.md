@@ -339,3 +339,35 @@ High-fidelity premium components and responsive systems verified working:
 [SYSTEM] Completed AURA Socials & Workout UX Restructure (UI Layout & Slider Alignment Fix Pass).
 
 [SYSTEM] Completed Socials & Workout Cleanup Pass (Inbox removed, Flat list, Relocations, Global sliders removed).
+
+---
+
+## 10. AURA AI PHASE 4 — INSIGHTS HUB & ACCOUNTABILITY V2 (COMPLETED)
+
+### WEEKLY AI COACH REVIEW (Home Dashboard)
+- [x] **insightsEngine.generateWeeklyReview**: Analyzes last 7 days of workout history, check-in answers, and readiness to produce a structured weekly review object.
+- [x] **Star Rating (1–5)**: Computed from workout consistency % and avg set completion rate.
+- [x] **Strengths Panel**: Up to 2 dynamically selected strengths (consistency, energy, sleep, volume).
+- [x] **Focus Areas Panel**: Up to 2 adaptive improvement targets based on gaps in sleep, frequency, stress, or readiness.
+- [x] **Coach Message**: 5-message deterministic rotation keyed to logged days × star rating — personal, identity-based coaching copy.
+- [x] **Dashboard Card**: Premium gradient card with violet border, rendered on every Home tab entry below the Engine Insights accordion.
+
+### HABIT PATTERN DETECTION (Home Dashboard)
+- [x] **insightsEngine.detectHabitPatterns**: Scans 14-day history for training cadence, sleep, hydration, stress, and momentum patterns.
+- [x] **2×2 Pill Grid**: Up to 4 pattern signals rendered as color-coded cards (green=positive, red=warning, amber=neutral).
+- [x] **Pattern Types**: Training cadence (Elite/Steady/Gap), Sleep quality, Hydration mastery/deficit, Mental state, Momentum (accelerating/declining).
+- [x] **Live Data**: Connects to `state.workout.history`, `state.checkIn.answers`, and `state.nutrition` — zero static data.
+
+### ACCOUNTABILITY CONVERSATION STARTERS (Partner Tab)
+- [x] **insightsEngine.generateConversationStarters**: Generates 3 contextual starter messages using partner name, current readiness, streak, and goal label.
+- [x] **Quick Starters Section**: Injected into the active partner card above the action buttons — `Tap to send →` label, violet border, pill layout.
+- [x] **Tap Interaction**: Highlights pill with violet flash, copies message to clipboard, opens chat with pre-filled input.
+- [x] **openChatWithUser Upgrade**: Accepts optional `prefillMsg` parameter — auto-populates the chat textarea and focuses it.
+
+### ARCHITECTURE DECISIONS
+- **Deterministic Rotation**: Coach messages and starters rotate by `(loggedDays × 3 + stars) % N` — no randomness, consistent across reloads.
+- **Zero State Mutation**: insightsEngine reads only from existing state slices — no new state keys added.
+- **Graceful Empty State**: All three functions return empty arrays/fallbacks if history or check-in data is absent.
+- **Progressive Disclosure**: Weekly review and habit cards only appear (`display:block`) after `onEnterDashboard` runs — invisible to users who haven't synced.
+
+[SYSTEM] Completed Phase 4 AI Insights Hub & Accountability V2 (Weekly Coach, Habit Patterns, Partner Starters).

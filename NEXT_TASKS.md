@@ -63,9 +63,12 @@ Track the progress of restructuring and features development:
   - [x] Resolve pointer-events leak from `.ob-step.active` and `.ci-wheel-card` elements by scoping `pointer-events: auto` strictly to `.screen.active`.
 - [x] **13. Premium Navigation Icons Restoration**
   - [x] Restore custom premium stroke-based SVGs for Home, Train, Diet, Recovery, and Socials to match AURA visual language.
-- [ ] **14. Future AI & Recovery Integrations**
-  - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
-  - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.
+- [x] **14. AI Insights Hub & Accountability V2 (Phase 4)**
+  - [x] Add `insightsEngine` with `generateWeeklyReview`, `detectHabitPatterns`, `generateConversationStarters`.
+  - [x] Weekly AI Coach Review card on Home dashboard — star rating (1–5), strengths, focus areas, coach message.
+  - [x] Habit Pattern Detection card on Home dashboard — 2×2 grid of 14-day pattern signals (training cadence, sleep, hydration, stress, momentum).
+  - [x] Context-aware Conversation Starters injected into Partner tab — 3 dynamically generated, tappable pills that pre-fill chat input.
+  - [x] `openChatWithUser` updated to accept optional pre-fill message.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
@@ -78,4 +81,11 @@ Track the progress of restructuring and features development:
   - Flattened Friends List below Add Friend CTA.
   - Relocated Friend History, Privacy & Matching, and Reset actions to Profile Settings.
   - Added Dark / Light mode toggle inside Profile Settings.
+  - Added Dark / Light mode toggle inside Profile Settings.
   - Removed global weight/reps sliders from exercise sheet.
+
+[SYSTEM] Completed Phase 4 AI Insights Hub & Accountability V2:
+  - insightsEngine added (generateWeeklyReview, detectHabitPatterns, generateConversationStarters).
+  - Weekly AI Coach Review card rendered on Home dashboard with star rating, coach message, strengths & focus grid.
+  - Habit Pattern Detection card on Home dashboard — 14-day signal analysis across training, sleep, hydration, stress.
+  - Context-aware Conversation Starters in Partner tab — 3 tappable pills that pre-fill chat input on tap.
