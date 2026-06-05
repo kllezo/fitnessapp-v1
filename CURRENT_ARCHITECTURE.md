@@ -44,3 +44,5 @@ The app uses a layout navigation controller displaying a active screen overlay a
 [SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
 [SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, layout alignment fixes, hidden state removals, and global CSS display fixes.
+
+[SYSTEM] Completed Socials & Workout Cleanup Pass (Inbox button removed, Flat Friends list rendered directly below Add Friend, Relocated privacy toggles, reset actions, and friend history list to Profile Settings, added light/dark theme class toggling, and removed global weight/reps sliders in favor of set-level inputs with null guards).

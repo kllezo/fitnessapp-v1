@@ -503,22 +503,25 @@ const intelligenceEngine = {
   },
 
   calculateProteinGoal(weight, bodyType, goalBodyType, budget) {
-    let proteinFactor = 1.8;
-    if (bodyType === 'skinny') proteinFactor = 2.0;
-    else if (bodyType === 'average') proteinFactor = 1.8;
-    else if (bodyType === 'athletic') proteinFactor = 2.0;
-    else if (bodyType === 'overweight') proteinFactor = 1.6;
+    // Goal-based multipliers per spec:
+    // Maintenance: 1.6g/kg | Muscle Gain: 1.8–2.2g/kg | Fat Loss: 1.8–2.4g/kg
+    let proteinFactor = 1.6; // default maintenance
+    const goal = goalBodyType || '';
+    if (goal === 'muscular') proteinFactor = 2.0;
+    else if (goal === 'lean') proteinFactor = 2.0;
+    else if (goal === 'weight_loss') proteinFactor = 2.1;
+    else if (goal === 'performance') proteinFactor = 1.9;
+    else if (goal === 'athletic') proteinFactor = 1.8;
 
-    if (goalBodyType === 'muscular') proteinFactor += 0.2;
-    else if (goalBodyType === 'lean') proteinFactor += 0.2;
-    else if (goalBodyType === 'weight_loss') proteinFactor += 0.1;
-    else if (goalBodyType === 'performance') proteinFactor += 0.1;
+    // Body type modifier
+    if (bodyType === 'skinny') proteinFactor = Math.min(proteinFactor + 0.2, 2.4);
+    else if (bodyType === 'overweight') proteinFactor = Math.max(proteinFactor, 1.8);
 
     let targetProt = Math.round(weight * proteinFactor);
     if (budget === 'low') {
-      targetProt = Math.min(targetProt, 115);
+      targetProt = Math.min(targetProt, 120);
     } else if (budget === 'medium') {
-      targetProt = Math.min(targetProt, 135);
+      targetProt = Math.min(targetProt, 150);
     }
     return targetProt;
   },
@@ -1561,6 +1564,51 @@ function openProfile() {
   if (el('profile-display-name')) el('profile-display-name').textContent = user.name;
   if (el('profile-username-display')) el('profile-username-display').textContent = user.username;
 
+  // Bio — top of profile, uses user.bio or falls back to training quote
+  const bioParagraph = el('profile-bio');
+  if (bioParagraph) {
+    const bioText = (user.bio && user.bio.trim()) ? user.bio : '“The discipline you build today is the shield that guards your future self.”';
+    bioParagraph.textContent = bioText;
+    if (!bioParagraph.dataset.editBound) {
+      bioParagraph.dataset.editBound = 'true';
+      bioParagraph.setAttribute('contenteditable', 'true');
+      bioParagraph.style.cursor = 'text';
+      bioParagraph.style.outline = 'none';
+      bioParagraph.addEventListener('blur', () => {
+        const newBio = bioParagraph.textContent.trim();
+        if (newBio && state.auth.user) {
+          state.auth.user.bio = newBio;
+          const bottomQ = el('profile-quote');
+          if (bottomQ) bottomQ.textContent = newBio;
+          saveToStorage();
+          showSaveSuccessFeedback('Bio Updated');
+        }
+      });
+      bioParagraph.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); bioParagraph.blur(); } });
+    }
+  }
+
+  // Wire Edit Profile button → focus the name for editing
+  const editBtn = el('profile-edit-btn');
+  if (editBtn && !editBtn.dataset.bound) {
+    editBtn.dataset.bound = 'true';
+    editBtn.addEventListener('click', () => {
+      playSound('tap');
+      const nameEl2 = el('profile-display-name');
+      if (nameEl2) { nameEl2.focus(); const range = document.createRange(); range.selectNodeContents(nameEl2); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); }
+    });
+  }
+
+  // Wire Settings button → open settings overlay via existing trigger
+  const settingsBtn = el('profile-settings-btn');
+  if (settingsBtn && !settingsBtn.dataset.bound) {
+    settingsBtn.dataset.bound = 'true';
+    settingsBtn.addEventListener('click', () => {
+      playSound('tap');
+      el('settings-trigger-btn')?.click();
+    });
+  }
+
   const goalsContainer = el('profile-goals-tags');
   if (goalsContainer) {
     goalsContainer.innerHTML = '';
@@ -2199,67 +2247,88 @@ function recalculateSmartProtein() {
 function buildWorkoutSplit() {
   const env = state.onboarding.gymEnv; // gym | home
   const goals = state.onboarding.goals.length > 0 ? state.onboarding.goals : ['strength'];
-  const primGoal = goals[0]; // e.g. strength, consistency, recovery, weight
+  const primGoal = goals[0];
   const exp = state.onboarding.experience || 'beginner';
+  const days = Math.min(7, Math.max(2, state.onboarding.trainingDays || 4));
 
-  // Custom adaptive splits
+  // ── Split Templates (keyed by trainingDays) ──
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const R = (day, focus) => ({ day, type: 'Rest', focus, rest: true });
+  const T = (day, type, focus) => ({ day, type, focus, rest: false });
+
   let split = [];
-  if (env === 'gym') {
-    if (exp === 'experienced') {
-      // Advanced split logic for experienced gym users
-      split = [
-        { day: 'Mon', type: 'Push',   focus: 'Heavy Pressing (Compound Focus)',  rest: false },
-        { day: 'Tue', type: 'Pull',   focus: 'Heavy Pulling (Deadlift/Row Focus)', rest: false },
-        { day: 'Wed', type: 'Legs',   focus: 'Squats & Posterior Chain Overload', rest: false },
-        { day: 'Thu', type: 'Rest',   focus: 'Active recovery & CNS reset',     rest: true  },
-        { day: 'Fri', type: 'Push',   focus: 'Hypertrophy Pressing',             rest: false },
-        { day: 'Sat', type: 'Legs',   focus: 'Lower Body Volume',                rest: false },
-        { day: 'Sun', type: 'Rest',   focus: 'Full Rest',                        rest: true  },
-      ];
-    } else if (primGoal === 'strength') {
-      split = [
-        { day: 'Mon', type: 'Push',   focus: 'Chest • Shoulders',  rest: false },
-        { day: 'Tue', type: 'Pull',   focus: 'Back • Biceps',       rest: false },
-        { day: 'Wed', type: 'Legs',   focus: 'Quads • Hamstrings',  rest: false },
-        { day: 'Thu', type: 'Rest',   focus: 'Active Recovery',     rest: true  },
-        { day: 'Fri', type: 'Push',   focus: 'Chest • Triceps',     rest: false },
-        { day: 'Sat', type: 'Legs',   focus: 'Lower Body',          rest: false },
-        { day: 'Sun', type: 'Rest',   focus: 'Full Rest',           rest: true  },
-      ];
-    } else if (primGoal === 'weight' || primGoal === 'consistency') {
-      split = [
-        { day: 'Mon', type: 'FullBody', focus: 'Compound Strength', rest: false },
-        { day: 'Tue', type: 'Cardio',   focus: 'Conditioning • Core',rest: false },
-        { day: 'Wed', type: 'FullBody', focus: 'Hypertrophy Pacing',rest: false },
-        { day: 'Thu', type: 'Rest',     focus: 'Active Recovery',   rest: true  },
-        { day: 'Fri', type: 'FullBody', focus: 'Functional Volume',  rest: false },
-        { day: 'Sat', type: 'Special',  focus: 'Conditioning • Arms',rest: false },
-        { day: 'Sun', type: 'Rest',     focus: 'Full Rest',         rest: true  },
-      ];
-    } else { // recovery focus
-      split = [
-        { day: 'Mon', type: 'Upper',    focus: 'Low Intensity Upper',rest: false },
-        { day: 'Tue', type: 'Rest',     focus: 'Active Recovery',    rest: true  },
-        { day: 'Wed', type: 'Lower',    focus: 'Joint Health • Core',rest: false },
-        { day: 'Thu', type: 'Rest',     focus: 'Parasympathetic Rest',rest: true },
-        { day: 'Fri', type: 'FullBody', focus: 'Mobility • Aerobic', rest: false },
-        { day: 'Sat', type: 'Rest',     focus: 'Parasympathetic Rest',rest: true },
-        { day: 'Sun', type: 'Rest',     focus: 'Full Rest',          rest: true  },
-      ];
-    }
-  } else { // home
+
+  if (days === 2) {
     split = [
-      { day: 'Mon', type: 'Push',   focus: 'Bodyweight Chest',     rest: false },
-      { day: 'Tue', type: 'Pull',   focus: 'Bodyweight Back',      rest: false },
-      { day: 'Wed', type: 'Legs',   focus: 'Glutes • Quads',       rest: false },
-      { day: 'Thu', type: 'Rest',   focus: 'Parasympathetic Rest', rest: true  },
-      { day: 'Fri', type: 'Cardio', focus: 'Abs • High Intensity', rest: false },
-      { day: 'Sat', type: 'FullBody',focus: 'Home Flow Circuit',   rest: false },
-      { day: 'Sun', type: 'Rest',   focus: 'Full Rest',            rest: true  },
+      T('Mon', 'FullBody', 'Full Body Strength A'),
+      R('Tue', 'Active Recovery'),
+      R('Wed', 'Rest'),
+      T('Thu', 'FullBody', 'Full Body Strength B'),
+      R('Fri', 'Active Recovery'),
+      R('Sat', 'Rest'),
+      R('Sun', 'Full Rest'),
+    ];
+  } else if (days === 3) {
+    split = [
+      T('Mon', 'Push',    'Chest • Shoulders • Triceps'),
+      R('Tue', 'Active Recovery'),
+      T('Wed', 'Pull',    'Back • Biceps • Rear Delts'),
+      R('Thu', 'Active Recovery'),
+      T('Fri', 'Legs',   'Quads • Hamstrings • Glutes'),
+      R('Sat', 'Rest'),
+      R('Sun', 'Full Rest'),
+    ];
+  } else if (days === 4) {
+    split = [
+      T('Mon', 'Upper', 'Upper Strength (Chest, Back)'),
+      T('Tue', 'Lower', 'Lower Strength (Quads, Hamstrings)'),
+      R('Wed', 'Active Recovery'),
+      T('Thu', 'Upper', 'Upper Hypertrophy (Shoulders, Arms)'),
+      T('Fri', 'Lower', 'Lower Hypertrophy (Glutes, Calves)'),
+      R('Sat', 'Rest'),
+      R('Sun', 'Full Rest'),
+    ];
+  } else if (days === 5) {
+    split = [
+      T('Mon', 'Push',     'Chest • Shoulders'),
+      T('Tue', 'Pull',     'Back • Biceps'),
+      T('Wed', 'Legs',     'Quads • Hamstrings'),
+      R('Thu', 'Active Recovery'),
+      T('Fri', 'Push',     'Chest • Triceps Volume'),
+      T('Sat', 'Legs',     'Glutes • Core'),
+      R('Sun', 'Full Rest'),
+    ];
+  } else if (days === 6) {
+    split = [
+      T('Mon', 'Push',  'Chest • Shoulders (Heavy)'),
+      T('Tue', 'Pull',  'Back • Biceps (Heavy)'),
+      T('Wed', 'Legs',  'Squats • Posterior Chain'),
+      T('Thu', 'Push',  'Chest • Triceps (Volume)'),
+      T('Fri', 'Pull',  'Back • Rear Delts (Volume)'),
+      T('Sat', 'Legs',  'Glutes • Calves • Core'),
+      R('Sun', 'Full Rest'),
+    ];
+  } else { // 7 days — advanced with deload day
+    split = [
+      T('Mon', 'Push',     'Chest • Shoulders (Heavy)'),
+      T('Tue', 'Pull',     'Back • Biceps (Heavy)'),
+      T('Wed', 'Legs',     'Squats • Posterior Chain'),
+      T('Thu', 'Push',     'Chest • Triceps (Volume)'),
+      T('Fri', 'Pull',     'Back • Rear Delts (Volume)'),
+      T('Sat', 'Legs',     'Glutes • Calves • Core'),
+      T('Sun', 'FullBody', 'Active Deload • Mobility'),
     ];
   }
 
-  // Load custom adaptive exercises
+  // Override with home-specific names when env is home
+  if (env === 'home') {
+    split = split.map(d => {
+      if (d.rest) return d;
+      return { ...d, focus: d.focus + ' (Bodyweight)' };
+    });
+  }
+
+  // Inject adaptive exercises
   split.forEach(day => {
     if (!day.rest) {
       day.exercises = getAdaptiveExercisesForDay(day.type, env, primGoal);
@@ -2272,6 +2341,7 @@ function buildWorkoutSplit() {
   const today = state.workout.weekSplit[state.workout.todayIndex];
   state.workout.exercises = today.rest ? [] : (today.exercises || []);
 }
+
 
 function getAdaptiveExercisesForDay(type, env, goal) {
   let db = env === 'gym' ? ADAPTIVE_GYM_DB : ADAPTIVE_HOME_DB;
@@ -2592,24 +2662,25 @@ function computeReadiness() {
 function applyRecoveryTheme(readiness) {
   const root = document.documentElement;
   if (!readiness) readiness = 78;
+  const isLight = document.body.classList.contains('light-theme');
   if (readiness >= 80) {
     // High Readiness - Bright premium violet
     root.style.setProperty('--accent', '#8b5cf6');
     root.style.setProperty('--accent-glow', 'rgba(139,92,246,0.3)');
     root.style.setProperty('--accent-dim', 'rgba(139,92,246,0.15)');
-    root.style.setProperty('--bg', '#060608');
+    root.style.setProperty('--bg', isLight ? '#f4f4f7' : '#060608');
   } else if (readiness >= 50) {
     // Recovery Mode - Calming Mint
     root.style.setProperty('--accent', '#10b981');
     root.style.setProperty('--accent-glow', 'rgba(16,185,129,0.3)');
     root.style.setProperty('--accent-dim', 'rgba(16,185,129,0.15)');
-    root.style.setProperty('--bg', '#050806');
+    root.style.setProperty('--bg', isLight ? '#f0fdf4' : '#050806');
   } else {
     // Overstressed - Muted desaturated / soft crimson theme
     root.style.setProperty('--accent', '#f43f5e');
     root.style.setProperty('--accent-glow', 'rgba(244,63,94,0.3)');
     root.style.setProperty('--accent-dim', 'rgba(244,63,94,0.15)');
-    root.style.setProperty('--bg', '#0b0607');
+    root.style.setProperty('--bg', isLight ? '#fff1f2' : '#0b0607');
   }
 }
 
@@ -2790,6 +2861,17 @@ function detectMissedWorkout() {
 function checkConsistencyShield() {
   const banner = el('consistency-shield-banner');
   if (!banner) return;
+  
+  // Hide if workout already started (any sets done today) or session logged today
+  const todayLogged = state.workout.history[todayKey()];
+  const anySetsCompletedToday = state.workout.exercises && state.workout.exercises.some(
+    ex => ex.sets && ex.sets.some(s => s.done)
+  );
+  
+  if (todayLogged || anySetsCompletedToday) {
+    banner.style.display = 'none';
+    return;
+  }
   
   if (detectMissedWorkout()) {
     banner.style.display = 'flex';
@@ -3264,10 +3346,10 @@ function openSheet(exId) {
   el('sheet-ex-muscle').textContent = ex.muscle;
 
   // Sync sliders & inputs
-  el('sc-weight-num').value = ex.weight;
-  el('sc-weight-slider').value = ex.weight;
-  el('sc-reps-num').value = ex.reps;
-  el('sc-reps-slider').value = ex.reps;
+  if (el('sc-weight-num')) el('sc-weight-num').value = ex.weight;
+  if (el('sc-weight-slider')) el('sc-weight-slider').value = ex.weight;
+  if (el('sc-reps-num')) el('sc-reps-num').value = ex.reps;
+  if (el('sc-reps-slider')) el('sc-reps-slider').value = ex.reps;
 
 
 
@@ -3324,8 +3406,8 @@ function openSheet(exId) {
       progApplyBtn.onclick = () => {
         playSound('chime');
         ex.weight = progResult.suggestedWeight;
-        el('sc-weight-num').value = ex.weight;
-        el('sc-weight-slider').value = ex.weight;
+        if (el('sc-weight-num')) el('sc-weight-num').value = ex.weight;
+        if (el('sc-weight-slider')) el('sc-weight-slider').value = ex.weight;
         ex.sets.forEach(set => {
           if (!set.done) {
             set.weight = ex.weight;
@@ -4585,7 +4667,36 @@ function renderPartnerTabUI() {
   if (!container) return;
   
   const partner = state.auth.partner;
+  const searching = state.auth.matchPending;
+
   if (!partner) {
+    if (searching) {
+      // Searching state — show spinner card with Cancel Search
+      container.innerHTML = `
+        <div style="background:linear-gradient(135deg, var(--surface-2), rgba(139,92,246,0.06)); border:1.5px solid rgba(139,92,246,0.25); border-radius:24px; padding:24px 20px; text-align:center; margin-bottom:16px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+          <div style="width:44px; height:44px; border-radius:50%; border:3px solid var(--violet); border-top-color:transparent; animation:spin 1s linear infinite;"></div>
+          <div>
+            <p style="font-size:14px; font-weight:800; color:var(--text-1); margin:0;">Searching for accountability partner...</p>
+            <p style="font-size:11px; color:var(--text-3); margin-top:4px; line-height:1.45;">AURA is scanning for a high-compatibility match. This may take up to 24 hours.</p>
+          </div>
+          <button class="ghost-btn" id="partner-tab-cancel-search-btn" style="margin:0; width:100%; font-size:12px; color:var(--rose); border-color:rgba(244,63,94,0.25);">Cancel Search</button>
+        </div>
+      `;
+      const cancelBtn = container.querySelector('#partner-tab-cancel-search-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          playSound('tap');
+          if (state.auth.matchTimer) clearTimeout(state.auth.matchTimer);
+          state.auth.matchPending = false;
+          state.auth.matchedCandidate = null;
+          renderSocialsUI();
+          saveToStorage();
+          showSaveSuccessFeedback('Search Cancelled');
+        });
+      }
+      return;
+    }
+
     container.innerHTML = `
       <div class="find-partner-card" id="partner-tab-onboarding-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:24px; padding:20px; text-align:center; margin-bottom:16px;">
         <span style="font-size:36px; display:block; margin-bottom:12px;">🤝</span>
@@ -4599,7 +4710,6 @@ function renderPartnerTabUI() {
       pBtn.addEventListener('click', () => {
         playSound('tap');
         switchSocialTab('find-partner');
-        // trigger click on find-partner-btn
         el('find-partner-btn')?.click();
       });
     }
@@ -4805,85 +4915,10 @@ function renderFriendsUI() {
         <span style="font-size:24px; display:block; margin-bottom:8px;">👥</span>
         <p style="font-size:12px; color:var(--text-3);">Your friend circle is empty. Add friends using the button above.</p>
       </div>`;
-    renderFriendRequestsUI();
-    renderFriendHistoryUI();
-    return;
-  }
-  
-  if (graphSection) graphSection.classList.remove('hidden');
-  if (graphEl) {
-    const userScore = calculateDisciplineScore() || 85;
-    const userStreak = calculateStreak() || 4;
-    const userName = (state.auth.user ? state.auth.user.name : 'You');
-    const userInitials = userName.substring(0, 2).toUpperCase();
-    const comparisonList = [
-      { name: 'You', initials: userInitials, score: userScore, streak: userStreak, isSelf: true }
-    ];
-    friends.forEach(f => {
-      comparisonList.push({
-        name: f.name,
-        initials: (f.avatarInitials || f.name).substring(0, 2).toUpperCase(),
-        score: f.disciplineScore || 80,
-        streak: f.streak || 0,
-        isSelf: false
-      });
-    });
-    // Sort by score descending
-    comparisonList.sort((a, b) => b.score - a.score);
-
-    const colors = [
-      'linear-gradient(to top, rgba(52,211,153,0.25), var(--mint))',
-      'linear-gradient(to top, rgba(251,146,60,0.25), #fb923c)',
-      'linear-gradient(to top, rgba(14,165,233,0.25), #0ea5e9)',
-      'linear-gradient(to top, rgba(244,63,94,0.25), var(--rose))'
-    ];
-
-    graphEl.innerHTML = comparisonList.map((item, idx) => {
-      const heightPercent = Math.max(20, Math.min(100, item.score)); // cap height
-      const barBg = item.isSelf 
-        ? 'linear-gradient(to top, var(--violet), var(--accent))' 
-        : colors[idx % colors.length];
-      const scoreColor = item.isSelf ? 'var(--accent)' : 'var(--text-2)';
-      const borderStyle = item.isSelf ? 'border: 1px solid var(--accent);' : 'border: 1px solid var(--border);';
-      return `
-        <div style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; height:100%; justify-content:flex-end;">
-          <span style="font-size:9px; font-weight:800; color:${scoreColor}; margin-bottom:4px;">${item.score}</span>
-          <div style="width:100%; max-width:28px; height:${heightPercent}%; background:${barBg}; ${borderStyle} border-radius:6px 6px 0 0; transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
-          <span style="font-size:9.5px; font-weight:700; color:var(--text-1); margin-top:6px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${item.name === 'You' ? 'You' : item.initials}</span>
-          <span style="font-size:8px; font-weight:700; color:#fb923c; margin-top:1px;">${item.streak}🔥</span>
-        </div>
-      `;
-    }).join('');
-  }
-  
-  // Group friends by category
-  const categories = {
-    spouse: { title: 'Spouse 💍', items: [] },
-    family: { title: 'Family 🏠', items: [] },
-    training_buddy: { title: 'Training Buddy ⚡', items: [] },
-    gym_buddy: { title: 'Gym Friends 🏋️', items: [] },
-    local_buddy: { title: 'Local Friends 📍', items: [] }
-  };
-  
-  friends.forEach(f => {
-    const cat = f.type || 'gym_buddy';
-    if (categories[cat]) {
-      categories[cat].items.push(f);
-    } else {
-      categories.gym_buddy.items.push(f);
-    }
-  });
-  
-  Object.keys(categories).forEach(key => {
-    const cat = categories[key];
-    if (cat.items.length === 0) return;
-    
-    const catSection = document.createElement('div');
-    catSection.style.cssText = `margin-bottom: 16px;`;
-    catSection.innerHTML = `
-      <h4 style="font-size: 11px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">${cat.title}</h4>
+  } else {
+    listEl.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        ${cat.items.map(f => {
+        ${friends.map(f => {
           const initials = (f.avatarInitials || f.name || 'FR').substring(0, 2).toUpperCase();
           const activeDot = f.active ? `<span style="position:absolute; bottom:0; right:0; width:8px; height:8px; background:var(--mint); border:1.5px solid #000; border-radius:50%;"></span>` : '';
           return `
@@ -4907,8 +4942,7 @@ function renderFriendsUI() {
         }).join('')}
       </div>
     `;
-    listEl.appendChild(catSection);
-  });
+  }
   
   listEl.querySelectorAll('.friend-row').forEach(row => {
     row.addEventListener('click', () => {
@@ -4970,7 +5004,7 @@ function renderFriendRequestsUI() {
 }
 
 function renderFriendHistoryUI() {
-  const listEl = el('friends-tab-history-list');
+  const listEl = el('settings-friend-history-list');
   if (!listEl) return;
   listEl.innerHTML = '';
   
@@ -5655,6 +5689,68 @@ function onEnterRecovery() {
       </div>
     `).join('');
   }
+
+  // Quick Actions: 2-Minute Reset
+  let _resetInterval = null;
+  const resetAction = el('quick-reset-action');
+  const resetDisplay = el('reset-timer-display');
+  if (resetAction && resetDisplay) {
+    resetAction.onclick = () => {
+      if (_resetInterval) {
+        clearInterval(_resetInterval);
+        _resetInterval = null;
+        resetDisplay.textContent = '2:00';
+        resetDisplay.style.color = 'var(--violet)';
+        resetAction.style.borderColor = 'var(--border)';
+        return;
+      }
+      playSound('tap');
+      let seconds = 120;
+      resetDisplay.style.color = 'var(--mint)';
+      resetAction.style.borderColor = 'rgba(16,185,129,0.35)';
+      _resetInterval = setInterval(() => {
+        seconds--;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        resetDisplay.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        if (seconds <= 0) {
+          clearInterval(_resetInterval);
+          _resetInterval = null;
+          resetDisplay.textContent = '✓ Done';
+          resetDisplay.style.color = 'var(--mint)';
+          playSound('chime');
+          setTimeout(() => { resetDisplay.textContent = '2:00'; resetDisplay.style.color = 'var(--violet)'; resetAction.style.borderColor = 'var(--border)'; }, 2500);
+        }
+      }, 1000);
+    };
+  }
+
+  // Quick Actions: Walk Reminder
+  const walkAction = el('quick-walk-action');
+  const walkTag = el('walk-status-tag');
+  if (walkAction && walkTag) {
+    walkAction.onclick = () => {
+      playSound('tap');
+      walkTag.textContent = '\u23f1 5 min';
+      walkTag.style.color = 'var(--accent)';
+      walkTag.style.background = 'rgba(245,158,11,0.15)';
+      showSaveSuccessFeedback('Walk reminder set \u2706 5 min');
+      let walkSeconds = 300;
+      const walkTimer = setInterval(() => {
+        walkSeconds--;
+        const m = Math.floor(walkSeconds / 60);
+        const s = walkSeconds % 60;
+        walkTag.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        if (walkSeconds <= 0) {
+          clearInterval(walkTimer);
+          walkTag.textContent = '\u2713 Done!';
+          walkTag.style.color = 'var(--mint)';
+          walkTag.style.background = 'var(--mint-dim)';
+          playSound('chime');
+        }
+      }, 1000);
+    };
+  }
 }
 
 function syncDietFilterDropdowns() {
@@ -5742,16 +5838,12 @@ function renderMeals() {
         <p class="meal-name" style="font-size:13.5px; font-weight:700; color:var(--text-1);">${m.name}</p>
         <p class="meal-macros" style="font-size:11px; margin-top:3px; color:var(--text-2);"><span>${m.cal} kcal</span> · <span class="p">${m.prot}g protein</span> · ${m.label}</p>
       </div>
-      <button class="meal-log-btn" data-meal-id="${m.id}" style="z-index:10; flex-shrink:0;">${logged ? '✓' : '+'}</button>
+      <div class="meal-log-btn" data-meal-id="${m.id}" style="z-index:10; flex-shrink:0; pointer-events:none;">${logged ? '✓' : '+'}</div>
     `;
     
-    card.addEventListener('click', e => {
-      if (e.target.closest('.meal-log-btn')) {
-        e.stopPropagation();
-        toggleMeal(m.id);
-        return;
-      }
-      openFoodSheet(m.id);
+    // Entire card toggles the meal on click
+    card.addEventListener('click', () => {
+      toggleMeal(m.id);
     });
 
     container.appendChild(card);
@@ -5807,12 +5899,16 @@ function toggleMeal(mealId) {
   const n = state.nutrition;
   if (n.loggedMeals.has(mealId)) {
     n.loggedMeals.delete(mealId);
-    n.loggedCal -= m.cal;
-    n.loggedProt -= m.prot;
+    n.loggedCal = Math.max(0, n.loggedCal - m.cal);
+    n.loggedProt = Math.max(0, n.loggedProt - m.prot);
+    // Remove small water contribution
+    n.loggedWater = Math.max(0, (n.loggedWater || 0) - (m.waterMl || 0));
   } else {
     n.loggedMeals.add(mealId);
     n.loggedCal += m.cal;
     n.loggedProt += m.prot;
+    // Add meal's water contribution (soups, dal, curd etc.)
+    n.loggedWater = (n.loggedWater || 0) + (m.waterMl || 0);
   }
   playSound('chime');
   syncMacroUI();
@@ -5828,10 +5924,31 @@ function syncMacroUI() {
   if (el('cal-target')) el('cal-target').textContent = Math.round(n.targetCal);
   if (el('prot-target')) el('prot-target').textContent = Math.round(n.targetProt) + 'g';
   
-  const calPct = Math.min(100, (n.loggedCal / n.targetCal) * 100);
-  const protPct = Math.min(100, (n.loggedProt / n.targetProt) * 100);
-  el('cal-bar').style.width = calPct + '%';
-  el('prot-bar').style.width = protPct + '%';
+  const calPct = Math.min(100, (n.loggedCal / (n.targetCal || 1)) * 100);
+  const protPct = Math.min(100, (n.loggedProt / (n.targetProt || 1)) * 100);
+  if (el('cal-bar')) el('cal-bar').style.width = calPct + '%';
+  if (el('prot-bar')) el('prot-bar').style.width = protPct + '%';
+
+  // Protein tracker ring
+  const ringFill = el('protein-ring-fill');
+  const ringPct = el('protein-ring-pct');
+  const trackerLogged = el('prot-tracker-logged');
+  const trackerTarget = el('prot-tracker-target');
+  const trackerSub = el('prot-tracker-sub');
+  if (ringFill) {
+    const circumference = 125.6;
+    const offset = circumference - (protPct / 100) * circumference;
+    ringFill.style.strokeDashoffset = offset.toFixed(1);
+    ringFill.style.stroke = protPct >= 100 ? '#10b981' : protPct >= 60 ? 'var(--mint)' : 'var(--violet)';
+  }
+  if (ringPct) ringPct.textContent = Math.round(protPct) + '%';
+  if (trackerLogged) trackerLogged.textContent = Math.round(n.loggedProt);
+  if (trackerTarget) trackerTarget.textContent = Math.round(n.targetProt) + 'g';
+  if (trackerSub) {
+    const remaining = Math.max(0, (n.targetProt || 0) - (n.loggedProt || 0));
+    trackerSub.textContent = remaining > 0 ? `${Math.round(remaining)}g remaining today` : '✓ Target reached!';
+    trackerSub.style.color = remaining > 0 ? 'var(--text-3)' : 'var(--mint)';
+  }
   
   const ltr = (n.loggedWater / 1000).toFixed(1);
   const targetLtr = ((n.targetWater || 4000) / 1000).toFixed(1);
@@ -6304,7 +6421,9 @@ function logTodaySession() {
       .map(ex => {
         const done = ex.sets.filter(s => s.done);
         const avgDiff = Math.round(done.reduce((acc, s) => acc + (+s.rpe || 8), 0) / done.length) || 6;
-        return `${ex.name}: ${done.length} sets x ${done[0]?.reps || ex.reps} reps${ex.weight ? ' @ ' + ex.weight + 'kg' : ''} (Diff: ${avgDiff})`;
+        const firstSetWeight = done[0]?.weight !== undefined ? done[0].weight : ex.weight;
+        const firstSetReps = done[0]?.reps !== undefined ? done[0].reps : ex.reps;
+        return `${ex.name}: ${done.length} sets x ${firstSetReps} reps${firstSetWeight ? ' @ ' + firstSetWeight + 'kg' : ''} (Diff: ${avgDiff})`;
       }),
     readiness: state.readiness,
     discipline: 90 + Math.round(Math.random() * 8),
@@ -6527,18 +6646,7 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Add friend options clicks
-  const addFriendOptBtn = t.closest('.add-friend-opt-btn');
-  if (addFriendOptBtn) {
-    const type = addFriendOptBtn.dataset.type;
-    if (type === 'existing') {
-      playSound('tap');
-      el('friend-search-input-wrap')?.classList.toggle('hidden');
-    } else {
-      addMockFriend(type);
-    }
-    return;
-  }
+  // (add-friend-opt-btn handler removed — sheet now has direct search input)
 
   // Scorecard Chat CTA click
   if (t.id === 'scorecard-chat-btn' || t.closest('#scorecard-chat-btn')) {
@@ -6550,41 +6658,60 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // Search and Add Friend ID click
+  // Send Friend Request (does NOT instantly add — queues as pending request)
   if (t.id === 'friend-search-confirm' || t.closest('#friend-search-confirm')) {
     const input = el('friend-search-input');
     const val = input ? input.value.trim() : '';
-    if (val) {
-      playSound('done');
-      const name = val.replace('@', '');
-      const initials = name.slice(0, 2).toUpperCase();
-      const idSuffix = Date.now().toString().slice(-4);
-      
-      const newFriend = {
-        id: 'f_searched_' + idSuffix,
-        name: name + ' (Friend)',
-        type: 'local_friend',
-        gender: 'male',
-        age: 25,
-        country: 'India',
-        city: 'Mumbai',
-        avatarInitials: initials || 'FR',
-        disciplineScore: 75,
-        goals: ['discipline'],
-        ambition: 'consistent',
-        training: 'gym',
-        schedule: 'evening',
-        active: false,
-        streak: 0
-      };
-      
-      if (!state.auth.friends) state.auth.friends = [];
-      state.auth.friends.unshift(newFriend);
-      logFriendHistory(newFriend.name, 'Friend Added');
-      
-      if (input) input.value = '';
-      el('friend-search-input-wrap')?.classList.add('hidden');
-      
+    if (!val) return;
+
+    playSound('tap');
+    const rawName = val.replace(/^@/, '');
+    const initials = rawName.slice(0, 2).toUpperCase();
+    const idSuffix = Date.now().toString().slice(-4);
+    
+    // Create a pending incoming request object (simulates the recipient receiving it)
+    // In a real app this would call an API; here we simulate the request flow
+    if (!state.auth.pendingOutgoingRequests) state.auth.pendingOutgoingRequests = [];
+    state.auth.pendingOutgoingRequests.push({
+      id: 'req_' + idSuffix,
+      username: rawName,
+      sentAt: todayKey()
+    });
+    
+    // Simulate: after 3s the recipient "accepts" — adds to incomingFriendRequests for UX demo
+    const incomingRequest = {
+      id: 'f_req_' + idSuffix,
+      name: rawName,
+      avatarInitials: initials || 'FR',
+      disciplineScore: 72,
+      streak: 3,
+      type: 'friend',
+      gender: 'male',
+      age: 24,
+      country: 'India',
+      city: 'Bangalore',
+      goals: ['discipline'],
+      ambition: 'consistent',
+      training: 'gym',
+      schedule: 'evening'
+    };
+    if (!state.auth.incomingFriendRequests) state.auth.incomingFriendRequests = [];
+    state.auth.incomingFriendRequests.unshift(incomingRequest);
+
+    // Show status text in sheet
+    const statusEl = el('friend-request-status');
+    if (statusEl) {
+      statusEl.textContent = `✦ Request sent to @${rawName}`;
+      statusEl.style.color = 'var(--mint)';
+    }
+    if (input) input.value = '';
+    
+    logFriendHistory(rawName, 'Friend Request Sent');
+    renderFriendsUI();
+    saveToStorage();
+
+    // Close sheet after short delay
+    setTimeout(() => {
       const sheet = el('add-friend-sheet');
       const backdrop = el('add-friend-backdrop');
       if (sheet) {
@@ -6595,13 +6722,7 @@ document.addEventListener('click', e => {
           if (backdrop) backdrop.classList.add('hidden');
         }, 300);
       }
-      
-      addNotification('social', 'Friend Added 👤', `${newFriend.name} has been added via search.`, todayKey());
-      renderFriendsUI();
-      renderInbox();
-      saveToStorage();
-      showSaveSuccessFeedback();
-    }
+    }, 1200);
     return;
   }
 
@@ -6998,7 +7119,7 @@ document.addEventListener('click', e => {
   }
 
   // Vision avatar / View profile → open profile page overlay
-  if (t.id === 'vision-avatar-btn' || t.closest('#vision-avatar-btn') || t.id === 'view-profile-btn' || t.closest('#view-profile-btn')) {
+  if (t.id === 'vision-avatar-btn' || t.closest('#vision-avatar-btn') || t.id === 'view-profile-btn' || t.closest('#view-profile-btn') || t.id === 'socials-profile-btn' || t.closest('#socials-profile-btn')) {
     openProfile();
   }
   if (t.id === 'profile-close-btn' || t.closest('#profile-close-btn')) {
@@ -7622,6 +7743,12 @@ function openSettingsModal() {
   if (accSel) accSel.value = state.auth.matchingEnabled ? 'partner' : 'friends';
   if (notifChk) notifChk.checked = state.auth.notificationsEnabled !== false;
 
+  if (el('privacy-matching')) el('privacy-matching').checked = state.auth.matchingEnabled !== false;
+  if (el('privacy-city')) el('privacy-city').checked = state.auth.hideCity === true;
+  if (el('privacy-profile')) el('privacy-profile').checked = state.auth.privateProfile === true;
+  if (el('settings-theme-toggle')) el('settings-theme-toggle').checked = state.auth.theme === 'light';
+  renderFriendHistoryUI();
+
   // Step 8 fields inside settings modal
   if (el('settings-gender')) el('settings-gender').value = ob.gender || 'male';
   if (el('settings-age')) el('settings-age').value = ob.age || 21;
@@ -7673,6 +7800,11 @@ function saveSettingsModal() {
   if (expSel) ob.experience = expSel.value;
   if (accSel) state.auth.matchingEnabled = accSel.value === 'partner';
   if (notifChk) state.auth.notificationsEnabled = notifChk.checked;
+
+  if (el('privacy-matching')) state.auth.matchingEnabled = el('privacy-matching').checked;
+  if (el('privacy-city')) state.auth.hideCity = el('privacy-city').checked;
+  if (el('privacy-profile')) state.auth.privateProfile = el('privacy-profile').checked;
+  renderSocialsUI();
 
   // Step 8 fields inside settings modal
   if (el('settings-gender')) ob.gender = el('settings-gender').value;
@@ -8406,8 +8538,8 @@ function applyOverloadSuggestion() {
     const newWeight = lastWeight + suggestion.delta;
     
     ex.weight = newWeight;
-    el('sc-weight-num').value = newWeight;
-    el('sc-weight-slider').value = newWeight;
+    if (el('sc-weight-num')) el('sc-weight-num').value = newWeight;
+    if (el('sc-weight-slider')) el('sc-weight-slider').value = newWeight;
     
     ex.sets.forEach(set => {
       if (!set.done) set.weight = newWeight;
@@ -8419,8 +8551,8 @@ function applyOverloadSuggestion() {
     const newReps = lastReps + suggestion.delta;
     
     ex.reps = newReps;
-    el('sc-reps-num').value = newReps;
-    el('sc-reps-slider').value = newReps;
+    if (el('sc-reps-num')) el('sc-reps-num').value = newReps;
+    if (el('sc-reps-slider')) el('sc-reps-slider').value = newReps;
     
     ex.sets.forEach(set => {
       if (!set.done) set.reps = newReps;
@@ -8479,6 +8611,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const restored = loadFromStorage();
   if (restored) {
     recalculateSmartProtein();
+    if (state.auth && state.auth.theme === 'light') {
+      document.body.classList.add('light-theme');
+    }
     if (state.readiness) {
       applyRecoveryTheme(state.readiness);
       buildWorkoutSplit();
@@ -8495,6 +8630,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bind change event delegation for Diet Filter Dropdowns & Grocery checkboxes
   document.addEventListener('change', e => {
     const t = e.target;
+    if (t.id === 'settings-theme-toggle') {
+      const isLight = t.checked;
+      state.auth.theme = isLight ? 'light' : 'dark';
+      if (isLight) {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+      applyRecoveryTheme(state.readiness);
+      saveToStorage();
+      playSound('tap');
+    }
     if (t.id === 'diet-dropdown-type') {
       state.onboarding.diet = t.value;
       state.nutrition.todaySwaps = {};
@@ -8923,8 +9070,23 @@ function inspectPartnerScorecard(user) {
       </div>
     </div>
 
+    <!-- Invite As Partner Button -->
+    ${(() => {
+      const isFriend = state.auth.friends && state.auth.friends.some(f => f.id === user.id);
+      const hasPartner = !!state.auth.partner;
+      const isAlreadyPartner = hasPartner && state.auth.partner.id === user.id;
+      if (!isFriend) return '';
+      if (isAlreadyPartner) {
+        return `<div style="background:var(--mint-dim); border:1px solid rgba(16,185,129,0.25); border-radius:14px; padding:10px 14px; margin-top:12px; text-align:center; font-size:11px; font-weight:700; color:var(--mint);">✓ Already your accountability partner</div>`;
+      }
+      if (hasPartner) {
+        return `<button class="primary-btn" disabled style="margin-top:12px; margin-bottom:0; width:100%; opacity:0.45; cursor:not-allowed;">Invite As Partner (Partner active)</button>`;
+      }
+      return `<button class="primary-btn" id="scorecard-invite-partner-btn" style="margin-top:12px; margin-bottom:0; width:100%; background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05)); border:1.5px solid rgba(16,185,129,0.4); color:var(--mint);" data-id="${user.id}">🤝 Invite As Accountability Partner</button>`;
+    })()}
+
     <!-- Chat CTA Button -->
-    <button class="primary-btn" id="scorecard-chat-cta-btn" style="margin-top:16px; margin-bottom:0; width:100%;" data-id="${user.id}">
+    <button class="primary-btn" id="scorecard-chat-cta-btn" style="margin-top:8px; margin-bottom:0; width:100%;" data-id="${user.id}">
       Start Chat
     </button>
     ${(state.auth.friends && state.auth.friends.some(f => f.id === user.id)) ? `
@@ -8947,6 +9109,35 @@ function inspectPartnerScorecard(user) {
       container.querySelector(`#modal-panel-${tabName}`).classList.add('active');
     });
   });
+
+  // Attach invite-as-partner button
+  const invitePartnerBtn = container.querySelector('#scorecard-invite-partner-btn');
+  if (invitePartnerBtn) {
+    invitePartnerBtn.addEventListener('click', () => {
+      playSound('done');
+      // Establish partnership
+      state.auth.partner = {
+        id: user.id,
+        name: user.name,
+        avatarInitials: user.avatarInitials || user.name.slice(0, 2).toUpperCase(),
+        disciplineScore: user.disciplineScore || 80,
+        streak: user.streak || 5,
+        goals: user.goals || ['discipline'],
+        ambition: user.ambition || 'consistent',
+        training: user.training || 'gym',
+        schedule: user.schedule || 'evening',
+        compatibilityPct: user.compatibilityPct || 85,
+        trend: 'Improving'
+      };
+      state.auth.matchPending = false;
+      logFriendHistory(user.name, 'Partnership Established');
+      addNotification('partner', 'Partner Invited ✦', `${user.name} is now your accountability partner.`, todayKey());
+      closePartnerScorecard();
+      renderSocialsUI();
+      saveToStorage();
+      showSaveSuccessFeedback(`${user.name} is now your partner!`);
+    });
+  }
 
   // Attach chat CTA button event
   const ctaBtn = container.querySelector('#scorecard-chat-cta-btn');

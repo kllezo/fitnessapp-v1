@@ -324,9 +324,16 @@ High-fidelity premium components and responsive systems verified working:
 - [x] **4. Find Partner Tab State Polish**: Allowed viewing the Find Partner tab when matched by displaying the "Active Partnership Exists" card and hiding search preferences.
 - [x] **5. Remove Hidden States**: Enforced that Friends graph renders demo comparisons when empty, Friend History defaults to "No history yet.", and Partner Tab shows the find partner onboarding card instead of blank empty states.
 - [x] **6. Global CSS Hidden Fix**: Added a global `.hidden { display: none !important; }` rule to `app.css` to fix sub-tab panels overlapping and prevent multiple layouts stacking simultaneously.
+- [x] **7. Remove Inbox Icon**: Deleted the redundant top-right inbox icon from the Socials tab. Integrated direct chat via friend list clicks, and profile scoreboard inspection via chat header username clicks.
+- [x] **8. Flat Friends List**: Restructured the Friends tab list to render a flat list of all friends directly below the Add Friend CTA, removing unnecessary grouping headers.
+- [x] **9. Move Friend History & Privacy Settings**: Relocated the Friend History log, Reset button, and Privacy & Matching controls from the Socials/Friends tab to the unified Profile Settings overlay.
+- [x] **10. Dark / Light Mode Toggle**: Added a theme toggle inside Profile Settings that toggles the `.light-theme` class, adapts background variables, and persists in state.
+- [x] **11. Remove Global Sliders**: Removed global Weight and Target Reps sliders from the exercise sheet modal to eliminate layout overlap, relying entirely on set-level tracking.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 
 [SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
 [SYSTEM] Completed AURA Socials & Workout UX Restructure (UI Layout & Slider Alignment Fix Pass).
+
+[SYSTEM] Completed Socials & Workout Cleanup Pass (Inbox removed, Flat list, Relocations, Global sliders removed).

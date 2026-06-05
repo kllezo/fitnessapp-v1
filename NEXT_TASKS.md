@@ -68,3 +68,10 @@ Track the progress of restructuring and features development:
 [SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).
 
 [SYSTEM] Completed Socials Restructure, rest timer selector fixes, independent set completion, global difficulty removal, automated history logging, layout alignment fixes, hidden state removals, and global CSS display fixes.
+
+[SYSTEM] Completed Socials & Workout Cleanup Pass:
+  - Removed top-right Inbox icon from Socials.
+  - Flattened Friends List below Add Friend CTA.
+  - Relocated Friend History, Privacy & Matching, and Reset actions to Profile Settings.
+  - Added Dark / Light mode toggle inside Profile Settings.
+  - Removed global weight/reps sliders from exercise sheet.

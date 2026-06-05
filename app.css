@@ -3863,6 +3863,55 @@ body::after {
   display: block;
 }
 
+/* ── Light Theme ── */
+body.light-theme {
+  --bg:         #f4f4f7;
+  --surface:    #ffffff;
+  --surface-2:  #eaeaf0;
+  --surface-3:  #dedee6;
+  --border:     rgba(0,0,0,0.08);
+  --border-2:   rgba(0,0,0,0.15);
+  --text-1:     #121214;
+  --text-2:     #5a5a6a;
+  --text-3:     #8a8a9a;
+}
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+  color: var(--text-1) !important;
+}
+body.light-theme .friend-row,
+body.light-theme .settings-overlay,
+body.light-theme .profile-overlay,
+body.light-theme .inbox-panel,
+body.light-theme .chat-screen-overlay,
+body.light-theme .scorecard-modal,
+body.light-theme .sheet-container {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+
+
+/* ── Spinner for Partner Search State ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Quick Action Cards hover ── */
+#quick-reset-action:hover,
+#quick-walk-action:hover {
+  border-color: rgba(139,92,246,0.3) !important;
+  background: var(--surface-3) !important;
+}
+#quick-reset-action:active,
+#quick-walk-action:active {
+  transform: scale(0.98);
+}
+
+/* ── Protein Tracker Ring transition ── */
+#protein-ring-fill {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.1,0.8,0.2,1), stroke 0.4s ease;
+}
 
 
 
