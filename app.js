@@ -184,7 +184,7 @@ function addMockFriend(type) {
   showSaveSuccessFeedback();
 }
 
-function openChatWithUser(userId) {
+function openChatWithUser(userId, prefillMsg) {
   playSound('tap');
   closeInbox();
   closePartnerScorecard();
@@ -209,7 +209,17 @@ function openChatWithUser(userId) {
   chatOverlay.classList.remove('hidden');
   void chatOverlay.offsetWidth;
   chatOverlay.classList.add('visible');
+
+  // Pre-fill the message input if a starter message was provided
+  if (prefillMsg) {
+    const chatInput = el('chat-msg-input');
+    if (chatInput) {
+      chatInput.value = prefillMsg;
+      chatInput.focus();
+    }
+  }
 }
+
 
 const state = {
   currentScreen: 'screen-splash',
@@ -944,6 +954,162 @@ const recoveryEngine = {
     }
 
     return recs;
+  }
+};
+
+// ─── insightsEngine (Phase 4 AI) ──────────────────────────────────────────
+const insightsEngine = {
+
+  // ── Weekly Coach Review ──────────────────────────────────────────────────
+  generateWeeklyReview(history, checkInAnswers, onboarding, readiness) {
+    const keys = Object.keys(history || {}).sort().slice(-7);
+    const loggedDays = keys.filter(k => history[k]?.logged).length;
+    const totalDays = 7;
+    const workoutPct = Math.round((loggedDays / totalDays) * 100);
+
+    // Volume calculation
+    let totalVolume = 0;
+    let avgCompletion = 0;
+    let completionCount = 0;
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && h.logged) {
+        totalVolume += h.totalVolume || 0;
+        if (typeof h.completion === 'number') {
+          avgCompletion += h.completion;
+          completionCount++;
+        }
+      }
+    });
+    if (completionCount > 0) avgCompletion = Math.round(avgCompletion / completionCount);
+
+    // Star rating
+    let stars = 2;
+    if (workoutPct >= 80 && avgCompletion >= 80) stars = 5;
+    else if (workoutPct >= 60 && avgCompletion >= 70) stars = 4;
+    else if (workoutPct >= 40) stars = 3;
+    else if (workoutPct >= 20) stars = 2;
+    else stars = 1;
+
+    // Strengths
+    const strengths = [];
+    if (workoutPct >= 80) strengths.push('Elite training consistency this week');
+    else if (workoutPct >= 60) strengths.push('Solid workout attendance');
+    if (checkInAnswers.energy >= 4) strengths.push('High energy output maintained');
+    if (checkInAnswers.sleep >= 4) strengths.push('Strong sleep discipline');
+    if (checkInAnswers.motivation >= 4) strengths.push('Motivation levels sustained');
+    if (totalVolume > 5000) strengths.push(`${Math.round(totalVolume / 1000)}k kg total weekly volume`);
+    if (strengths.length === 0) strengths.push('Showing up — the hardest part');
+
+    // Focus areas
+    const focus = [];
+    if (workoutPct < 60) focus.push('Increase training frequency');
+    if (checkInAnswers.sleep <= 3) focus.push('Prioritize sleep duration & quality');
+    if (checkInAnswers.soreness <= 2) focus.push('Add active recovery sessions');
+    if (checkInAnswers.stress <= 2) focus.push('Manage stress with breathing protocols');
+    if (readiness < 50) focus.push('Allow CNS recovery before next push');
+    if (focus.length === 0) focus.push('Keep pushing your current edge');
+
+    // Coach message
+    const coachMessages = [
+      'Every rep this week is compound interest on the person you\'re becoming.',
+      'The body adapts to what you consistently demand. You\'re building the demand.',
+      'Discipline sustained across 7 days is worth more than 1 perfect session.',
+      'Recovery is not weakness. It\'s how you load the spring.',
+      'Your data doesn\'t lie. The pattern you\'re building is the identity you\'re creating.',
+    ];
+    const msgIndex = Math.abs(loggedDays * 3 + stars) % coachMessages.length;
+
+    return {
+      stars,
+      workoutPct,
+      loggedDays,
+      avgCompletion,
+      totalVolume: Math.round(totalVolume),
+      strengths: strengths.slice(0, 2),
+      focus: focus.slice(0, 2),
+      coachMessage: coachMessages[msgIndex]
+    };
+  },
+
+  // ── Habit Pattern Detection ──────────────────────────────────────────────
+  detectHabitPatterns(history, checkInAnswers, nutrition) {
+    const keys = Object.keys(history || {}).sort().slice(-14);
+    const patterns = [];
+
+    // Training cadence pattern
+    const loggedDays7 = keys.slice(-7).filter(k => history[k]?.logged).length;
+    const loggedDays14 = keys.filter(k => history[k]?.logged).length;
+    if (loggedDays7 >= 5) {
+      patterns.push({ icon: '🔥', label: 'Elite Training Cadence', desc: `${loggedDays7}/7 days active this week`, type: 'positive' });
+    } else if (loggedDays7 >= 3) {
+      patterns.push({ icon: '📈', label: 'Steady Training Rhythm', desc: `${loggedDays7}/7 days — building momentum`, type: 'neutral' });
+    } else if (loggedDays7 < 2) {
+      patterns.push({ icon: '⚠️', label: 'Training Gap Detected', desc: 'Less than 2 sessions this week', type: 'warning' });
+    }
+
+    // Sleep pattern
+    const sleep = Number(checkInAnswers.sleep) || 3;
+    if (sleep >= 4) {
+      patterns.push({ icon: '💤', label: 'Recovery Sleep Locked In', desc: '7+ hours sustained', type: 'positive' });
+    } else if (sleep <= 2) {
+      patterns.push({ icon: '🌙', label: 'Sleep Deficit Active', desc: 'Under 6h sleep — CNS risk rising', type: 'warning' });
+    }
+
+    // Hydration pattern
+    const water = nutrition?.loggedWater || 0;
+    const target = nutrition?.targetWater || 3000;
+    const hydPct = Math.round((water / target) * 100);
+    if (hydPct >= 90) {
+      patterns.push({ icon: '💧', label: 'Hydration Mastery', desc: `${(water/1000).toFixed(1)}L — on target`, type: 'positive' });
+    } else if (hydPct < 50) {
+      patterns.push({ icon: '💧', label: 'Under-Hydrated Pattern', desc: `${(water/1000).toFixed(1)}L of ${(target/1000).toFixed(1)}L daily goal`, type: 'warning' });
+    }
+
+    // Stress pattern
+    const stress = Number(checkInAnswers.stress) || 3;
+    if (stress <= 2) {
+      patterns.push({ icon: '🧠', label: 'High Stress Pattern', desc: 'CNS stress markers elevated — recovery priority', type: 'warning' });
+    } else if (stress >= 4) {
+      patterns.push({ icon: '🧘', label: 'Mental State Solid', desc: 'Low stress — performance window is open', type: 'positive' });
+    }
+
+    // Momentum pattern (improving vs declining 14-day)
+    const first7 = keys.slice(0, 7).filter(k => history[k]?.logged).length;
+    const last7 = keys.slice(-7).filter(k => history[k]?.logged).length;
+    if (last7 > first7 + 1) {
+      patterns.push({ icon: '🚀', label: 'Momentum Accelerating', desc: 'More sessions this week vs last', type: 'positive' });
+    } else if (first7 > last7 + 1) {
+      patterns.push({ icon: '📉', label: 'Declining Momentum', desc: 'Fewer sessions vs previous week — rebuild', type: 'warning' });
+    }
+
+    return patterns.slice(0, 4);
+  },
+
+  // ── Accountability Conversation Starters ─────────────────────────────────
+  generateConversationStarters(userState, partner) {
+    if (!partner) return [];
+
+    const r = userState.readiness || 0;
+    const streak = userState.workout?.streak || 0;
+    const goal = userState.onboarding?.primaryGoal || 'strength';
+    const goalMap = { strength: 'strength', weight_loss: 'cutting', muscle: 'building', consistency: 'consistency', performance: 'performance' };
+    const goalLabel = goalMap[goal] || goal;
+
+    const starters = [
+      `Hey ${partner.name.split(' ')[0]}! My readiness today is ${r}/100 — what's yours looking like? 💪`,
+      `Accountability check-in: I'm on a ${streak}-day streak. How's your consistency this week?`,
+      `Just finished my session. What's your training focus this week for ${goalLabel}?`,
+      `${partner.name.split(' ')[0]}, are you hitting your daily protein target? Sharing mine keeps me honest.`,
+      `Quick check-in: Sleep score today? Mine's ${userState.checkIn?.answers?.sleep || '?'}/5 — need to improve!`,
+      `Let's set a shared challenge this week — both hit ${Math.max(3, streak)}+ workouts. Deal?`,
+      `Readiness sync: I logged all my water today 💧 — small wins add up. How about you?`,
+      `${partner.name.split(' ')[0]}, if you're feeling low energy today — MVS mode: just show up for 20 mins. I'll do the same.`,
+    ];
+
+    // Shuffle deterministically based on today's date
+    const seed = new Date().getDate() + streak;
+    return starters.slice(seed % 3, (seed % 3) + 3);
   }
 };
 
@@ -2758,6 +2924,99 @@ function onEnterDashboard() {
   updateAuraGuidanceUI();
   calculateDisciplineScore();
   setTimeout(() => renderDisciplineChart(), 400);
+  setTimeout(() => renderWeeklyCoachReview(), 200);
+  setTimeout(() => renderHabitPatterns(), 300);
+}
+
+function renderWeeklyCoachReview() {
+  const container = el('ai-coach-review-card');
+  if (!container) return;
+
+  const review = insightsEngine.generateWeeklyReview(
+    state.workout.history,
+    state.checkIn.answers,
+    state.onboarding,
+    state.readiness
+  );
+
+  const stars = '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars);
+  const strengthsHTML = review.strengths.map(s =>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mint);"><span>✓</span><span>${s}</span></div>`
+  ).join('');
+  const focusHTML = review.focus.map(f =>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2);"><span style="color:var(--violet)">→</span><span>${f}</span></div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+      <div>
+        <span style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-2);">AURA Weekly Coach</span>
+        <p style="font-size:18px;font-weight:900;color:var(--text-1);margin-top:2px;">${review.loggedDays}/7 Sessions</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px;color:#f59e0b;letter-spacing:2px;">${stars}</div>
+        <div style="font-size:9px;color:var(--text-3);margin-top:2px;">${review.workoutPct}% consistency</div>
+      </div>
+    </div>
+    <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+      <p style="font-size:11.5px;color:var(--text-2);line-height:1.5;font-style:italic;margin:0;">"${review.coachMessage}"</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:10px;">
+        <span style="font-size:9px;font-weight:700;color:var(--mint);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px;">Strengths</span>
+        <div style="display:flex;flex-direction:column;gap:4px;">${strengthsHTML}</div>
+      </div>
+      <div style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.12);border-radius:12px;padding:10px;">
+        <span style="font-size:9px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px;">Focus</span>
+        <div style="display:flex;flex-direction:column;gap:4px;">${focusHTML}</div>
+      </div>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+function renderHabitPatterns() {
+  const container = el('habit-patterns-card');
+  if (!container) return;
+
+  const patterns = insightsEngine.detectHabitPatterns(
+    state.workout.history,
+    state.checkIn.answers,
+    state.nutrition
+  );
+
+  if (patterns.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  const typeColors = {
+    positive: { bg: 'rgba(16,185,129,0.07)', border: 'rgba(16,185,129,0.2)', text: 'var(--mint)' },
+    warning:  { bg: 'rgba(244,63,94,0.07)',  border: 'rgba(244,63,94,0.2)',  text: 'var(--rose)' },
+    neutral:  { bg: 'rgba(251,191,36,0.07)', border: 'rgba(251,191,36,0.2)', text: '#f59e0b'     }
+  };
+
+  const patternsHTML = patterns.map(p => {
+    const c = typeColors[p.type] || typeColors.neutral;
+    return `
+      <div style="background:${c.bg};border:1px solid ${c.border};border-radius:12px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">${p.icon}</span>
+        <div>
+          <p style="font-size:12px;font-weight:700;color:${c.text};margin:0;">${p.label}</p>
+          <p style="font-size:10.5px;color:var(--text-3);margin-top:2px;">${p.desc}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-2);">Habit Patterns</span>
+      <span style="font-size:10px;color:var(--text-3);">14-day analysis</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${patternsHTML}</div>
+  `;
+  container.style.display = 'block';
 }
 
 function animateRing(target) {
@@ -4833,6 +5092,24 @@ function renderPartnerTabUI() {
         </div>
       </div>
 
+      <!-- Conversation Starters (Phase 4 AI) -->
+      ${(() => {
+        const starters = insightsEngine.generateConversationStarters(state, partner);
+        if (!starters || starters.length === 0) return '';
+        const pills = starters.map((s, i) =>
+          `<div class="convo-starter-pill" data-starter-idx="${i}" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:8px 12px;font-size:11px;color:var(--text-2);line-height:1.4;cursor:pointer;transition:all 0.18s ease;">${s}</div>`
+        ).join('');
+        return `
+          <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:16px;padding:12px 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:9px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:0.06em;">Quick Starters</span>
+              <span style="font-size:9px;color:var(--text-3);">Tap to send →</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">${pills}</div>
+          </div>
+        `;
+      })()}
+
       <!-- Actions -->
       <div style="display:flex; gap:10px; margin-top:4px;">
         <button class="primary-btn" style="flex:1; margin:0; font-size:12px;" id="partner-chat-trigger-btn">Open Chat</button>
@@ -4840,7 +5117,33 @@ function renderPartnerTabUI() {
       </div>
     </div>
   `;
+
+  // Wire conversation starter pill clicks
+  const starterPills = container.querySelectorAll('.convo-starter-pill');
+  const starters = insightsEngine.generateConversationStarters(state, partner);
+  starterPills.forEach((pill, i) => {
+    pill.addEventListener('click', () => {
+      playSound('tap');
+      pill.style.background = 'rgba(139,92,246,0.18)';
+      pill.style.borderColor = 'rgba(139,92,246,0.5)';
+      pill.style.color = 'var(--text-1)';
+      setTimeout(() => {
+        pill.style.background = 'rgba(139,92,246,0.07)';
+        pill.style.borderColor = 'rgba(139,92,246,0.2)';
+        pill.style.color = 'var(--text-2)';
+      }, 600);
+      // Copy to clipboard and open chat pre-filled
+      const msg = starters[i] || '';
+      if (navigator.clipboard) navigator.clipboard.writeText(msg).catch(() => {});
+      // Pre-fill chat message if partner has an id
+      if (partner.id) {
+        openChatWithUser(partner.id, msg);
+      }
+      showSaveSuccessFeedback('Starter copied & chat opened ✦');
+    });
+  });
 }
+
 
 function renderFriendsUI() {
   const listEl = el('friends-groups-list');
