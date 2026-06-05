@@ -1107,11 +1107,137 @@ const insightsEngine = {
       `${partner.name.split(' ')[0]}, if you're feeling low energy today — MVS mode: just show up for 20 mins. I'll do the same.`,
     ];
 
-    // Shuffle deterministically based on today's date
     const seed = new Date().getDate() + streak;
     return starters.slice(seed % 3, (seed % 3) + 3);
+  },
+
+  // ── Phase 5: Recovery Score ───────────────────────────────────────────────
+  calculateRecoveryScore(history, checkInAnswers, currentReadiness) {
+    const keys = Object.keys(history || {}).sort().slice(-7);
+    let readinessSum = 0;
+    let readinessCount = 0;
+
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && typeof h.readiness === 'number') {
+        readinessSum += h.readiness;
+        readinessCount++;
+      }
+    });
+
+    // Include today's readiness
+    if (currentReadiness > 0) {
+      readinessSum += currentReadiness;
+      readinessCount++;
+    }
+
+    const avgReadiness = readinessCount > 0 ? Math.round(readinessSum / readinessCount) : 0;
+
+    // Blend with today's sleep and soreness
+    const sleep = Number(checkInAnswers.sleep) || 3;
+    const soreness = Number(checkInAnswers.soreness) || 3;
+    const sleepBonus = (sleep - 3) * 4;   // -8 to +8
+    const sorenessBonus = (soreness - 3) * 3; // -6 to +6
+
+    const score = Math.min(100, Math.max(0, avgReadiness + sleepBonus + sorenessBonus));
+    return Math.round(score);
+  },
+
+  // ── Phase 5: Recovery Streak ──────────────────────────────────────────────
+  calculateRecoveryStreak(history) {
+    const keys = Object.keys(history || {}).sort().reverse();
+    let streak = 0;
+    for (const k of keys) {
+      const h = history[k];
+      if (h && typeof h.readiness === 'number' && h.readiness >= 60) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  },
+
+  // ── Phase 5: 7-Day Readiness Sparkline ───────────────────────────────────
+  getReadinessTrend(history, currentReadiness) {
+    const today = new Date();
+    const points = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const h = history[key];
+      if (i === 0 && currentReadiness > 0) {
+        points.push({ key, value: currentReadiness, isToday: true });
+      } else if (h && typeof h.readiness === 'number') {
+        points.push({ key, value: h.readiness, isToday: false });
+      } else {
+        points.push({ key, value: null, isToday: false });
+      }
+    }
+    return points;
+  },
+
+  // ── Phase 5: Sleep Debt Tracker ───────────────────────────────────────────
+  calculateSleepDebt(history, todaySleepScore) {
+    // Map check-in sleep score (1-5) to estimated hours
+    const scoreToHours = { 1: 4.5, 2: 5.5, 3: 6.5, 4: 7.5, 5: 8.5 };
+    const target = 8; // target hours per night
+    let totalDebt = 0;
+    let daysTracked = 0;
+
+    const keys = Object.keys(history || {}).sort().slice(-6); // last 6 logged days
+    keys.forEach(k => {
+      const h = history[k];
+      if (h && h.sleepScore) {
+        const hrs = scoreToHours[h.sleepScore] || 6.5;
+        totalDebt += Math.max(0, target - hrs);
+        daysTracked++;
+      }
+    });
+
+    // Add today
+    if (todaySleepScore > 0) {
+      const hrs = scoreToHours[todaySleepScore] || 6.5;
+      totalDebt += Math.max(0, target - hrs);
+      daysTracked++;
+    }
+
+    return {
+      totalDebt: Math.round(totalDebt * 10) / 10,
+      daysTracked,
+      status: totalDebt >= 6 ? 'Critical' : totalDebt >= 3 ? 'Moderate' : 'Low'
+    };
+  },
+
+  // ── Phase 5: PR Feed ─────────────────────────────────────────────────────
+  extractPRFeed(history) {
+    const prMap = {}; // exName -> { weight, date, reps }
+
+    Object.entries(history || {}).forEach(([date, h]) => {
+      if (!h || !h.exercises) return;
+      h.exercises.forEach(ex => {
+        if (!ex || !ex.name) return;
+        const name = ex.name;
+        const sets = ex.sets || [];
+        sets.forEach(s => {
+          const w = parseFloat(s.weight) || 0;
+          if (w > 0) {
+            if (!prMap[name] || w > prMap[name].weight) {
+              prMap[name] = { weight: w, date, reps: s.reps || '—' };
+            }
+          }
+        });
+      });
+    });
+
+    return Object.entries(prMap)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 5);
   }
 };
+
 
 // ─── Exercise Database ─────────────────────────────────────────────────────
 const ADAPTIVE_GYM_DB = {
@@ -2926,7 +3052,9 @@ function onEnterDashboard() {
   setTimeout(() => renderDisciplineChart(), 400);
   setTimeout(() => renderWeeklyCoachReview(), 200);
   setTimeout(() => renderHabitPatterns(), 300);
+  setTimeout(() => renderPRFeed(), 350);
 }
+
 
 function renderWeeklyCoachReview() {
   const container = el('ai-coach-review-card');
@@ -3236,7 +3364,9 @@ function onEnterWorkout() {
   renderWorkoutGrid();
   renderWeekCalendar();
   renderMonthCalendar();
+  setTimeout(() => renderPRFeed(), 200);
 }
+
 
 function switchCalView(view) {
   state.workout.calView = view;
@@ -6054,6 +6184,117 @@ function onEnterRecovery() {
       }, 1000);
     };
   }
+
+  // Phase 5: Render recovery intelligence panel
+  setTimeout(() => renderRecoveryIntelligence(), 150);
+}
+
+function renderRecoveryIntelligence() {
+  const container = el('recovery-intelligence-panel');
+  if (!container) return;
+
+  const history = state.workout.history || {};
+  const answers = state.checkIn.answers || {};
+  const r = state.readiness || 0;
+
+  const recScore = insightsEngine.calculateRecoveryScore(history, answers, r);
+  const recStreak = insightsEngine.calculateRecoveryStreak(history);
+  const trend = insightsEngine.getReadinessTrend(history, r);
+  const sleepDebt = insightsEngine.calculateSleepDebt(history, answers.sleep || 0);
+
+  // Score color
+  const scoreColor = recScore >= 75 ? 'var(--mint)' : recScore >= 50 ? 'var(--violet)' : 'var(--rose)';
+  const scoreLabel = recScore >= 75 ? 'Recovered' : recScore >= 50 ? 'Stable' : 'Depleted';
+
+  // Debt color
+  const debtColor = sleepDebt.status === 'Critical' ? 'var(--rose)' : sleepDebt.status === 'Moderate' ? '#f59e0b' : 'var(--mint)';
+
+  // Sparkline bars
+  const maxVal = 100;
+  const sparkHTML = trend.map(p => {
+    const h = p.value !== null ? Math.round((p.value / maxVal) * 36) : 4;
+    const color = p.isToday ? 'var(--accent)' : (p.value === null ? 'rgba(255,255,255,0.08)' : p.value >= 70 ? 'var(--mint)' : p.value >= 50 ? 'var(--violet)' : 'var(--rose)');
+    const d = new Date(p.key);
+    const dayLabel = p.isToday ? 'T' : ['S','M','T','W','T','F','S'][d.getDay()];
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+        <div style="width:100%;max-width:18px;height:${h}px;background:${color};border-radius:3px;transition:height 0.4s ease;"></div>
+        <span style="font-size:8px;color:${p.isToday ? 'var(--accent)' : 'var(--text-3)'};font-weight:${p.isToday ? '800' : '500'}">${dayLabel}</span>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <span style="font-size:10px;font-weight:700;color:var(--mint);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-2);">Recovery Intelligence</span>
+      <span style="font-size:9px;color:var(--text-3);">7-day view</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center;">
+        <p style="font-size:24px;font-weight:900;color:${scoreColor};margin:0;">${state.checkIn.done ? recScore : '—'}</p>
+        <p style="font-size:9px;color:var(--text-3);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Rec. Score</p>
+        <p style="font-size:9px;font-weight:700;color:${scoreColor};margin-top:1px;">${state.checkIn.done ? scoreLabel : 'Sync'}</p>
+      </div>
+      <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center;">
+        <p style="font-size:24px;font-weight:900;color:#fb923c;margin:0;">${recStreak}</p>
+        <p style="font-size:9px;color:var(--text-3);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Rec. Streak</p>
+        <p style="font-size:9px;font-weight:700;color:#fb923c;margin-top:1px;">${recStreak >= 3 ? '🔥 Hot' : recStreak >= 1 ? 'Active' : 'Start'}</p>
+      </div>
+      <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center;">
+        <p style="font-size:24px;font-weight:900;color:${debtColor};margin:0;">${sleepDebt.totalDebt}h</p>
+        <p style="font-size:9px;color:var(--text-3);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Sleep Debt</p>
+        <p style="font-size:9px;font-weight:700;color:${debtColor};margin-top:1px;">${sleepDebt.status}</p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface-3);border:1px solid var(--border);border-radius:14px;padding:12px;">
+      <p style="font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Readiness Trend</p>
+      <div style="display:flex;align-items:flex-end;gap:4px;height:44px;">${sparkHTML}</div>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+function renderPRFeed() {
+  const container = el('pr-feed-panel');
+  if (!container) return;
+
+  const prs = insightsEngine.extractPRFeed(state.workout.history || {});
+
+  if (prs.length === 0) {
+    container.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-2);">Personal Records</span>
+      </div>
+      <p style="font-size:11px;color:var(--text-3);text-align:center;padding:12px 0;">Log workouts to track your PRs here.</p>`;
+    container.style.display = 'block';
+    return;
+  }
+
+  const prRows = prs.map((pr, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅';
+    const d = new Date(pr.date);
+    const dateStr = `${d.getDate()}/${d.getMonth()+1}`;
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+        <span style="font-size:16px;flex-shrink:0;">${medal}</span>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:12px;font-weight:700;color:var(--text-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pr.name}</p>
+          <p style="font-size:10px;color:var(--text-3);margin-top:1px;">${pr.reps} reps · ${dateStr}</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <p style="font-size:14px;font-weight:900;color:#f59e0b;margin:0;">${pr.weight}kg</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-2);">Personal Records</span>
+      <span style="font-size:9px;color:var(--text-3);">${prs.length} lifts tracked</span>
+    </div>
+    ${prRows}`;
+  container.style.display = 'block';
 }
 
 function syncDietFilterDropdowns() {
