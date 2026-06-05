@@ -318,9 +318,9 @@ High-fidelity premium components and responsive systems verified working:
 - **Modular Nutrition Architecture**: Split engine into distinct decoupled components (`nutritionEngine`, `foodSwapEngine`, `groceryEngine`) that interface through structured JSON models, ensuring seamless future LLM plug-in capabilities.
 
 ### AURA — UX RESTRUCTURE & UI ALIGNMENT PASS (JUNE 2026)
-- [x] **1. Weight & Reps Slider Overflow Fix**: Configured responsive CSS grid and 10px slider margins to prevent range handles from overflowing or clipping on mobile viewports.
-- [x] **2. Rest Timer Layout Fix**: Reordered rest selector timer buttons logically (30s, 45s, 60s, 90s, 120s) and styled start action button to be vertically centered and fully contained.
-- [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends.
+- [x] **1. Weight & Reps Slider Overflow Fix**: Stacked inputs and range sliders vertically by default for mobile viewports, applying 12px slider margin guides so knobs never touch container edges or clip.
+- [x] **2. Rest Timer Layout Fix**: Removed "45s" option, leaving (30s, 60s, 90s, 120s), and styled the start button with responsive layout and flex constraints to remain inside the card.
+- [x] **3. Friends Comparison Graph**: Added dynamic leaderboards section in the Friends tab comparing discipline score metrics and day streaks between you and your friends with index-based multi-color gradient bars.
 - [x] **4. Find Partner Tab State Polish**: Allowed viewing the Find Partner tab when matched by displaying the "Active Partnership Exists" card and hiding search preferences.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.

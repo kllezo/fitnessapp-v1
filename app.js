@@ -4763,11 +4763,18 @@ function renderFriendsUI() {
     // Sort by score descending
     comparisonList.sort((a, b) => b.score - a.score);
 
-    graphEl.innerHTML = comparisonList.map(item => {
+    const colors = [
+      'linear-gradient(to top, rgba(52,211,153,0.25), var(--mint))',
+      'linear-gradient(to top, rgba(251,146,60,0.25), #fb923c)',
+      'linear-gradient(to top, rgba(14,165,233,0.25), #0ea5e9)',
+      'linear-gradient(to top, rgba(244,63,94,0.25), var(--rose))'
+    ];
+
+    graphEl.innerHTML = comparisonList.map((item, idx) => {
       const heightPercent = Math.max(20, Math.min(100, item.score)); // cap height
       const barBg = item.isSelf 
         ? 'linear-gradient(to top, var(--violet), var(--accent))' 
-        : 'linear-gradient(to top, var(--surface-3), rgba(139,92,246,0.25))';
+        : colors[idx % colors.length];
       const scoreColor = item.isSelf ? 'var(--accent)' : 'var(--text-2)';
       const borderStyle = item.isSelf ? 'border: 1px solid var(--accent);' : 'border: 1px solid var(--border);';
       return `

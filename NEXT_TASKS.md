@@ -53,10 +53,10 @@ Track the progress of restructuring and features development:
   - [x] Resolve set checklist double-toggling and independent selection states.
 - [x] **11. UI Layout & Slider Alignment Pass**
   - [x] Fix Weight & Reps slider knobs extending outside container/viewport bounds.
-  - [x] Reorder rest timer selector buttons to logical ascending order (30s, 45s, 60s, 90s, 120s).
+  - [x] Reorder rest timer selector buttons to logical ascending order (30s, 60s, 90s, 120s) and remove 45s button.
   - [x] Center and contain rest start button inside card bounds.
   - [x] Perform responsive pass (320px, 375px, 390px, 430px widths) with zero horizontal scrolling.
-  - [x] Add dynamic friends comparison leaderboard chart/graph at the top of Friends sub-tab.
+  - [x] Add dynamic friends comparison leaderboard chart/graph at the top of Friends sub-tab with index-based multi-color gradient bars.
 - [ ] **12. Future AI & Recovery Integrations**
   - [ ] Implement AI weekly reviews, habit logs, and readiness star ratings.
   - [ ] Connect Recovery Score, Recovery Streak, Fatigue Trend, and Sleep Debt telemetry.

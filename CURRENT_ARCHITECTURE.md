@@ -35,7 +35,7 @@ The app uses a layout navigation controller displaying a active screen overlay a
 - Responsive phone chassis wrapper containing Simulated iPhone notches, gesture pills, and system headers.
 - Gesture-dismissible sheets using touch velocity vector math.
 - Backdrop blurred warning overlays for safe reset flows.
-- Responsive CSS Grid layouts for training sheet options with custom viewport media queries down to 320px preventing widget clipping.
+- Responsive vertical stacked layouts for training sheet options with custom viewport media queries down to 320px preventing widget clipping.
 
 [SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.
 

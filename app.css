@@ -1589,12 +1589,14 @@ body::after {
 .rest-timer-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: linear-gradient(135deg, var(--mint-dim), transparent);
   border: 1px solid rgba(16,185,129,0.2);
   border-radius: 20px;
-  padding: 14px;
+  padding: 12px 14px;
   margin-bottom: 16px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .rest-ring-wrap {
   position: relative;
@@ -1614,7 +1616,7 @@ body::after {
   transition: stroke-dashoffset 1s linear;
 }
 .rest-val { font-size: 14px; font-weight: 700; color: var(--mint); position: relative; z-index: 1; }
-.rest-info { flex: 1; }
+.rest-info { flex: 1; min-width: 0; }
 .rest-title { font-size: 13px; font-weight: 600; color: var(--text-1); }
 .rest-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .rest-action-btn {
@@ -1639,12 +1641,13 @@ body::after {
     padding: 10px 12px;
   }
   .rest-selectors {
-    gap: 3px !important;
+    gap: 4px !important;
   }
   .rest-sel-btn {
     padding: 3px 5px !important;
-    font-size: 8px !important;
+    font-size: 8.5px !important;
     border-radius: 4px !important;
+    flex: 1;
   }
   .rest-action-btn {
     padding: 6px 10px;
@@ -1656,8 +1659,11 @@ body::after {
     padding: 8px 10px;
   }
   .rest-selectors {
-    flex-wrap: wrap !important;
     gap: 2px !important;
+  }
+  .rest-sel-btn {
+    font-size: 7.5px !important;
+    padding: 3px 4px !important;
   }
 }
 
@@ -1668,19 +1674,18 @@ body::after {
   border-radius: 20px;
   padding: 16px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* Stacked by default for mobile viewports */
   gap: 16px;
   margin-bottom: 16px;
 }
-@media (max-width: 380px) {
+@media (min-width: 481px) {
   .session-controls {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
   }
 }
 .sc-item { display: flex; flex-direction: column; gap: 8px; }
 .sc-label { font-size: 11px; font-weight: 600; color: var(--text-2); font-family: var(--font-2); text-transform: uppercase; letter-spacing: 0.06em; }
-.sc-dual { display: flex; align-items: center; gap: 12px; }
+.sc-dual { display: flex; align-items: center; gap: 12px; padding: 0 4px; }
 .sc-num {
   width: 64px;
   padding: 8px;
@@ -1702,7 +1707,7 @@ body::after {
   background: rgba(255,255,255,0.08);
   border-radius: 4px;
   outline: none;
-  margin: 0 10px; /* add horizontal margin to accommodate knob overflow */
+  margin: 0 12px; /* Sufficient space for knob so it never clips */
 }
 .sc-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
