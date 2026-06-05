@@ -957,6 +957,41 @@
             <p class="advice-body" id="advice-body">Complete your daily sync to receive today's readiness assessment.</p>
           </div>
 
+          <!-- AURA Consistency Index Card (moved from Socials) -->
+          <div class="discipline-card" style="background:linear-gradient(135deg, var(--surface-2), var(--violet-dim)); border:1.5px solid rgba(139,92,246,0.35); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:14px; margin-top:12px; margin-bottom:12px; position:relative; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; font-family:var(--font-2);">AURA Consistency Index</span>
+                <p style="font-size:36px; font-weight:900; color:var(--text-1); margin-top:4px;" id="discipline-score-val">—</p>
+              </div>
+              <span class="discipline-tag" id="discipline-status-tag" style="background:var(--surface-3); color:var(--text-2); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; padding:4px 10px; border-radius:12px;">Syncing</span>
+            </div>
+            <!-- Mini metrics -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--text-1);display:block;" id="acc-streak-val">4</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Day Streak</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--mint);display:block;" id="acc-weekly-val">5/7</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Weekly</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--violet);display:block;" id="acc-reliability-val">A+</span>
+                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Reliability</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progression Charts (moved from Socials) -->
+          <div class="chart-card" style="margin-bottom:16px;">
+            <div class="chart-top">
+              <span class="chart-lbl">Past 7 Days Discipline</span>
+              <span class="chart-avg" id="chart-avg">— avg</span>
+            </div>
+            <canvas id="discipline-chart" class="chart-canvas" style="height:100px;"></canvas>
+          </div>
+
           <!-- Today's AURA Guidance Panel -->
           <div class="guidance-card" id="guidance-card" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; margin-top:12px; display:none; flex-direction:column; gap:12px;">
             <p style="font-size:12px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin:0;">Today's AURA Guidance</p>
@@ -1020,6 +1055,8 @@
               <div class="insight-row"><span class="insight-label">Energy Mode</span><span class="insight-val" id="ins-energy">Standard ⚡</span></div>
             </div>
           </div>
+
+
 
           <!-- Today's Workout Card -->
           <p class="section-label">Today's Session</p>
@@ -1206,7 +1243,7 @@
             </div>
 
             <!-- Session Controls -->
-            <div class="session-controls" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+            <div class="session-controls" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               <div class="sc-item">
                 <label class="sc-label">Weight (kg)</label>
                 <div class="sc-dual">
@@ -1221,13 +1258,7 @@
                   <input type="range" class="sc-slider" id="sc-reps-slider" min="1" max="30" value="10">
                 </div>
               </div>
-              <div class="sc-item">
-                <label class="sc-label">Difficulty (1-10)</label>
-                <div class="sc-dual">
-                  <input type="number" class="sc-num" id="sc-diff-num" value="8" min="1" max="10">
-                  <input type="range" class="sc-slider" id="sc-diff-slider" min="1" max="10" value="8">
-                </div>
-              </div>
+              
             </div>
 
             <!-- Sets Log -->
@@ -1575,121 +1606,138 @@
               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
               <span class="inbox-badge hidden" id="inbox-badge" style="position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--accent);color:#000;font-size:9px;font-weight:900;border-radius:50%;display:flex;align-items:center;justify-content:center;">1</span>
             </button>
+            <button class="inbox-btn" id="socials-profile-btn" style="position:relative;width:36px;height:36px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--dur-fast) ease;">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </button>
           </div>
         </div>
 
-        <div class="screen-scroll">
+        <!-- Socials Tab Bar -->
+        <div class="social-tabs-header" style="display:flex; border-bottom:1px solid rgba(255,255,255,0.06); padding:0 20px 8px; gap:16px; margin-top:10px;">
+          <button class="sub-tab-btn active" data-tab="partner" id="tab-btn-partner" style="background:none; border:none; color:var(--text-1); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; padding:6px 0; position:relative; transition:color 0.2s ease;">
+            Partner
+            <span class="active-indicator" style="position:absolute; bottom:-9px; left:0; right:0; height:2.5px; background:var(--violet); border-radius:2px;"></span>
+          </button>
+          <button class="sub-tab-btn" data-tab="friends" id="tab-btn-friends" style="background:none; border:none; color:var(--text-3); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; padding:6px 0; position:relative; transition:color 0.2s ease;">
+            Friends
+          </button>
+          <button class="sub-tab-btn" data-tab="find-partner" id="tab-btn-find-partner" style="background:none; border:none; color:var(--text-3); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; padding:6px 0; position:relative; transition:color 0.2s ease;">
+            Find Partner
+          </button>
+        </div>
 
-          <!-- Profile Quick Card -->
-          <div class="profile-quick-card" id="profile-quick-card">
-            <div class="pqc-avatar" id="pqc-avatar">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="opacity:0.5"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        <div class="screen-scroll" style="padding-top:12px;">
+          
+          <!-- PANEL 1: FIND PARTNER -->
+          <div class="social-panel hidden" id="panel-find-partner">
+            <!-- Active Partnership Exists state (hidden by default) -->
+            <div id="active-partnership-card" class="hidden" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:20px; text-align:center; margin-bottom:16px;">
+              <span style="font-size:36px; display:block; margin-bottom:12px;">🏆</span>
+              <p style="font-size:14px; font-weight:800; color:var(--text-1);">Active Partnership Exists</p>
+              <p style="font-size:12px; color:var(--text-3); margin-top:6px; line-height:1.45;">You are currently matched with an accountability partner. Check the Partner tab for details.</p>
+              <button class="primary-btn" id="go-to-partner-tab-btn" style="margin-top:16px;font-size:12px;width:100%;">View Partner</button>
             </div>
-            <div class="pqc-info">
-              <p class="pqc-name" id="pqc-name">Your Name</p>
-              <p class="pqc-handle" id="pqc-handle">@username</p>
-            </div>
-            <button class="pqc-view-btn" id="view-profile-btn">View Profile →</button>
-          </div>
 
-          <!-- Discipline Score Card -->
-          <div class="discipline-card" style="background:linear-gradient(135deg, var(--surface-2), var(--violet-dim)); border:1.5px solid rgba(139,92,246,0.35); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:14px; margin-bottom:20px; position:relative; overflow:hidden;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <span style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; font-family:var(--font-2);">AURA Consistency Index</span>
-                <p style="font-size:36px; font-weight:900; color:var(--text-1); margin-top:4px;" id="discipline-score-val">—</p>
-              </div>
-              <span class="discipline-tag" id="discipline-status-tag" style="background:var(--surface-3); color:var(--text-2); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; padding:4px 10px; border-radius:12px;">Syncing</span>
+            <!-- Match Status -->
+            <div id="match-status-card" class="hidden" style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:16px;">
+              <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.06em; display:block;">Match Status</span>
+              <p style="font-size:14px; font-weight:800; color:var(--text-1); margin-top:4px;" id="find-partner-status-text">Idle · Searching Suspended</p>
             </div>
-            <!-- Mini metrics -->
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
-                <span style="font-size:16px;font-weight:800;color:var(--text-1);display:block;" id="acc-streak-val">4</span>
-                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Day Streak</span>
-              </div>
-              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
-                <span style="font-size:16px;font-weight:800;color:var(--mint);display:block;" id="acc-weekly-val">5/7</span>
-                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Weekly</span>
-              </div>
-              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
-                <span style="font-size:16px;font-weight:800;color:var(--violet);display:block;" id="acc-reliability-val">A+</span>
-                <span style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Reliability</span>
-              </div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:10px 14px; border-radius:14px;">
-              <p style="font-size:10px; color:var(--text-3); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Consistency Factor</p>
-              <p style="font-size:12px; color:var(--text-2); margin-top:4px; line-height:1.45;" id="discipline-expl">Complete your daily sync to activate your consistency index.</p>
-            </div>
-          </div>
 
-          <!-- No partner state -->
-          <div class="find-partner-card" id="find-partner-card">
-            <div class="fpc-icon">🤝</div>
-            <div class="fpc-text">
-              <p class="fpc-title">Find an Accountability Partner</p>
-              <p class="fpc-sub">We match you based on discipline score, goals, schedule, and lifestyle compatibility. Not random. Not instant.</p>
+            <!-- Compatibility Filters Summary -->
+            <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:16px;" id="compatibility-filters-summary-card" class="hidden">
+              <span style="font-size:9px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.06em; display:block;">Compatibility Filters</span>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;" id="filters-summary-list">
+                <!-- JS dynamically renders active preferences -->
+              </div>
+              <button class="ghost-btn" id="update-match-filters-btn" style="margin-top:12px; font-size:11px; width:100%; padding:6px 0;">Configure Filters</button>
             </div>
-            <button class="primary-btn" id="find-partner-btn" style="margin-top:14px;font-size:13px;">Find My Match →</button>
-          </div>
 
-          <!-- Pending match state (hidden by default) -->
-          <div class="match-pending-card hidden" id="match-pending-card">
-            <div class="mpc-anim">
-              <div class="mpc-pulse-ring"></div>
-              <span class="mpc-icon">🔍</span>
+            <!-- No partner state -->
+            <div class="find-partner-card" id="find-partner-card">
+              <div class="fpc-icon">🤝</div>
+              <div class="fpc-text">
+                <p class="fpc-title">Find an Accountability Partner</p>
+                <p class="fpc-sub">We match you based on discipline score, goals, schedule, and lifestyle compatibility. Not random. Not instant.</p>
+              </div>
+              <button class="primary-btn" id="find-partner-btn" style="margin-top:14px;font-size:13px;">Find My Match →</button>
             </div>
-            <p class="mpc-title">Analyzing Compatibility</p>
-            <p class="mpc-sub">Still finding your accountability match... This may take up to 24 hours for the best compatibility.</p>
-            <div class="mpc-progress-dots">
-              <span class="mpc-dot active"></span>
-              <span class="mpc-dot"></span>
-              <span class="mpc-dot"></span>
-            </div>
-            <button class="ghost-btn" id="cancel-match-btn" style="font-size:12px;margin-top:8px;">Cancel Request</button>
-          </div>
 
-          <!-- Active Partner Card (hidden by default) -->
-          <div class="active-partner-card hidden" id="active-partner-card">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-              <div class="sm-avatar mint" id="partner-avatar-badge">AK</div>
-              <div style="flex:1;">
-                <p style="font-size:15px;font-weight:700;color:var(--text-1);" id="partner-name">Arjun K.</p>
-                <p style="font-size:11px;color:var(--text-3);margin-top:2px;" id="partner-location">Mumbai, India</p>
+            <!-- Pending match state (hidden by default) -->
+            <div class="match-pending-card hidden" id="match-pending-card">
+              <div class="mpc-anim">
+                <div class="mpc-pulse-ring"></div>
+                <span class="mpc-icon">🔍</span>
               </div>
-              <div style="text-align:right;">
-                <div class="compat-score" id="partner-compat">87%</div>
-                <p style="font-size:9px;color:var(--text-3);margin-top:2px;">Compatible</p>
+              <p class="mpc-title">Analyzing Compatibility</p>
+              <p class="mpc-sub">Still finding your accountability match... This may take up to 24 hours for the best compatibility.</p>
+              <div class="mpc-progress-dots">
+                <span class="mpc-dot active"></span>
+                <span class="mpc-dot"></span>
+                <span class="mpc-dot"></span>
               </div>
+              <button class="ghost-btn" id="cancel-match-btn" style="font-size:12px;margin-top:8px;">Cancel Request</button>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-              <div style="background:var(--surface-2);border:1px solid var(--border);padding:8px;border-radius:10px;text-align:center;">
-                <span style="font-size:11px;font-weight:700;color:var(--mint);display:block;" id="partner-discipline">91</span>
-                <span style="font-size:9px;color:var(--text-3);">Discipline</span>
+
+            <!-- Incoming Request Card (Ravi V.) (hidden by default) -->
+            <div class="match-card hidden" id="incoming-request-card" style="background:linear-gradient(135deg, var(--surface-2), rgba(249,115,22,0.08)); border:1.5px solid rgba(249,115,22,0.25); border-radius:24px; padding:20px; margin-bottom:20px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                  <span style="font-size:9px; font-weight:800; color:#fb923c; text-transform:uppercase; letter-spacing:0.12em; background:rgba(249,115,22,0.1); padding:3px 8px; border-radius:8px;">Incoming Partner Request</span>
+                  <h3 style="font-size:18px; font-weight:800; color:var(--text-1); margin-top:6px;">Ravi V.</h3>
+                  <p style="font-size:11px; color:var(--text-3); margin-top:2px;">Bangalore, India · Software Developer</p>
+                </div>
+                <div style="text-align:right;">
+                  <span style="font-size:24px; font-weight:900; color:#fb923c; font-family:var(--font-2);">82%</span>
+                  <p style="font-size:8px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px;">Alignment</p>
+                </div>
               </div>
-              <div style="background:var(--surface-2);border:1px solid var(--border);padding:8px;border-radius:10px;text-align:center;">
-                <span style="font-size:11px;font-weight:700;color:var(--violet);display:block;" id="partner-training">Gym · Evening</span>
-                <span style="font-size:9px;color:var(--text-3);">Training</span>
+              <div style="display:flex; gap:8px;">
+                <button class="primary-btn" id="accept-request-btn" style="flex:1; margin:0; font-size:12px; background:linear-gradient(135deg, #fb923c, #f97316);">Accept</button>
+                <button class="ghost-btn" id="decline-request-btn" style="flex:1; margin:0; font-size:12px;">Decline</button>
               </div>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="secondary-btn" style="flex:1;font-size:12px;" id="partner-msg-btn">Message</button>
-              <button class="ghost-btn" style="flex:1;font-size:12px;" id="end-partnership-btn">End Partnership</button>
             </div>
           </div>
 
-          <!-- Progression Charts -->
-          <p class="section-label" style="margin-top:24px;">Discipline Index</p>
-          <div class="chart-card">
-            <div class="chart-top">
-              <span class="chart-lbl">Past 7 Days</span>
-              <span class="chart-avg" id="chart-avg">— avg</span>
+          <!-- PANEL 2: PARTNER -->
+          <div class="social-panel" id="panel-partner">
+            <!-- Dynamic partner info rendered by JS -->
+          </div>
+
+          <!-- PANEL 3: FRIENDS -->
+          <div class="social-panel hidden" id="panel-friends">
+            <!-- Pending Requests Section (hidden by default) -->
+            <div id="friend-requests-section" style="margin-bottom:16px;" class="hidden">
+              <p class="section-label" style="margin-bottom:8px;">Pending Requests</p>
+              <div id="friend-requests-list" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- JS rendered friend requests -->
+              </div>
             </div>
-            <canvas id="discipline-chart" class="chart-canvas"></canvas>
+
+            <!-- Friend List Section -->
+            <div id="friends-groups-list" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- JS rendered friend categories -->
+            </div>
+
+            <!-- Add Friend Action -->
+            <div style="margin-top:16px; margin-bottom:16px;">
+              <button class="primary-btn" id="add-friend-trigger-btn" style="margin:0; width:100%; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg, var(--surface-2), rgba(139,92,246,0.05)); border:1.5px solid var(--border);">
+                <span>👤+</span> Add Friend
+              </button>
+            </div>
+
+            <!-- Friend History in Friends Tab -->
+            <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:20px; padding:16px;">
+              <p style="font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Friend History</p>
+              <div id="friends-tab-history-list" style="display:flex; flex-direction:column; gap:12px;">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
           </div>
 
           <!-- Privacy Settings -->
           <p class="section-label" style="margin-top:24px;">Privacy & Matching</p>
-          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <p style="font-size:13px;font-weight:600;color:var(--text-1);">Enable Matching</p>
@@ -1713,7 +1761,7 @@
             </div>
           </div>
 
-          <button class="secondary-btn" id="reset-btn" style="margin-top:20px;opacity:0.5;font-size:12px;">Re-initialize Aura Setup</button>
+          <button class="secondary-btn" id="reset-btn" style="margin-top:20px;opacity:0.5;font-size:12px;width:100%;">Re-initialize Aura Setup</button>
         </div>
       </div>
 
@@ -1784,6 +1832,15 @@
                   <span style="font-size:12px;color:var(--text-2);">Location</span>
                   <span style="font-size:12px;font-weight:600;color:var(--text-1);" id="profile-location">—</span>
                 </div>
+              </div>
+            </div>
+
+            
+            <!-- Friend Request History -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px;">
+              <p style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Friend History</p>
+              <div id="profile-friend-history-list" style="display:flex;flex-direction:column;gap:12px;">
+                <!-- JS rendered -->
               </div>
             </div>
 
@@ -2350,6 +2407,44 @@
           </div>
           <div id="scorecard-content">
             <!-- JS populated: compatibility score, transformation archetype, consistency index -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ADD FRIEND BOTTOM SHEET ═══ -->
+      <div class="sheet-backdrop hidden" id="add-friend-backdrop" style="z-index: 800;"></div>
+      <div class="bottom-sheet" id="add-friend-sheet" style="height:55%; background:#0c0c12; border-top:1px solid var(--border-2); border-radius:32px 32px 0 0; z-index:810;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:10px;">
+          <div>
+            <p class="sheet-ex-name" style="font-size:18px; font-weight:700; color:var(--text-1);">Add Friend</p>
+            <span style="font-size:11px; color:var(--text-3); display:inline-block; margin-top:4px;">Select the type of friend you'd like to add.</span>
+          </div>
+          <button class="sheet-close" id="add-friend-close" style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-2); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+        
+        <div class="sheet-scroll" style="padding:16px 20px 40px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px;">
+          <button class="primary-btn add-friend-opt-btn" data-type="existing" style="margin:0; font-size:13px; text-align:left; display:flex; align-items:center; justify-content:space-between; width:100%;">
+            <span>Add Existing Friend (Search ID)</span>
+            <span>➔</span>
+          </button>
+          <button class="primary-btn add-friend-opt-btn" data-type="gym_buddy" style="margin:0; font-size:13px; text-align:left; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, rgba(96,165,250,0.1), rgba(96,165,250,0.02)); border:1px solid rgba(96,165,250,0.25); color:#60a5fa; width:100%;">
+            <span>Add Gym Buddy</span>
+            <span>🏋️</span>
+          </button>
+          <button class="primary-btn add-friend-opt-btn" data-type="family" style="margin:0; font-size:13px; text-align:left; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02)); border:1px solid rgba(16,185,129,0.25); color:var(--mint); width:100%;">
+            <span>Add Family Member</span>
+            <span>🏠</span>
+          </button>
+          <button class="primary-btn add-friend-opt-btn" data-type="spouse" style="margin:0; font-size:13px; text-align:left; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, rgba(236,72,153,0.1), rgba(236,72,153,0.02)); border:1px solid rgba(236,72,153,0.25); color:#ec4899; width:100%;">
+            <span>Add Spouse</span>
+            <span>💍</span>
+          </button>
+
+          <!-- Search inputs (initially hidden) -->
+          <div id="friend-search-input-wrap" class="hidden" style="display:flex; flex-direction:column; gap:8px; margin-top:10px; border-top:1px solid var(--border); padding-top:12px;">
+            <input type="text" id="friend-search-input" class="auth-input" placeholder="Enter friend username (e.g. @rohan)" style="font-size:13px; width:100%;">
+            <button class="primary-btn" id="friend-search-confirm" style="margin:0; width:100%;">Search & Add</button>
           </div>
         </div>
       </div>

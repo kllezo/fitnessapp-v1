@@ -6,6 +6,211 @@
 'use strict';
 
 // ─── Global State ──────────────────────────────────────────────────────────
+
+// ─── Socials Restructure Custom Helpers ───
+function getUserById(id) {
+  if (state.auth.partner && state.auth.partner.id === id) {
+    return state.auth.partner;
+  }
+  if (state.auth.matchedCandidate && state.auth.matchedCandidate.id === id) {
+    return state.auth.matchedCandidate;
+  }
+  if (id === 'm_ravi') {
+    return {
+      id: 'm_ravi',
+      name: 'Ravi V.',
+      gender: 'male',
+      age: 26,
+      country: 'India',
+      city: 'Bangalore',
+      avatarInitials: 'RV',
+      disciplineScore: 84,
+      goals: ['muscle-gain', 'discipline'],
+      ambition: 'ambitious',
+      training: 'gym',
+      profession: 'SWE',
+      income: '50-100',
+      schedule: 'evening',
+      lifeGoals: ['discipline', 'career'],
+      personality: 'intense',
+      trustSignals: { streak: 85, recovery: 78, consistency: 88 },
+      compatibilityPct: 82
+    };
+  }
+  return (state.auth.friends || []).find(f => f.id === id);
+}
+
+function switchSocialTab(tabName) {
+  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    if (btn.dataset.tab === tabName) {
+      btn.classList.add('active');
+      btn.style.color = 'var(--text-1)';
+      if (!btn.querySelector('.active-indicator')) {
+        const ind = document.createElement('span');
+        ind.className = 'active-indicator';
+        ind.style.cssText = 'position:absolute; bottom:-9px; left:0; right:0; height:2.5px; background:var(--violet); border-radius:2px;';
+        btn.appendChild(ind);
+      }
+    } else {
+      btn.classList.remove('active');
+      btn.style.color = 'var(--text-3)';
+      btn.querySelector('.active-indicator')?.remove();
+    }
+  });
+
+  document.querySelectorAll('.social-panel').forEach(panel => {
+    if (panel.id === `panel-${tabName}`) {
+      panel.classList.remove('hidden');
+    } else {
+      panel.classList.add('hidden');
+    }
+  });
+}
+
+function switchScorecardTab(tabName) {
+  document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+    if (btn.dataset.tab === tabName) {
+      btn.classList.add('active');
+      btn.style.color = 'var(--text-1)';
+      if (!btn.querySelector('.modal-active-indicator')) {
+        const ind = document.createElement('span');
+        ind.className = 'modal-active-indicator';
+        ind.style.cssText = 'position:absolute; bottom:-7px; left:0; right:0; height:2px; background:var(--violet); border-radius:2px;';
+        btn.appendChild(ind);
+      }
+    } else {
+      btn.classList.remove('active');
+      btn.style.color = 'var(--text-3)';
+      btn.querySelector('.modal-active-indicator')?.remove();
+    }
+  });
+
+  const profilePanel = el('scorecard-panel-profile');
+  const compatPanel = el('scorecard-panel-compatibility');
+  if (tabName === 'profile') {
+    profilePanel?.classList.remove('hidden');
+    compatPanel?.classList.add('hidden');
+  } else {
+    profilePanel?.classList.add('hidden');
+    compatPanel?.classList.remove('hidden');
+  }
+}
+
+function addMockFriend(type) {
+  playSound('done');
+  
+  // Close sheet
+  const sheet = el('add-friend-sheet');
+  const backdrop = el('add-friend-backdrop');
+  if (sheet) {
+    sheet.style.transform = 'translateY(100%)';
+    if (backdrop) backdrop.classList.remove('visible');
+    setTimeout(() => {
+      sheet.classList.add('hidden');
+      if (backdrop) backdrop.classList.add('hidden');
+    }, 300);
+  }
+  
+  // Generate a mock friend based on the type
+  let newFriend = null;
+  const idSuffix = Date.now().toString().slice(-4);
+  
+  if (type === 'spouse') {
+    newFriend = {
+      id: 'f_spouse_' + idSuffix,
+      name: 'Kavya (Spouse)',
+      type: 'spouse',
+      gender: 'female',
+      age: 24,
+      country: 'India',
+      city: 'Pune',
+      avatarInitials: 'KV',
+      disciplineScore: 90,
+      goals: ['discipline', 'weight-loss'],
+      ambition: 'consistent',
+      training: 'home',
+      schedule: 'morning',
+      active: true,
+      streak: 5
+    };
+  } else if (type === 'family') {
+    newFriend = {
+      id: 'f_family_' + idSuffix,
+      name: 'Amit (Cousin)',
+      type: 'family',
+      gender: 'male',
+      age: 22,
+      country: 'India',
+      city: 'Delhi',
+      avatarInitials: 'AM',
+      disciplineScore: 82,
+      goals: ['muscle-gain', 'strength'],
+      ambition: 'casual',
+      training: 'gym',
+      schedule: 'evening',
+      active: false,
+      streak: 2
+    };
+  } else {
+    // gym_buddy / training_buddy
+    newFriend = {
+      id: 'f_gym_' + idSuffix,
+      name: 'Karan S.',
+      type: 'training_buddy',
+      gender: 'male',
+      age: 26,
+      country: 'India',
+      city: 'Bangalore',
+      avatarInitials: 'KS',
+      disciplineScore: 94,
+      goals: ['strength', 'hybrid'],
+      ambition: 'ambitious',
+      training: 'gym',
+      schedule: 'evening',
+      active: true,
+      streak: 18
+    };
+  }
+  
+  if (!state.auth.friends) state.auth.friends = [];
+  state.auth.friends.unshift(newFriend);
+  
+  logFriendHistory(newFriend.name, 'Friend Added');
+  addNotification('social', 'Friend Added 👤', `${newFriend.name} has been added to your accountability group.`, todayKey());
+  
+  renderFriendsUI();
+  renderInbox();
+  saveToStorage();
+  showSaveSuccessFeedback();
+}
+
+function openChatWithUser(userId) {
+  playSound('tap');
+  closeInbox();
+  closePartnerScorecard();
+  const chatOverlay = el('chat-screen-overlay');
+  if (!chatOverlay) return;
+
+  const user = getUserById(userId);
+  if (!user) return;
+
+  state.auth.activeChatUser = userId;
+  el('chat-header-name').textContent = user.name;
+
+  // Populate initial simulated messages if none exist
+  if (!state.auth.chats[userId]) {
+    state.auth.chats[userId] = [
+      { sender: 'them', text: `Hey! Aligned with you on the accountability path. Let's compound discipline!`, time: '2h ago' }
+    ];
+  }
+
+  renderChatMessages();
+
+  chatOverlay.classList.remove('hidden');
+  void chatOverlay.offsetWidth;
+  chatOverlay.classList.add('visible');
+}
+
 const state = {
   currentScreen: 'screen-splash',
   currentTab: 'home', // home | train | diet | recovery | socials
@@ -31,7 +236,112 @@ const state = {
     matchPending: false,
     matchTimer: null,
     partner: null,
-    friends: [], // Circle of accountability friends
+    activeChatUser: null,
+    friendHistory: [
+      { user: 'Ravi', status: 'Added Friend', date: '12 Jun 2026' },
+      { user: 'Arjun', status: 'Declined Request', date: '15 Jun 2026' },
+      { user: 'Akash', status: 'Removed Friend', date: '21 Jun 2026' }
+    ],
+    incomingFriendRequests: [
+      { id: 'req_arjun', name: 'Arjun P.', type: 'gym_buddy', avatarInitials: 'AP', disciplineScore: 81, lastActive: '1d ago', streak: 4, todayStatus: { workout: 'Completed', protein: 'Hit', water: 'Missed', sleep: 'Hit' } }
+    ],
+    friends: [
+      {
+        id: 'f_neha',
+        name: 'Neha (Spouse)',
+        type: 'spouse',
+        gender: 'female',
+        age: 23,
+        country: 'India',
+        city: 'Mumbai',
+        avatarInitials: 'NH',
+        disciplineScore: 92,
+        goals: ['discipline', 'strength'],
+        ambition: 'consistent',
+        training: 'gym',
+        schedule: 'evening',
+        active: true,
+        streak: 8,
+        lastActive: '10m ago',
+        todayStatus: { workout: 'Completed', protein: 'Hit', water: 'Hit', sleep: 'Hit' }
+      },
+      {
+        id: 'f_vikram',
+        name: 'Vikram S.',
+        type: 'gym_buddy',
+        gender: 'male',
+        age: 25,
+        country: 'India',
+        city: 'Mumbai',
+        avatarInitials: 'VS',
+        disciplineScore: 89,
+        goals: ['muscle-gain', 'strength'],
+        ambition: 'ambitious',
+        training: 'gym',
+        schedule: 'morning',
+        active: true,
+        streak: 12,
+        lastActive: '1h ago',
+        todayStatus: { workout: 'Completed', protein: 'Hit', water: 'Missed', sleep: 'Hit' }
+      },
+      {
+        id: 'f_sameer',
+        name: 'Sameer K.',
+        type: 'training_buddy',
+        gender: 'male',
+        age: 24,
+        country: 'India',
+        city: 'Hyderabad',
+        avatarInitials: 'SK',
+        disciplineScore: 86,
+        goals: ['athlete', 'hybrid'],
+        ambition: 'ambitious',
+        training: 'hybrid',
+        schedule: 'evening',
+        active: false,
+        streak: 15,
+        lastActive: 'Yesterday',
+        todayStatus: { workout: 'Rest Day', protein: 'Hit', water: 'Hit', sleep: 'Missed' }
+      },
+      {
+        id: 'f_priya',
+        name: 'Priya (Sister)',
+        type: 'family',
+        gender: 'female',
+        age: 26,
+        country: 'India',
+        city: 'Delhi',
+        avatarInitials: 'PR',
+        disciplineScore: 78,
+        goals: ['discipline', 'recovery'],
+        ambition: 'consistent',
+        training: 'home',
+        schedule: 'afternoon',
+        active: true,
+        streak: 3,
+        lastActive: '3h ago',
+        todayStatus: { workout: 'Completed', protein: 'Missed', water: 'Hit', sleep: 'Hit' }
+      },
+      {
+        id: 'f_rohan',
+        name: 'Rohan M.',
+        type: 'local_friend',
+        gender: 'male',
+        age: 24,
+        country: 'India',
+        city: 'Mumbai',
+        avatarInitials: 'RM',
+        disciplineScore: 72,
+        goals: ['weight-loss'],
+        ambition: 'casual',
+        training: 'outdoor',
+        schedule: 'evening',
+        active: false,
+        streak: 0,
+        lastActive: '2d ago',
+        todayStatus: { workout: 'Missed', protein: 'Missed', water: 'Missed', sleep: 'Missed' }
+      }
+    ],
     chats: {}, // Simulated conversations database
   },
 
@@ -129,6 +439,11 @@ const state = {
     ambientCtx: null,
     ambientNode: null,
     ambientGain: null,
+    // Future Recovery Architecture placeholders
+    futureRecoveryScore: null,
+    futureRecoveryStreak: 0,
+    futureFatigueTrend: null,
+    futureSleepDebt: 0,
   },
 
   audio: {
@@ -2370,6 +2685,8 @@ function onEnterDashboard() {
   updateRecoveryStateHeader();
   updateStreakUI();
   updateAuraGuidanceUI();
+  calculateDisciplineScore();
+  setTimeout(() => renderDisciplineChart(), 400);
 }
 
 function animateRing(target) {
@@ -2952,10 +3269,7 @@ function openSheet(exId) {
   el('sc-reps-num').value = ex.reps;
   el('sc-reps-slider').value = ex.reps;
 
-  // Sync global difficulty slider
-  const defaultDiff = ex.sets.length > 0 ? (ex.sets[0].rpe || 8) : 8;
-  el('sc-diff-num').value = defaultDiff;
-  el('sc-diff-slider').value = defaultDiff;
+
 
   // Init sets if none
   if (ex.sets.length === 0) {
@@ -3053,7 +3367,9 @@ function closeSheet() {
   renderWorkoutGrid();
 }
 
+
 function renderSetsRows(ex) {
+
   const container = el('sets-rows');
   if (!container) return;
   container.innerHTML = '';
@@ -3117,25 +3433,7 @@ function renderSetsRows(ex) {
       });
     });
 
-    row.querySelector('.set-check').addEventListener('click', () => {
-      set.done = !set.done;
-      if (set.done && checkForPR(ex, i)) flashPRBadge(ex.id);
-      if (set.done) startRestTimer();
-      renderSetsRows(ex);
-      updateVolumeProgressBar();
-      checkWorkoutCompletion();
-      saveToStorage();
-      
-      // Auto-complete only when all sets checked & smooth completion timing
-      if (set.done && ex.sets.every(s => s.done)) {
-        setTimeout(() => {
-          if (state.activeSheet.exId === ex.id) {
-            closeSheet();
-            showSaveSuccessFeedback("Exercise Complete! ⚡");
-          }
-        }, 600);
-      }
-    });
+
 
     row.querySelector('.set-delete').addEventListener('click', () => {
       deleteSet(ex.id, i, row);
@@ -4046,26 +4344,18 @@ function calculateCompatibility(p1, p2) {
   return Math.min(99, score);
 }
 
-function startMatchingSearch() {
-  playSound('tap');
-  
-  const backdrop = el('match-filter-backdrop');
-  if (backdrop) backdrop.classList.add('hidden');
-  
-  el('find-partner-card')?.classList.add('hidden');
-  
-  const pendingCard = el('match-pending-card');
-  if (pendingCard) {
-    pendingCard.classList.remove('hidden');
-    pendingCard.classList.add('active');
-  }
-  
-  state.auth.matchPending = true;
-  saveToStorage();
-  
+function resumeMatchingSearch() {
   if (state.auth.matchTimer) clearTimeout(state.auth.matchTimer);
   
-  // 15 seconds delayed premium queue
+  // Set matching pending details dynamically
+  const mpc = el('match-pending-card');
+  if (mpc) {
+    const title = mpc.querySelector('.mpc-title');
+    const sub = mpc.querySelector('.mpc-sub');
+    if (title) title.textContent = "Finding your best accountability partner...";
+    if (sub) sub.textContent = "This may take up to 24 hours.";
+  }
+  
   state.auth.matchTimer = setTimeout(() => {
     state.auth.matchPending = false;
     
@@ -4087,15 +4377,26 @@ function startMatchingSearch() {
     const bestFit = scored[0];
     state.auth.matchedCandidate = bestFit;
     
-    el('match-pending-card')?.classList.add('hidden');
-    
     addNotification('match', 'Match Found ✦', `We've found a highly compatible accountability match: ${bestFit.name} (${bestFit.compatibilityPct}% aligned).`, todayKey());
     playSound('chime');
     
-    renderMatchCard(bestFit);
-    
+    renderSocialsUI();
     saveToStorage();
   }, 15000);
+}
+
+function startMatchingSearch() {
+  playSound('tap');
+  
+  const backdrop = el('match-filter-backdrop');
+  if (backdrop) backdrop.classList.add('hidden');
+  
+  state.auth.matchPending = true;
+  state.auth.matchedCandidate = null;
+  renderSocialsUI();
+  saveToStorage();
+  
+  resumeMatchingSearch();
 }
 
 function renderMatchCard(candidate) {
@@ -4110,8 +4411,6 @@ function renderMatchCard(candidate) {
   card.className = 'match-card';
   card.style.cssText = `background:linear-gradient(135deg, var(--surface-2), rgba(139,92,246,0.08));border:1.5px solid rgba(139,92,246,0.25);border-radius:24px;padding:20px;margin-bottom:20px;position:relative;animation: slideUp 0.45s cubic-bezier(0.1, 0.8, 0.2, 1);`;
   
-  const formatMap = { gym: '🏋️ Gym', home: '🏠 Home', hybrid: '⚡ Hybrid', outdoor: '🌄 Outdoor' };
-  
   card.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
       <div>
@@ -4121,41 +4420,21 @@ function renderMatchCard(candidate) {
       </div>
       <div style="text-align:right;">
         <span style="font-size:24px;font-weight:900;color:var(--mint);font-family:var(--font-2);">${candidate.compatibilityPct}%</span>
-        <p style="font-size:8px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;">Alignment</p>
+        <p style="font-size:8px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;">Compatible</p>
       </div>
     </div>
     
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div style="background:var(--surface-3);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
-        <span style="font-size:12px;font-weight:700;color:var(--text-1);display:block;">${candidate.disciplineScore}</span>
-        <span style="font-size:9px;color:var(--text-3);">Discipline Index</span>
-      </div>
-      <div style="background:var(--surface-3);border:1px solid var(--border);padding:8px;border-radius:12px;text-align:center;">
-        <span style="font-size:12px;font-weight:700;color:var(--text-1);display:block;">${formatMap[candidate.training] || candidate.training}</span>
-        <span style="font-size:9px;color:var(--text-3);">Training Style</span>
-      </div>
-    </div>
-
     <div style="margin-bottom:14px;background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:10px 12px;border-radius:14px;">
-      <p style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Trust Indicators</p>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:var(--text-2);">Consistency Stability:</span>
-          <span style="font-size:11px;font-weight:700;color:var(--mint);">${candidate.trustSignals.consistency}%</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:var(--text-2);">Streak Reliability:</span>
-          <span style="font-size:11px;font-weight:700;color:var(--accent);">${candidate.trustSignals.streak}%</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:var(--text-2);">Recovery Respect:</span>
-          <span style="font-size:11px;font-weight:700;color:var(--violet);">${candidate.trustSignals.recovery}%</span>
-        </div>
+      <p style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Reasons for Compatibility</p>
+      <div style="display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--text-2);">
+        <div>✓ Same Goal</div>
+        <div>✓ Similar Schedule</div>
+        <div>✓ Similar Experience</div>
       </div>
     </div>
 
     <div style="display:flex;gap:8px;">
-      <button class="primary-btn" id="send-match-request-btn" style="flex:2;margin:0;font-size:12px;" data-candidate-id="${candidate.id}">Send Accountability Request →</button>
+      <button class="primary-btn" id="send-match-request-btn" style="flex:2;margin:0;font-size:12px;" data-candidate-id="${candidate.id}">Accept Match →</button>
       <button class="ghost-btn" id="decline-match-candidate-btn" style="flex:1;margin:0;font-size:12px;">Decline</button>
     </div>
   `;
@@ -4167,6 +4446,31 @@ function renderMatchCard(candidate) {
 }
 
 function sendAccountabilityRequest(candidateId) {
+  playSound('done');
+  
+  const candidate = SIMULATED_MATCHES.find(c => c.id === candidateId);
+  if (!candidate) return;
+  
+  const user = state.auth.user || { name: 'Praneeth' };
+  const pct = calculateCompatibility(user, candidate);
+  
+  state.auth.partner = {
+    ...candidate,
+    compatibilityPct: pct
+  };
+  state.auth.matchedCandidate = null;
+  state.auth.matchPending = false;
+  
+  logFriendHistory(candidate.name, 'Partnership Started');
+  addNotification('social', 'Partnership Active! 🤝', `${candidate.name} accepted your accountability request. Let's build consistency together.`, todayKey());
+  playSound('chime');
+  
+  renderSocialsUI();
+  switchSocialTab('partner');
+  saveToStorage();
+}
+
+function sendAccountabilityRequestLegacy(candidateId) {
   playSound('done');
   
   const candidate = SIMULATED_MATCHES.find(c => c.id === candidateId);
@@ -4192,8 +4496,6 @@ function sendAccountabilityRequest(candidateId) {
     backdrop?.classList.remove('visible');
     setTimeout(() => backdrop?.classList.add('hidden'), 300);
     
-    el('aura-match-candidate-card')?.remove();
-    
     const user = state.auth.user || { name: 'Praneeth' };
     const pct = calculateCompatibility(user, candidate);
     
@@ -4201,30 +4503,22 @@ function sendAccountabilityRequest(candidateId) {
       ...candidate,
       compatibilityPct: pct
     };
+    state.auth.matchedCandidate = null;
     
+    logFriendHistory(candidate.name, 'Partnership Started');
     addNotification('social', 'Partnership Active! 🤝', `${candidate.name} accepted your accountability request. Let's build consistency together.`, todayKey());
     playSound('chime');
     
     renderSocialsUI();
+    switchSocialTab('partner');
     saveToStorage();
   }, 10000);
 }
 
 function declineMatchCandidate() {
   playSound('tap');
-  el('aura-match-candidate-card')?.remove();
-  
-  const findCard = el('find-partner-card');
-  if (findCard) {
-    findCard.classList.remove('hidden');
-    const title = findCard.querySelector('.fpc-title');
-    const sub = findCard.querySelector('.fpc-sub');
-    
-    if (title) title.textContent = "Searching for Aligned Partner";
-    if (sub) sub.textContent = "That match wasn't aligned this time. We're continuing to scan the network queue for a better fit.";
-  }
-  
   state.auth.matchedCandidate = null;
+  renderSocialsUI();
   saveToStorage();
 }
 
@@ -4256,16 +4550,19 @@ function acceptIncomingRequest() {
   
   el('incoming-request-card')?.classList.add('hidden');
   
+  logFriendHistory(ravi.name, 'Partnership Started');
   addNotification('social', 'Partnership Established 🤝', 'Ravi V. is now your accountability partner. Stay consistent!', todayKey());
   playSound('chime');
   
   renderSocialsUI();
+  switchSocialTab('partner');
   saveToStorage();
 }
 
 function declineIncomingRequest() {
   playSound('tap');
   el('incoming-request-card')?.classList.add('hidden');
+  logFriendHistory('Ravi V.', 'Friend Request Declined');
   addNotification('social', 'Request Declined', 'Declined Ravi V.\'s request. We\'ll continue scanning for partnerships.', todayKey());
   
   renderSocialsUI();
@@ -4274,28 +4571,438 @@ function declineIncomingRequest() {
 
 function endPartnership() {
   playSound('tap');
+  const partnerName = state.auth.partner ? state.auth.partner.name : 'Partner';
   state.auth.partner = null;
   state.auth.incomingRequestShown = false;
+  logFriendHistory(partnerName, 'Partnership Ended');
   renderSocialsUI();
   saveToStorage();
   addNotification('social', 'Partnership Ended', 'Your accountability partnership has been closed. AURA will continue scanning for your next match.', todayKey());
 }
 
+function renderPartnerTabUI() {
+  const container = el('panel-partner');
+  if (!container) return;
+  
+  const partner = state.auth.partner;
+  if (!partner) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px; opacity:0.6;">
+        <span style="font-size:36px; display:block; margin-bottom:12px;">🤝</span>
+        <p style="font-size:14px; font-weight:700; color:var(--text-1);">No Active Partner</p>
+        <p style="font-size:12px; color:var(--text-3); margin-top:4px; line-height:1.45;">Match with an accountability partner in the "Find Partner" tab to start your shared journey.</p>
+      </div>`;
+    return;
+  }
+  
+  const initials = (partner.avatarInitials || partner.name || 'AK').substring(0, 2).toUpperCase();
+  const trend = partner.trend || 'Improving';
+  const trendColors = { Improving: 'var(--mint)', Stable: 'var(--violet)', Declining: 'var(--rose)' };
+  
+  container.innerHTML = `
+    <div class="active-partner-card" id="active-partner-card" style="background:var(--surface-2); border:1.5px solid rgba(139,92,246,0.25); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:16px;">
+      <!-- Header: Partner Profile Summary & Compatibility -->
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="sm-avatar mint" id="partner-avatar-badge" style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; background:linear-gradient(135deg, var(--mint), #059669); color:#fff;">
+          ${initials}
+        </div>
+        <div style="flex:1;">
+          <h3 style="font-size:16px; font-weight:800; color:var(--text-1);" id="partner-name">${partner.name}</h3>
+          <p style="font-size:11px; color:var(--text-3); margin-top:2px;" id="partner-last-active">Last Active: 10m ago</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:15px; font-weight:900; color:var(--mint);" id="partner-compat">${partner.compatibilityPct || 87}% Compatible</div>
+          <div style="font-size:9px; color:var(--text-3); margin-top:2px;">✓ Same Goal · Similar Schedule</div>
+        </div>
+      </div>
+
+      <!-- Shared Streak -->
+      <div style="background:linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.02)); border:1px solid rgba(251,146,60,0.2); border-radius:16px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <span style="font-size:9px; font-weight:700; color:#fb923c; text-transform:uppercase; letter-spacing:0.06em;">Shared Partner Streak</span>
+          <p style="font-size:16px; font-weight:800; color:var(--text-1); margin-top:2px;" id="shared-partner-streak">17 Days</p>
+        </div>
+        <span style="font-size:24px;">🔥</span>
+      </div>
+
+      <!-- Accountability Contract -->
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 16px;">
+        <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:8px;">Accountability Contract</span>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <span style="font-size:10px; color:var(--text-2);">Workout Goal</span>
+            <p style="font-size:12px; font-weight:700; color:var(--text-1); margin-top:2px;">5/5</p>
+          </div>
+          <div>
+            <span style="font-size:10px; color:var(--text-2);">Protein Goal</span>
+            <p style="font-size:12px; font-weight:700; color:var(--text-1); margin-top:2px;">7/7</p>
+          </div>
+          <div>
+            <span style="font-size:10px; color:var(--text-2);">Water Goal</span>
+            <p style="font-size:12px; font-weight:700; color:var(--text-1); margin-top:2px;">7/7</p>
+          </div>
+          <div>
+            <span style="font-size:10px; color:var(--text-2);">Sleep Goal</span>
+            <p style="font-size:12px; font-weight:700; color:var(--text-1); margin-top:2px;">6/7</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Status & Partner Trend -->
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.06em;">Today's Status</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Trend:</span>
+            <span style="font-size:10px; font-weight:700; color:${trendColors[trend]}; background:rgba(255,255,255,0.03); padding:2px 6px; border-radius:6px;">${trend}</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+            <span style="color:var(--text-2);">Workout:</span>
+            <span style="font-weight:800; color:var(--mint);">✓</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+            <span style="color:var(--text-2);">Protein:</span>
+            <span style="font-weight:800; color:var(--mint);">✓</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+            <span style="color:var(--text-2);">Water:</span>
+            <span style="font-weight:800; color:var(--rose);">✗</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+            <span style="color:var(--text-2);">Sleep:</span>
+            <span style="font-weight:800; color:var(--mint);">✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Accountability Challenge -->
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:9px; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.06em;">Weekly Challenge</span>
+          <span style="font-size:10px; font-weight:700; color:var(--mint); background:rgba(16,185,129,0.15); padding:2px 8px; border-radius:8px;">Active</span>
+        </div>
+        <p style="font-size:13px; font-weight:700; color:var(--text-1); margin-top:6px;" id="partner-challenge">Protein Challenge</p>
+        <p style="font-size:11px; color:var(--text-3); margin-top:2px;">Hit daily protein target for 5 consecutive days.</p>
+      </div>
+
+      <!-- Weekly Partner Review -->
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 16px;">
+        <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:8px;">Weekly Partner Review</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:10px; color:var(--text-3);">You</span>
+            <p style="font-size:14px; font-weight:800; color:var(--text-1);" id="review-you-score">86</p>
+          </div>
+          <div style="font-size:18px; color:var(--text-3);">:</div>
+          <div>
+            <span style="font-size:10px; color:var(--text-3);">Partner</span>
+            <p style="font-size:14px; font-weight:800; color:var(--text-1);" id="review-partner-score">83</p>
+          </div>
+          <div style="width:1px; height:24px; background:var(--border);"></div>
+          <div>
+            <span style="font-size:10px; color:var(--text-3);">Combined</span>
+            <p style="font-size:14px; font-weight:800; color:var(--mint);" id="review-combined-score">84.5</p>
+          </div>
+        </div>
+        <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:6px;">
+          <span style="font-size:11px; color:var(--text-2); font-weight:600;" id="review-status">Best Week Yet</span>
+          <span style="font-size:14px;">🏆</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex; gap:10px; margin-top:4px;">
+        <button class="primary-btn" style="flex:1; margin:0; font-size:12px;" id="partner-chat-trigger-btn">Open Chat</button>
+        <button class="ghost-btn" style="flex:1; margin:0; font-size:12px; color:var(--rose);" id="end-partnership-btn">End Partnership</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderFriendsUI() {
+  const listEl = el('friends-groups-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  
+  const friends = state.auth.friends || [];
+  if (friends.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center; padding:30px 10px; opacity:0.5;">
+        <span style="font-size:24px; display:block; margin-bottom:8px;">👥</span>
+        <p style="font-size:12px; color:var(--text-3);">Your friend circle is empty. Add friends using the button above.</p>
+      </div>`;
+    return;
+  }
+  
+  // Group friends by category
+  const categories = {
+    spouse: { title: 'Spouse 💍', items: [] },
+    family: { title: 'Family 🏠', items: [] },
+    training_buddy: { title: 'Training Buddy ⚡', items: [] },
+    gym_buddy: { title: 'Gym Friends 🏋️', items: [] },
+    local_buddy: { title: 'Local Friends 📍', items: [] }
+  };
+  
+  friends.forEach(f => {
+    const cat = f.type || 'gym_buddy';
+    if (categories[cat]) {
+      categories[cat].items.push(f);
+    } else {
+      categories.gym_buddy.items.push(f);
+    }
+  });
+  
+  Object.keys(categories).forEach(key => {
+    const cat = categories[key];
+    if (cat.items.length === 0) return;
+    
+    const catSection = document.createElement('div');
+    catSection.style.cssText = `margin-bottom: 16px;`;
+    catSection.innerHTML = `
+      <h4 style="font-size: 11px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">${cat.title}</h4>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${cat.items.map(f => {
+          const initials = (f.avatarInitials || f.name || 'FR').substring(0, 2).toUpperCase();
+          const activeDot = f.active ? `<span style="position:absolute; bottom:0; right:0; width:8px; height:8px; background:var(--mint); border:1.5px solid #000; border-radius:50%;"></span>` : '';
+          return `
+            <div class="friend-row" data-id="${f.id}" style="display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border: 1px solid var(--border); padding: 12px 14px; border-radius: 16px; cursor: pointer; transition: all 0.2s ease;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-3); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; color: var(--text-1); border: 1px solid var(--border);">
+                  ${initials}
+                  ${activeDot}
+                </div>
+                <div>
+                  <p style="font-size: 13px; font-weight: 700; color: var(--text-1); margin: 0;">${f.name}</p>
+                  <p style="font-size: 10px; color: var(--text-3); margin-top: 1px;">Streak: ${f.streak || 0}d · Index: ${f.disciplineScore || 0}</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 11px; font-weight: 800; color: var(--accent); background: rgba(139,92,246,0.1); padding: 3px 8px; border-radius: 8px;">${f.disciplineScore || 0}</span>
+                <span style="font-size: 14px; opacity: 0.5;">›</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    listEl.appendChild(catSection);
+  });
+  
+  listEl.querySelectorAll('.friend-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const friendId = row.dataset.id;
+      openChatWithUser(friendId);
+    });
+  });
+
+  renderFriendRequestsUI();
+  renderFriendHistoryUI();
+}
+
+
+function renderFriendRequestsUI() {
+  const reqSection = el('friend-requests-section');
+  const reqList = el('friend-requests-list');
+  if (!reqSection || !reqList) return;
+  
+  const requests = state.auth.incomingFriendRequests || [];
+  if (requests.length === 0) {
+    reqSection.classList.add('hidden');
+    return;
+  }
+  
+  reqSection.classList.remove('hidden');
+  reqList.innerHTML = requests.map(req => {
+    const initials = (req.avatarInitials || req.name || 'FR').substring(0, 2).toUpperCase();
+    return `
+      <div class="friend-request-row" style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-2); border:1px solid var(--border); padding:12px 14px; border-radius:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:34px; height:34px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:var(--text-1); border:1px solid var(--border);">
+            ${initials}
+          </div>
+          <div>
+            <p style="font-size:13px; font-weight:700; color:var(--text-1); margin:0;">${req.name}</p>
+            <p style="font-size:10px; color:var(--text-3); margin-top:2px;">Discipline: ${req.disciplineScore || 0} · Streak: ${req.streak || 0}d</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="primary-btn accept-friend-btn" data-id="${req.id}" style="margin:0; padding:6px 12px; font-size:11px; background:var(--mint); color:#000;">Accept</button>
+          <button class="ghost-btn decline-friend-btn" data-id="${req.id}" style="margin:0; padding:6px 12px; font-size:11px;">Decline</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Bind click listeners
+  reqList.querySelectorAll('.accept-friend-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      acceptFriendRequest(btn.dataset.id);
+    });
+  });
+  
+  reqList.querySelectorAll('.decline-friend-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      declineFriendRequest(btn.dataset.id);
+    });
+  });
+}
+
+function renderFriendHistoryUI() {
+  const listEl = el('friends-tab-history-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  
+  const history = state.auth.friendHistory || [];
+  if (history.length === 0) {
+    listEl.innerHTML = `<p style="font-size:11px; color:var(--text-3); text-align:center; padding:10px 0;">No history logged yet.</p>`;
+    return;
+  }
+  
+  listEl.innerHTML = history.map(item => {
+    let actionText = '';
+    const act = (item.action || item.status || '').toLowerCase();
+    if (act.includes('added')) actionText = 'Added';
+    else if (act.includes('declined')) actionText = 'Declined';
+    else if (act.includes('removed')) actionText = 'Removed';
+    else if (act.includes('accepted')) actionText = 'Accepted';
+    else if (act.includes('started') || act.includes('partnership established')) actionText = 'Partnership Started with';
+    else if (act.includes('ended') || act.includes('partnership ended')) actionText = 'Partnership Ended with';
+    else actionText = item.action || item.status || 'Interacted with';
+    
+    const timeDisplay = item.time ? ` · ${item.time}` : '';
+    
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:8px;">
+        <div>
+          <p style="font-size:12px; font-weight:700; color:var(--text-1); margin:0;">${actionText} ${item.user}</p>
+          <p style="font-size:10px; color:var(--text-3); margin-top:2px;">${item.date}${timeDisplay}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function acceptFriendRequest(id) {
+  playSound('done');
+  const requests = state.auth.incomingFriendRequests || [];
+  const reqIdx = requests.findIndex(r => r.id === id);
+  if (reqIdx === -1) return;
+  
+  const req = requests[reqIdx];
+  requests.splice(reqIdx, 1);
+  
+  if (!state.auth.friends) state.auth.friends = [];
+  const newFriend = {
+    id: req.id,
+    name: req.name,
+    type: req.type || 'gym_buddy',
+    gender: req.gender || 'male',
+    age: req.age || 24,
+    country: req.country || 'India',
+    city: req.city || 'Bangalore',
+    avatarInitials: req.avatarInitials || 'AP',
+    disciplineScore: req.disciplineScore || 80,
+    goals: req.goals || ['discipline'],
+    ambition: req.ambition || 'consistent',
+    training: req.training || 'gym',
+    schedule: req.schedule || 'evening',
+    active: true,
+    streak: req.streak || 4,
+    lastActive: req.lastActive || '1d ago',
+    todayStatus: req.todayStatus
+  };
+  state.auth.friends.unshift(newFriend);
+  
+  logFriendHistory(newFriend.name, 'Friend Request Accepted');
+  
+  renderFriendsUI();
+  saveToStorage();
+}
+
+function declineFriendRequest(id) {
+  playSound('tap');
+  const requests = state.auth.incomingFriendRequests || [];
+  const reqIdx = requests.findIndex(r => r.id === id);
+  if (reqIdx === -1) return;
+  
+  const req = requests[reqIdx];
+  requests.splice(reqIdx, 1);
+  
+  logFriendHistory(req.name, 'Friend Request Declined');
+  
+  renderFriendsUI();
+  saveToStorage();
+}
+
+function removeFriend(friendId) {
+  playSound('tap');
+  if (!state.auth.friends) return;
+  const idx = state.auth.friends.findIndex(f => f.id === friendId);
+  if (idx !== -1) {
+    const friendName = state.auth.friends[idx].name;
+    state.auth.friends.splice(idx, 1);
+    logFriendHistory(friendName, 'Friend Removed');
+    closePartnerScorecard();
+    renderFriendsUI();
+    saveToStorage();
+  }
+}
+
+function logFriendHistory(user, action) {
+  if (!state.auth.friendHistory) {
+    state.auth.friendHistory = [];
+  }
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); // "12 Jun 2026"
+  const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  state.auth.friendHistory.unshift({
+    user: user,
+    action: action,
+    date: dateStr,
+    time: timeStr
+  });
+  saveToStorage();
+}
+
 function renderSocialsUI() {
-  const findCard = el('find-partner-card');
-  const pendingCard = el('match-pending-card');
-  const activeCard = el('active-partner-card');
+  // Update Find Partner panel visibility based on partner state
+  const findCard = document.getElementById('find-partner-card');
+  const activeCard = document.getElementById('active-partnership-card');
+  const matchStatus = document.getElementById('match-status-card');
+  const compatFilters = document.getElementById('compatibility-filters-summary-card');
+  const pendingCard = document.getElementById('match-pending-card');
+  if (state.auth.partner) {
+    if (findCard) findCard.classList.add('hidden');
+    if (matchStatus) matchStatus.classList.add('hidden');
+    if (compatFilters) compatFilters.classList.add('hidden');
+    if (pendingCard) pendingCard.classList.add('hidden');
+    if (activeCard) activeCard.classList.remove('hidden');
+  } else {
+    if (activeCard) activeCard.classList.add('hidden');
+    if (findCard && !state.auth.isSearching) findCard.classList.remove('hidden');
+  }
+
   const incomingCard = el('incoming-request-card');
+  const statusText = el('find-partner-status-text');
   
-  if (!findCard || !pendingCard || !activeCard || !incomingCard) return;
+  if (!findCard || !pendingCard || !incomingCard) return;
   
+  // Hide all find-partner cards by default
   findCard.classList.add('hidden');
   pendingCard.classList.add('hidden');
-  activeCard.classList.add('hidden');
   incomingCard.classList.add('hidden');
+  
+  // Remove dynamic candidate card if any
+  el('aura-match-candidate-card')?.remove();
+  
+  // Hide the legacy/busy cards to keep the UI clean, minimal and intentional
+  el('match-status-card')?.classList.add('hidden');
+  el('compatibility-filters-summary-card')?.classList.add('hidden');
   
   const partner = state.auth.partner;
   const pending = state.auth.matchPending;
+  const matchedCandidate = state.auth.matchedCandidate;
   const enabled = state.auth.matchingEnabled;
   
   if (!enabled) {
@@ -4306,6 +5013,10 @@ function renderSocialsUI() {
     if (title) title.textContent = "Matching System Suspended";
     if (sub) sub.textContent = "Enable matching in your privacy configurations below to scan for accountability partner recommendations.";
     if (btn) btn.disabled = true;
+    if (statusText) {
+      statusText.textContent = "Suspended · Matching Disabled";
+      statusText.style.color = 'var(--text-3)';
+    }
     return;
   }
   
@@ -4318,81 +5029,64 @@ function renderSocialsUI() {
   if (sub) sub.textContent = "We match you based on discipline score, goals, schedule, and lifestyle compatibility. Not random. Not instant.";
   
   if (partner) {
-    activeCard.classList.remove('hidden');
-    
-    const initials = (partner.avatarInitials || partner.name || 'AK').substring(0,2).toUpperCase();
-    const avatarBadge = el('partner-avatar-badge');
-    if (avatarBadge) {
-      avatarBadge.textContent = initials;
-      avatarBadge.style.background = 'linear-gradient(135deg, var(--mint), #059669)';
-      avatarBadge.style.color = '#fff';
+    // State 4: Matched
+    const activeTabBtn = document.querySelector('.sub-tab-btn.active');
+    const activeTab = activeTabBtn ? activeTabBtn.dataset.tab : '';
+    if (activeTab === 'find-partner' || activeTab === '') {
+      switchSocialTab('partner');
     }
     
-    if (el('partner-name')) el('partner-name').textContent = partner.name;
-    if (el('partner-location')) el('partner-location').textContent = `${partner.city || 'Mumbai'}, ${partner.country || 'India'}`;
-    if (el('partner-compat')) el('partner-compat').textContent = `${partner.compatibilityPct || 87}%`;
-    if (el('partner-discipline')) el('partner-discipline').textContent = String(partner.disciplineScore || 91);
+    if (statusText) {
+      statusText.textContent = `Matched with ${partner.name}`;
+      statusText.style.color = 'var(--mint)';
+    }
     
-    const formatMap = { gym: 'Gym', home: 'Home', hybrid: 'Hybrid', outdoor: 'Outdoor' };
-    const styleStr = `${formatMap[partner.training] || partner.training} · ${(partner.schedule || 'evening').toUpperCase()}`;
-    if (el('partner-training')) el('partner-training').textContent = styleStr;
+    if (activeCard) {
+      activeCard.classList.remove('hidden');
+      activeCard.innerHTML = `
+        <span style="font-size:36px; display:block; margin-bottom:12px;">🏆</span>
+        <p style="font-size:14px; font-weight:800; color:var(--text-1);">Active Partnership Exists</p>
+        <p style="font-size:12.5px; color:var(--text-3); margin-top:6px; line-height:1.45;">You already have an active accountability partner.<br>End your current partnership before searching again.</p>
+      `;
+    }
+    if (findCard) findCard.classList.add('hidden');
     
   } else if (pending) {
+    // State 2: Searching
     pendingCard.classList.remove('hidden');
+    if (statusText) {
+      statusText.textContent = "Searching · Matching in Progress...";
+      statusText.style.color = '#fb923c';
+    }
+  } else if (matchedCandidate) {
+    // State 3: Potential Match Found
+    renderMatchCard(matchedCandidate);
+    if (statusText) {
+      statusText.textContent = "Match Found · Pending Action";
+      statusText.style.color = 'var(--accent)';
+    }
   } else {
+    // State 1: Idle
     findCard.classList.remove('hidden');
+    if (statusText) {
+      statusText.textContent = "Idle · Ready to Match";
+      statusText.style.color = 'var(--text-3)';
+    }
   }
+  
+  // Render Partner Tab content
+  renderPartnerTabUI();
 }
 
 function onEnterSquad() {
   renderSocialsUI();
-  updateStreakUI();
-  calculateDisciplineScore();
-  renderProgressChart();
+  updateFiltersSummary();
+  renderFriendsUI();
   
-  const user = state.auth.user || { name: 'Praneeth' };
-  const score = state.readiness ? Math.round(50 + (state.readiness - 35) * (50 / 65)) : 78;
-  const statusTags = ['Locked In', 'Consistent', 'Disciplined', 'Recovery Focused'];
-  let activeTag = statusTags[1];
-  if (score >= 88) activeTag = statusTags[0];
-  else if (score >= 75) activeTag = statusTags[2];
-  else if (score < 55) activeTag = statusTags[3];
-  
-  if (el('discipline-score-val')) el('discipline-score-val').textContent = String(score);
-  if (el('discipline-status-tag')) el('discipline-status-tag').textContent = activeTag;
-  if (el('acc-streak-val')) el('acc-streak-val').textContent = String(calculateStreak());
-  if (el('chart-avg')) el('chart-avg').textContent = '91 avg';
-  if (el('discipline-expl')) el('discipline-expl').textContent = `Discipline shielding is locked in at ${score}% effectiveness. Peer accountability pacer is aligned.`;
-  
-  // Populate circle
-  if (el('sm-you-avatar')) {
-    const initials = (user.name || 'PR').substring(0,2).toUpperCase();
-    el('sm-you-avatar').textContent = initials;
-    if (user.avatar) {
-      el('sm-you-avatar').textContent = '';
-      el('sm-you-avatar').style.backgroundImage = `url(${user.avatar})`;
-      el('sm-you-avatar').style.backgroundSize = 'cover';
-      el('sm-you-avatar').style.backgroundPosition = 'center';
-    }
-  }
-  if (el('sm-you-name')) el('sm-you-name').innerHTML = `${user.name || 'Praneeth'} <span class="sm-you">you</span>`;
-  if (el('sm-you-status')) el('sm-you-status').textContent = `Synced today · ${score} index`;
-  if (el('sm-you-score')) el('sm-you-score').textContent = String(score);
-  
-  setTimeout(() => renderDisciplineChart(), 400);
-  
-  // Trigger simulated incoming request
-  if (!state.auth.partner && !state.auth.matchPending && !state.auth.incomingRequestShown) {
-    state.auth.incomingRequestShown = true;
-    setTimeout(() => {
-      if (state.currentScreen === 'screen-squad' && !state.auth.partner && !state.auth.matchPending) {
-        playSound('chime');
-        el('incoming-request-card')?.classList.remove('hidden');
-        addNotification('social', 'Incoming Request 🤝', 'Ravi V. (82% compatible) wants to be your accountability partner.', todayKey());
-        showSaveSuccessFeedback();
-      }
-    }, 4500);
-  }
+  // Check active tab inside the Socials screen
+  const activeTabBtn = document.querySelector('.sub-tab-btn.active');
+  const activeTab = activeTabBtn ? activeTabBtn.dataset.tab : 'find-partner';
+  switchSocialTab(activeTab);
 }
 
 function renderDisciplineChart() {
@@ -5616,6 +6310,26 @@ function saveToStorage() {
         weekSplit:  state.workout.weekSplit,
         todayIndex: state.workout.todayIndex,
       },
+      auth: {
+        loggedIn:             state.auth.loggedIn,
+        user:                 state.auth.user,
+        users:                state.auth.users,
+        signupStep:           state.auth.signupStep,
+        avatar:               state.auth.avatar,
+        matchingPreferences:  state.auth.matchingPreferences,
+        matchingEnabled:      state.auth.matchingEnabled,
+        hideCity:             state.auth.hideCity,
+        privateProfile:       state.auth.privateProfile,
+        notificationsEnabled: state.auth.notificationsEnabled,
+        matchPending:         state.auth.matchPending,
+        partner:              state.auth.partner,
+        matchedCandidate:     state.auth.matchedCandidate,
+        friends:              state.auth.friends,
+        chats:                state.auth.chats,
+        activeChatUser:       state.auth.activeChatUser,
+        incomingRequestShown: state.auth.incomingRequestShown,
+        partnerRequestDeclined: state.auth.partnerRequestDeclined
+      }
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
   } catch(e) { /* silent */ }
@@ -5639,6 +6353,9 @@ function loadFromStorage() {
     }
     if (s.workout?.history)   state.workout.history   = s.workout.history;
     if (s.workout?.weekSplit) state.workout.weekSplit  = s.workout.weekSplit;
+    if (s.auth) {
+      state.auth = { ...state.auth, ...s.auth };
+    }
     return true;
   } catch(e) { return false; }
 }
@@ -5646,6 +6363,133 @@ function loadFromStorage() {
 // ─── Event Delegation ─────────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const t = e.target;
+
+  // Socials sub-tabs click
+  const subTabBtn = t.closest('.sub-tab-btn');
+  if (subTabBtn) {
+    playSound('tap');
+    switchSocialTab(subTabBtn.dataset.tab);
+    return;
+  }
+
+  // Scorecard modal sub-tabs click
+  const modalTabBtn = t.closest('.modal-tab-btn');
+  if (modalTabBtn) {
+    playSound('tap');
+    switchScorecardTab(modalTabBtn.dataset.tab);
+    return;
+  }
+
+  // Open Add Friend Sheet
+  if (t.id === 'add-friend-trigger-btn' || t.closest('#add-friend-trigger-btn')) {
+    playSound('tap');
+    const sheet = el('add-friend-sheet');
+    const backdrop = el('add-friend-backdrop');
+    if (sheet) {
+      sheet.classList.remove('hidden');
+      sheet.style.transform = 'translateY(0)';
+      if (backdrop) {
+        backdrop.classList.remove('hidden');
+        void backdrop.offsetWidth;
+        backdrop.classList.add('visible');
+      }
+    }
+    return;
+  }
+
+  // Close Add Friend Sheet
+  if (t.id === 'add-friend-close' || t.closest('#add-friend-close') || t.id === 'add-friend-backdrop') {
+    playSound('tap');
+    const sheet = el('add-friend-sheet');
+    const backdrop = el('add-friend-backdrop');
+    if (sheet) {
+      sheet.style.transform = 'translateY(100%)';
+      if (backdrop) backdrop.classList.remove('visible');
+      setTimeout(() => {
+        sheet.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+      }, 300);
+    }
+    return;
+  }
+
+  // Add friend options clicks
+  const addFriendOptBtn = t.closest('.add-friend-opt-btn');
+  if (addFriendOptBtn) {
+    const type = addFriendOptBtn.dataset.type;
+    if (type === 'existing') {
+      playSound('tap');
+      el('friend-search-input-wrap')?.classList.toggle('hidden');
+    } else {
+      addMockFriend(type);
+    }
+    return;
+  }
+
+  // Scorecard Chat CTA click
+  if (t.id === 'scorecard-chat-btn' || t.closest('#scorecard-chat-btn')) {
+    const btn = t.id === 'scorecard-chat-btn' ? t : t.closest('#scorecard-chat-btn');
+    const userId = btn.dataset.userId;
+    closePartnerScorecard();
+    closeInbox();
+    openChatWithUser(userId);
+    return;
+  }
+
+  // Search and Add Friend ID click
+  if (t.id === 'friend-search-confirm' || t.closest('#friend-search-confirm')) {
+    const input = el('friend-search-input');
+    const val = input ? input.value.trim() : '';
+    if (val) {
+      playSound('done');
+      const name = val.replace('@', '');
+      const initials = name.slice(0, 2).toUpperCase();
+      const idSuffix = Date.now().toString().slice(-4);
+      
+      const newFriend = {
+        id: 'f_searched_' + idSuffix,
+        name: name + ' (Friend)',
+        type: 'local_friend',
+        gender: 'male',
+        age: 25,
+        country: 'India',
+        city: 'Mumbai',
+        avatarInitials: initials || 'FR',
+        disciplineScore: 75,
+        goals: ['discipline'],
+        ambition: 'consistent',
+        training: 'gym',
+        schedule: 'evening',
+        active: false,
+        streak: 0
+      };
+      
+      if (!state.auth.friends) state.auth.friends = [];
+      state.auth.friends.unshift(newFriend);
+      logFriendHistory(newFriend.name, 'Friend Added');
+      
+      if (input) input.value = '';
+      el('friend-search-input-wrap')?.classList.add('hidden');
+      
+      const sheet = el('add-friend-sheet');
+      const backdrop = el('add-friend-backdrop');
+      if (sheet) {
+        sheet.style.transform = 'translateY(100%)';
+        if (backdrop) backdrop.classList.remove('visible');
+        setTimeout(() => {
+          sheet.classList.add('hidden');
+          if (backdrop) backdrop.classList.add('hidden');
+        }, 300);
+      }
+      
+      addNotification('social', 'Friend Added 👤', `${newFriend.name} has been added via search.`, todayKey());
+      renderFriendsUI();
+      renderInbox();
+      saveToStorage();
+      showSaveSuccessFeedback();
+    }
+    return;
+  }
 
   // Today's Plan meal checking
   const planCheckBtn = t.closest('.plan-meal-check');
@@ -6194,21 +7038,30 @@ document.addEventListener('click', e => {
     const ex = state.workout.exercises.find(e => e.id === state.activeSheet.exId);
     if (ex && ex.sets[idx]) {
       ex.sets[idx].done = !ex.sets[idx].done;
-      setCheck.classList.toggle('done');
-      setCheck.closest('.set-row').classList.toggle('logged', ex.sets[idx].done);
       if (ex.sets[idx].done) {
         playSound('chime');
-        startRestTimer(60);
-        checkWorkoutCompletion();
-        updateVolumeProgressBar();
-        // PR detection
+        startRestTimer();
         const isPR = checkForPR(ex, idx);
-        if (isPR) { flashPRBadge(ex.id); saveToStorage(); }
+        if (isPR) flashPRBadge(ex.id);
       } else {
         playSound('tap');
-        updateVolumeProgressBar();
+      }
+      renderSetsRows(ex);
+      updateVolumeProgressBar();
+      checkWorkoutCompletion();
+      saveToStorage();
+
+      // Auto-complete only when all sets checked & smooth completion timing
+      if (ex.sets[idx].done && ex.sets.every(s => s.done)) {
+        setTimeout(() => {
+          if (state.activeSheet.exId === ex.id) {
+            closeSheet();
+            showSaveSuccessFeedback("Exercise Complete! ⚡");
+          }
+        }, 600);
       }
     }
+    return;
   }
 
   // Energy Mode options
@@ -6261,6 +7114,21 @@ document.addEventListener('click', e => {
       renderSetsRows(ex);
       playSound('tap');
     }
+  }
+
+  // Rest selector button click
+  const restSelBtn = t.closest('.rest-sel-btn');
+  if (restSelBtn) {
+    playSound('tap');
+    document.querySelectorAll('.rest-sel-btn').forEach(btn => btn.classList.remove('active'));
+    restSelBtn.classList.add('active');
+    const secs = parseInt(restSelBtn.dataset.secs, 10);
+    state.restTimer.duration = secs;
+    state.restTimer.remaining = secs;
+    if (document.getElementById('rest-val')) document.getElementById('rest-val').textContent = secs + 's';
+    updateRestTimerUI();
+    saveToStorage();
+    return;
   }
 
   // Rest timer action
@@ -6512,9 +7380,12 @@ document.addEventListener('click', e => {
     sendChatMessage();
   }
 
-  // Chat profile inspect button
-  if (t.id === 'chat-profile-btn' || t.closest('#chat-profile-btn')) {
-    inspectPartnerScorecard();
+  // Chat profile inspect button / username click
+  if (t.id === 'chat-profile-btn' || t.closest('#chat-profile-btn') || t.id === 'chat-header-name' || t.closest('#chat-header-name')) {
+    const user = getUserById(state.auth.activeChatUser);
+    if (user) {
+      inspectPartnerScorecard(user);
+    }
   }
 
   // Scorecard modal close
@@ -6866,28 +7737,7 @@ document.addEventListener('input', e => {
     });
     saveToStorage();
   }
-  if (t.id === 'sc-diff-slider') {
-    el('sc-diff-num').value = t.value;
-    // Sync all un-completed set rows difficulty
-    document.querySelectorAll('.set-input[data-field="rpe"]').forEach((inp, i) => {
-      if (ex.sets[i] && !ex.sets[i].done && !ex.sets[i].rpeEdited) {
-        inp.value = t.value;
-        ex.sets[i].rpe = +t.value;
-      }
-    });
-    saveToStorage();
-  }
-  if (t.id === 'sc-diff-num') {
-    el('sc-diff-slider').value = t.value;
-    // Sync all un-completed set rows difficulty
-    document.querySelectorAll('.set-input[data-field="rpe"]').forEach((inp, i) => {
-      if (ex.sets[i] && !ex.sets[i].done && !ex.sets[i].rpeEdited) {
-        inp.value = t.value;
-        ex.sets[i].rpe = +t.value;
-      }
-    });
-    saveToStorage();
-  }
+
 });
 
 // Notes autosave on blur
@@ -7521,6 +8371,11 @@ document.addEventListener('DOMContentLoaded', () => {
       buildFakeHistory();
     }
     updateObProgress();
+    
+    // Resume active search if pending
+    if (state.auth && state.auth.matchPending) {
+      resumeMatchingSearch();
+    }
   }
 
   // Bind change event delegation for Diet Filter Dropdowns & Grocery checkboxes
@@ -7707,46 +8562,7 @@ function renderInbox() {
   container.innerHTML = '';
   
   const partner = state.auth.partner;
-  const requests = [];
-  
-  // Simulated incoming request if not accepted and shown
-  if (!partner && state.auth.incomingRequestShown && !state.auth.partnerRequestDeclined) {
-    requests.push({
-      id: 'm_ravi',
-      name: 'Ravi V.',
-      compatibilityPct: 82,
-      disciplineScore: 84,
-      profession: 'SWE'
-    });
-  }
-  
-  // Render Pending Requests
-  if (requests.length > 0) {
-    const title = document.createElement('p');
-    title.className = 'section-label';
-    title.style.marginBottom = '8px';
-    title.textContent = 'Accountability Requests';
-    container.appendChild(title);
-    
-    requests.forEach(req => {
-      const card = document.createElement('div');
-      card.className = 'inbox-request-card';
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-          <div>
-            <h4 style="font-size:14px; font-weight:700; color:var(--text-1);">${req.name}</h4>
-            <p style="font-size:10px; color:var(--text-3); margin-top:2px;">${req.profession.toUpperCase()} · India</p>
-          </div>
-          <span style="font-size:14px; font-weight:800; color:#fb923c;">${req.compatibilityPct}% Compat</span>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="primary-btn" id="inbox-accept-request-btn" style="flex:1; margin:0; padding:6px 12px; font-size:11px; background:linear-gradient(135deg, #fb923c, #f97316);" data-id="${req.id}">Accept</button>
-          <button class="ghost-btn" id="inbox-decline-request-btn" style="flex:1; margin:0; padding:6px 12px; font-size:11px;" data-id="${req.id}">Decline</button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
+  const friends = state.auth.friends || [];
   
   // Render Active Chats / Match
   const chatTitle = document.createElement('p');
@@ -7754,6 +8570,8 @@ function renderInbox() {
   chatTitle.style.cssText = 'margin-top:16px; margin-bottom:8px;';
   chatTitle.textContent = 'Discipline Chats';
   container.appendChild(chatTitle);
+  
+  let chatAdded = false;
   
   if (partner) {
     const card = document.createElement('div');
@@ -7763,49 +8581,50 @@ function renderInbox() {
         ${(partner.avatarInitials || partner.name || 'AK').substring(0,2).toUpperCase()}
       </div>
       <div style="flex:1; min-width:0;">
-        <h4 style="font-size:13.5px; font-weight:700; color:var(--text-1);">${partner.name}</h4>
-        <p style="font-size:11px; color:var(--text-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="inbox-last-msg">Active Partnership Established. Tap to coordinate.</p>
+        <h4 style="font-size:13.5px; font-weight:700; color:var(--text-1);">${partner.name} (Partner)</h4>
+        <p style="font-size:11px; color:var(--text-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="inbox-last-msg">Active Partnership Established. Tap to inspect.</p>
       </div>
-      <span style="font-size:10px; color:var(--text-3); font-weight:700;">Active</span>
+      <span style="font-size:10px; color:var(--mint); font-weight:700;">Partner</span>
     `;
-    card.addEventListener('click', () => openChatWithPartner());
+    card.addEventListener('click', () => openChatWithUser(partner.id));
     container.appendChild(card);
-  } else {
+    chatAdded = true;
+  }
+  
+  friends.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'inbox-chat-card';
+    card.innerHTML = `
+      <div class="sm-avatar" style="width:40px; height:40px; border-radius:50%; background:var(--surface-3); border:1px solid var(--border); color:var(--text-1); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;">
+        ${(f.avatarInitials || f.name || 'FR').substring(0,2).toUpperCase()}
+      </div>
+      <div style="flex:1; min-width:0;">
+        <h4 style="font-size:13.5px; font-weight:700; color:var(--text-1);">${f.name}</h4>
+        <p style="font-size:11px; color:var(--text-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Streak: ${f.streak || 0}d · Index: ${f.disciplineScore || 0}</p>
+      </div>
+      <span style="font-size:10px; color:var(--text-3); font-weight:700;">Friend</span>
+    `;
+    card.addEventListener('click', () => openChatWithUser(f.id));
+    container.appendChild(card);
+    chatAdded = true;
+  });
+  
+  if (!chatAdded) {
     const noChats = document.createElement('div');
     noChats.style.cssText = `text-align:center; padding:30px 16px; background:var(--surface-2); border:1px dashed var(--border); border-radius:18px; margin-top:8px; opacity:0.6;`;
     noChats.innerHTML = `
       <span style="font-size:24px; display:block; margin-bottom:6px;">💬</span>
       <p style="font-size:12px; font-weight:700; color:var(--text-2);">No Active Chats</p>
-      <p style="font-size:10px; color:var(--text-3); margin-top:2px;">Coordinate daily focus after matches are accepted.</p>
+      <p style="font-size:10px; color:var(--text-3); margin-top:2px;">Coordinate daily focus after matches or friends are added.</p>
     `;
     container.appendChild(noChats);
   }
 }
 
-// ─── Interactive Partner Chat Screen ───
 function openChatWithPartner() {
-  playSound('tap');
-  const chatOverlay = el('chat-screen-overlay');
-  if (!chatOverlay) return;
-  
-  const partner = state.auth.partner;
-  if (!partner) return;
-  
-  el('chat-header-name').textContent = partner.name;
-  
-  // Populate initial simulated messages
-  const exKey = partner.id;
-  if (!state.auth.chats[exKey]) {
-    state.auth.chats[exKey] = [
-      { sender: 'them', text: `Hey! Aligned with you on the transformation journey. Let's lock in!`, time: '2h ago' }
-    ];
+  if (state.auth.partner) {
+    openChatWithUser(state.auth.partner.id);
   }
-  
-  renderChatMessages();
-  
-  chatOverlay.classList.remove('hidden');
-  void chatOverlay.offsetWidth;
-  chatOverlay.classList.add('visible');
 }
 
 function closeChat() {
@@ -7819,11 +8638,11 @@ function closeChat() {
 
 function renderChatMessages() {
   const container = el('chat-msg-area');
-  const partner = state.auth.partner;
-  if (!container || !partner) return;
+  const activeUser = state.auth.activeChatUser;
+  if (!container || !activeUser) return;
   
   container.innerHTML = '';
-  const messages = state.auth.chats[partner.id] || [];
+  const messages = state.auth.chats[activeUser] || [];
   
   messages.forEach(msg => {
     const bubble = document.createElement('div');
@@ -7838,94 +8657,199 @@ function renderChatMessages() {
 
 function sendChatMessage() {
   const input = el('chat-input-field');
-  const partner = state.auth.partner;
-  if (!input || !partner) return;
+  const activeUser = state.auth.activeChatUser;
+  if (!input || !activeUser) return;
   
   const text = input.value.trim();
   if (!text) return;
   
   playSound('done');
   
-  const messages = state.auth.chats[partner.id] || [];
+  const messages = state.auth.chats[activeUser] || [];
   messages.push({ sender: 'you', text: text, time: 'Just now' });
-  state.auth.chats[partner.id] = messages;
+  state.auth.chats[activeUser] = messages;
   
   input.value = '';
   renderChatMessages();
   saveToStorage();
   
-  // Simulate accountability partner response after 3 seconds!
+  // Simulate response after 3.5 seconds
   setTimeout(() => {
-    if (state.auth.partner) {
+    if (state.auth.activeChatUser === activeUser) {
       playSound('chime');
       messages.push({ sender: 'them', text: `Strong effort! Synced my check-in too. Keep compounding discipline! 🔥`, time: 'Just now' });
-      state.auth.chats[partner.id] = messages;
+      state.auth.chats[activeUser] = messages;
       renderChatMessages();
       saveToStorage();
       
-      // Update inbox preview text too
+      // Update inbox preview text too if it's the partner
       const preview = el('inbox-last-msg');
-      if (preview) preview.textContent = "Partner: Strong effort! Synced my check-in too...";
+      if (preview && state.auth.partner && state.auth.partner.id === activeUser) {
+        preview.textContent = "Partner: Strong effort! Synced my check-in too...";
+      }
     }
   }, 3500);
 }
 
 // ─── Inspect Scorecard ───
-function inspectPartnerScorecard() {
+function inspectPartnerScorecard(user) {
   playSound('tap');
   const backdrop = el('scorecard-backdrop');
   const container = el('scorecard-content');
-  const partner = state.auth.partner;
-  if (!backdrop || !container || !partner) return;
+  if (!backdrop || !container || !user) return;
   
+  const currentUser = state.auth.user || {
+    goals: ['discipline'],
+    disciplineScore: 78,
+    ambition: 'consistent',
+    training: 'gym',
+    schedule: 'evening',
+    profession: 'software'
+  };
+  const compatPct = user.compatibilityPct || calculateCompatibility(currentUser, user);
   const formatMap = { gym: '🏋️ Gym Mode', home: '🏠 Home Mode', hybrid: '⚡ Hybrid Mode', outdoor: '🌄 Outdoor Mode' };
+  const initials = (user.avatarInitials || user.name || 'AK').substring(0,2).toUpperCase();
   
+  // Dynamic reasons list for Compatibility tab
+  let reasons = [];
+  if (currentUser.goals && user.goals && currentUser.goals.some(g => user.goals.includes(g))) reasons.push("✓ Goal Alignment");
+  if (currentUser.schedule === user.schedule) reasons.push("✓ Availability Match");
+  if (currentUser.ambition === user.ambition) reasons.push("✓ Ambition Tier");
+  if (currentUser.training === user.training) reasons.push("✓ Setup Compatibility");
+  if (reasons.length === 0) {
+    reasons.push("✓ Shared Focus: Consistency");
+    reasons.push("✓ Aligned Ambition");
+  }
+
   container.innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; margin-bottom:20px;">
-      <div style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, var(--mint), #059669); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800;">
-        ${(partner.avatarInitials || partner.name || 'AK').substring(0,2).toUpperCase()}
+    <!-- Top summary info -->
+    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; margin-bottom:16px;">
+      <div style="width:54px; height:54px; border-radius:50%; background:linear-gradient(135deg, var(--violet), var(--accent)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; border: 2px solid var(--border-2);">
+        ${initials}
       </div>
       <div>
-        <h3 style="font-size:18px; font-weight:800; color:var(--text-1);">${partner.name}</h3>
-        <p style="font-size:11px; color:var(--text-3); margin-top:2px;">${partner.city}, ${partner.country}</p>
-      </div>
-      <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); padding:4px 12px; border-radius:12px; font-size:11px; font-weight:800; color:var(--mint);">
-        ${partner.compatibilityPct}% Compatibility Aligned
+        <h3 style="font-size:16px; font-weight:800; color:var(--text-1); margin:0;">${user.name}</h3>
+        <p style="font-size:11px; color:var(--text-3); margin-top:2px;">${user.city || 'Bangalore'}, ${user.country || 'India'}</p>
       </div>
     </div>
-    
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-      <div style="background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:14px; text-align:center;">
-        <span style="font-size:18px; font-weight:800; color:var(--text-1); display:block;">${partner.disciplineScore}</span>
-        <span style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Discipline Score</span>
+
+    <!-- Tabs selector -->
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" data-modal-tab="profile">Profile</button>
+      <button class="modal-tab-btn" data-modal-tab="compatibility">Compatibility</button>
+    </div>
+
+    <!-- Profile Tab Panel -->
+    <div class="modal-panel active" id="modal-panel-profile">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+        <div style="background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:14px; text-align:center;">
+          <span style="font-size:18px; font-weight:800; color:var(--text-1); display:block;">${user.disciplineScore || 85}</span>
+          <span style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Discipline Score</span>
+        </div>
+        <div style="background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:14px; text-align:center;">
+          <span style="font-size:18px; font-weight:800; color:var(--accent); display:block;">${user.streak || 4}d</span>
+          <span style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Streak</span>
+        </div>
       </div>
-      <div style="background:var(--surface-3); border:1px solid var(--border); padding:10px; border-radius:14px; text-align:center;">
-        <span style="font-size:18px; font-weight:800; color:var(--accent); display:block;">${partner.trustSignals?.streak || 4}d</span>
-        <span style="font-size:9px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em;">Activity Streak</span>
+      
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Style:</span>
+          <span style="font-weight:600; color:var(--text-1);">${formatMap[user.training] || user.training || 'Gym'}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Ambition:</span>
+          <span style="font-weight:600; color:var(--text-1);">${(user.ambition || 'consistent').toUpperCase()}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Schedule:</span>
+          <span style="font-weight:600; color:var(--text-1);">${(user.schedule || 'evening').toUpperCase()}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Goals:</span>
+          <span style="font-weight:600; color:var(--text-1);">${(user.goals || []).join(', ').toUpperCase()}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Last Active:</span>
+          <span style="font-weight:600; color:var(--text-1);">${user.lastActive || '10m ago'}</span>
+        </div>
+      </div>
+
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 14px; margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; display:block;">Today's Progress</span>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Workout:</span>
+          <span style="font-weight:700; color:var(--mint);">✓ Completed</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Protein:</span>
+          <span style="font-weight:700; color:var(--mint);">✓ Hit</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Water:</span>
+          <span style="font-weight:700; color:var(--rose);">✗ Missed</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--text-2);">Sleep:</span>
+          <span style="font-weight:700; color:var(--mint);">✓ Hit</span>
+        </div>
       </div>
     </div>
-    
-    <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 14px; margin-bottom:20px; display:flex; flex-direction:column; gap:8px;">
-      <p style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Demographics & Style</p>
-      <div style="display:flex; justify-content:space-between; font-size:12px;">
-        <span style="color:var(--text-2);">Profession:</span>
-        <span style="font-weight:600; color:var(--text-1);">${partner.profession.toUpperCase()}</span>
+
+    <!-- Compatibility Tab Panel -->
+    <div class="modal-panel" id="modal-panel-compatibility">
+      <div style="text-align:center; padding:12px; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:16px; margin-bottom:12px;">
+        <span style="font-size:24px; font-weight:900; color:var(--mint);">${compatPct}%</span>
+        <p style="font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px;">Compatibility Match</p>
       </div>
-      <div style="display:flex; justify-content:space-between; font-size:12px;">
-        <span style="color:var(--text-2);">Ambition:</span>
-        <span style="font-weight:600; color:var(--text-1);">${(partner.ambition || 'consistent').toUpperCase()}</span>
-      </div>
-      <div style="display:flex; justify-content:space-between; font-size:12px;">
-        <span style="color:var(--text-2);">Setup:</span>
-        <span style="font-weight:600; color:var(--text-1);">${formatMap[partner.training] || partner.training}</span>
-      </div>
-      <div style="display:flex; justify-content:space-between; font-size:12px;">
-        <span style="color:var(--text-2);">Schedule:</span>
-        <span style="font-weight:600; color:var(--text-1);">${(partner.schedule || 'evening').toUpperCase()}</span>
+
+      <div style="background:var(--surface-3); border:1px solid var(--border); border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:6px;">
+        <p style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Match Analysis</p>
+        ${reasons.map(r => `<div style="font-size:11px; color:var(--text-2); display:flex; align-items:center; gap:6px;">${r}</div>`).join('')}
       </div>
     </div>
+
+    <!-- Chat CTA Button -->
+    <button class="primary-btn" id="scorecard-chat-cta-btn" style="margin-top:16px; margin-bottom:0; width:100%;" data-id="${user.id}">
+      Start Chat
+    </button>
+    ${(state.auth.friends && state.auth.friends.some(f => f.id === user.id)) ? `
+      <button class="ghost-btn" id="scorecard-remove-friend-btn" style="margin-top:8px; margin-bottom:0; width:100%; color:var(--rose); border-color:rgba(239,68,68,0.2);" data-id="${user.id}">
+        Remove Friend
+      </button>
+    ` : ''}
   `;
-  
+
+  // Attach tab switching events
+  const tabBtns = container.querySelectorAll('.modal-tab-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      playSound('tap');
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const tabName = btn.dataset.modalTab;
+      container.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+      container.querySelector(`#modal-panel-${tabName}`).classList.add('active');
+    });
+  });
+
+  // Attach chat CTA button event
+  const ctaBtn = container.querySelector('#scorecard-chat-cta-btn');
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', () => {
+      openChat(user.id);
+    });
+  }
+
+  // Attach remove friend button event
+  const removeFriendBtn = container.querySelector('#scorecard-remove-friend-btn');
+  if (removeFriendBtn) {
+    removeFriendBtn.addEventListener('click', () => {
+      removeFriend(user.id);
+    });
+  }
+
   backdrop.classList.remove('hidden');
   void backdrop.offsetWidth;
   backdrop.classList.add('visible');
@@ -7940,4 +8864,8 @@ function closePartnerScorecard() {
   }
 }
 
-
+function openChat(userId) {
+  closePartnerScorecard();
+  closeInbox();
+  openChatWithUser(userId);
+}

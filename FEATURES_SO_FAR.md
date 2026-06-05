@@ -102,6 +102,13 @@ High-fidelity premium components and responsive systems verified working:
 - **Dynamic Island Checks**: Completing actions, changing load values, or triggering PR achievements animates the Dynamic Island into a green check checkmark (`✦ Saved State`).
 - **Drag dismissed Sheet**: Pulling down sheet with downward swipe velocity (>0.6px/ms) snaps sheet closed instantly. Releasing it early triggers a visual elastic bounce-back.
 - **Advanced Compatibility Scoring**: Implemented highly curated 8-level compatibility scoring matrix internally leveraging profession and income indices while preserving absolute user privacy.
+- **Startup Syntax Error Fix**: Resolved duplicate `findCard` and `pendingCard` declarations within `renderSocialsUI` in `app.js` that caused an `Uncaught SyntaxError` and prevented the application from starting.
+- **Rest Timer Stability**: Robustly wired rest timer selector buttons (30s, 45s, 60s, 90s, 120s) with active class highlights, state synchronization, and reliable countdown driving.
+- **Multi-Set Independent Checkboxes**: Fixed checking sets to use independent completion states, auto-completing exercises only when all sets are ticked.
+- **Global Difficulty Removal**: Completely removed global difficulty controls in favor of per-set difficulty ratings.
+- **Socials Restructure**: Formatted Partner tab to show partner profiles, compatibility, shared streak, goals contract, status checks, and trend metrics. Friends tab displays friend lists, pending requests, add friends actions, and a complete history log.
+- **Friend Flow & Chat Overlay**: Updated clicking friends to open the Chat view directly, and clicking the chat username header to view their profile scorecard.
+- **Automated History Logging**: Set up automatic logging for friend additions/removals, accepted/declined requests, and starting/ending accountability partnerships.
 
 ## 3. COMPLETED REFINEMENTS & UX ENHANCEMENTS
 
@@ -202,7 +209,10 @@ High-fidelity premium components and responsive systems verified working:
 - [x] **Share Flow Improvements**: Re-enable share CTA and dynamically regenerate stats & share card on adding extra exercises.
 
 ### SOCIALS & ACCOUNTABILITY MATCHING
-- [x] **Compatibility State Routing**: Default state hides "Analyzing Compatibility" and only displays "Find Accountability Partner" until a request is submitted.
+- [x] **State Machine Routing**: Match flow is driven by a 4-state system: Idle (CTA only), Searching (Compatibility assessment loop), Found (Accept/Decline options), and Matched (locks partnership and switches focus to partner page).
+- [x] **State Persistence**: The matching search state, candidate propositions, and partner relations are serialized into the persistence buffer (`aura_state_v1`) to restore correctly across page refreshes.
+- [x] **Unified Inbox & Chats**: All conversations (partner and friends) are centralized inside the Accountability Inbox drawer. Clicking any user row opens a unified scorecard.
+- [x] **Unified Scorecard Modal**: Features two sub-tabs (Profile & Compatibility reasons) and a chat CTA to immediately coordinate.
 - [x] **Inbox Modal Backdrop Close**: Backdrop clicks and Escape key dismiss the Inbox drawer with smooth fade/slide transitions.
 - [x] **Partner Display Restriction**: Socials tab displays only the main partner, moving extra friends to the Inbox/DM list.
 - [x] **Comparison Section**: Lightweight comparison widget comparing streak, discipline score, recovery respect, and consistency.
@@ -314,3 +324,4 @@ High-fidelity premium components and responsive systems verified working:
 
 
 
+\n\n[SYSTEM] Completed Socials Restructure Final Pass & Workout Bugs Fixes.\n\n\n[SYSTEM] Completed UX Cleanup & Socials Finalization Pass (Partner Tab cleaned, Active Partnership state added).\n

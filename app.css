@@ -3774,6 +3774,49 @@ body::after {
   opacity: 0.5;
 }
 
+/* Scorecard Sub-tabs */
+.modal-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+}
+.modal-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  position: relative;
+  transition: color var(--dur-fast) ease;
+}
+.modal-tab-btn:hover {
+  color: var(--text-1);
+}
+.modal-tab-btn.active {
+  color: var(--text-1);
+}
+.modal-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--violet);
+  border-radius: 1px;
+}
+.modal-panel {
+  display: none;
+}
+.modal-panel.active {
+  display: block;
+}
+
 
 
 
